@@ -3,11 +3,11 @@
 #include <algorithm>
 #include <stdlib.h>
 #include <time.h>
-#include "sortsOpenMP.cpp"
 
 #include <omp.h>
-// #include <mpi.h>
+#include <mpi.h>
 
+#include "sampleSort.cpp"
 
 #define int64 long long int
 

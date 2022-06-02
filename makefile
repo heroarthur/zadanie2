@@ -1,5 +1,5 @@
 EXECS=zadanie2
-MPICC?=g++
+MPICC?=mpic++
 
 all: ${EXECS}
 
