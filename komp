@@ -1,0 +1,3 @@
+#!/bin/bash
+echo mpic++ -fopenmp --std=c++2a zadanie2.cpp -o zadanie2
+mpic++ -fopenmp --std=c++2a zadanie2.cpp -o zadanie2 
