@@ -52,14 +52,13 @@ int main(int argc, char** argv) {
     int p2 = worldSize * worldSize;
 
 	int64 size = 100;
-	Tuple3* A = (Tuple3*) malloc (size * sizeof(Tuple3));
-	Tuple3* sample = (Tuple3*) malloc (worldSize * sizeof(Tuple3));
-	Tuple3* rootSampleRecv;
-	Tuple3* broadcastSample = (Tuple3*) malloc ((worldSize - 1) * sizeof(Tuple3));
+	vector<Tuple3> A; A.reserve(size);
+	vector<Tuple3> sample; sample.reserve(worldSize);
+	vector<Tuple3> rootSampleRecv;
+	vector<Tuple3> broadcastSample; broadcastSample.reserve(worldSize - 1);
     
 	if (wordRank == root) {
-        rootSampleRecv = (Tuple3*) malloc (p2 * sizeof(Tuple3));
-		memset (rootSampleRecv,0,p2 * sizeof(Tuple3));
+        rootSampleRecv.reserve(p2);
     }
 
 
@@ -70,10 +69,10 @@ int main(int argc, char** argv) {
 		A[i].B2 = (rand() % 50) + 1;
 	}
 
-	sample_sort_MPI_tuple3(A, 
-                           sample,
-                           rootSampleRecv,
-                           broadcastSample,
+	sample_sort_MPI_tuple3(&A, 
+                           &sample,
+                           &rootSampleRecv,
+                           &broadcastSample,
                            &size, 
                            wordRank, 
                            worldSize);

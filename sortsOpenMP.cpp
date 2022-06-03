@@ -82,7 +82,7 @@ int get_block_start(int blockId, int blocksNumber, int dataSize) {
 
 
 
-void local_sort_openMP_tuple3(vector<Tuple3>& A, int64 size) {
+void local_sort_openMP_tuple3(vector<Tuple3>* A, int64 size) {
     
 	struct cmp_tuple3 {
 		bool operator ()(Tuple3 const& a, Tuple3 const& b) const {
@@ -99,7 +99,7 @@ void local_sort_openMP_tuple3(vector<Tuple3>& A, int64 size) {
 		int blockId = omp_get_thread_num();
 		int blockStart = get_block_start(blockId, blocksNumber, size);
 		int blockEnd = get_block_start(blockId+1, blocksNumber, size) + (blockId == blocksNumber-1 ? lastElemensSize : 0);
-		std::sort(A + blockStart, A + blockEnd, cmp_tuple3());
+		std::sort(A->begin() + blockStart, A->begin() + blockEnd, cmp_tuple3());
 	}
 
 	int merges = blocksNumber / 2;
@@ -114,7 +114,7 @@ void local_sort_openMP_tuple3(vector<Tuple3>& A, int64 size) {
 			int64 mergeMid = mergeStart + halfMergeLen;
 			int64 mergeEnd = i == mergesInStep-1 ? size : mergeStart + 2 * halfMergeLen;
 			mergeEnd = min(mergeEnd, size);
-			inplace_merge(A + mergeStart, A + mergeMid, A + mergeEnd, cmp_tuple3());
+			inplace_merge(A->begin() + mergeStart, A->begin() + mergeMid, A->begin() + mergeEnd, cmp_tuple3());
 		}
 	}
 }
