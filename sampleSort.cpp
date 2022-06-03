@@ -5,6 +5,7 @@
 #include <time.h>
 #include <cstdio>
 #include <cstring>
+#include <vector>
 
 #include <omp.h>
 #include <mpi.h>
@@ -25,10 +26,34 @@ using namespace std;
 //     int64 i;
 // };
 
+bool tuple3Equal(Tuple3 t1, Tuple3 t2) {
+    return t1.B == t2.B && t1.B2 == t2.B2;
+}
+
+bool tuple3Greater(Tuple3 t1, Tuple3 t2) {
+    return t1.B > t2.B || (t1.B == t2.B && t1.B2 > t2.B2);
+}
+
+bool tuple3Smaller(Tuple3 t1, Tuple3 t2) {
+    return !tuple3Equal(t1, t2) && !tuple3Greater(t1, t2);
+}
 
 
+int binarySearchTuple3(Tuple3* arr, Tuple3 tuple, int64 l, int64 r)
+{
+    if (r >= l) {
+        int mid = l + (r - l) / 2;
 
+        if (tuple3Equal(arr[mid], tuple) || (tuple3Smaller(tuple, arr[mid]) && tuple3Greater(tuple, arr[mid-1])))
+            return mid;
 
+        if (tuple3Greater(arr[mid], tuple))
+            return binarySearch(arr, l, mid - 1, x);
+ 
+        return binarySearch(arr, mid + 1, r, x);
+    }
+    return -1;
+}
 
 
 
@@ -36,25 +61,20 @@ void sample_sort_MPI_tuple3(Tuple3* A,
                             Tuple3* sample,
                             Tuple3* rootSampleRecv,
                             Tuple3* broadcastSample,
-                            int64 sizeOnNode, 
+                            int64* sizeOnNode, 
                             int rank, 
                             int worldSize) {
     const int root = 0;
 
-    local_sort_openMP_tuple3(A, sizeOnNode);
+    local_sort_openMP_tuple3(A, *sizeOnNode);
     cout<<"local sorted "<<worldSize<<" "<<rank<<endl;
 
-    // if (rank == 3) {
-	// 	for (int i = 0; i < sizeOnNode; i++) {
-	// 		cout<<"("<<A[i].B<<","<<A[i].B2<<") ";
-	// 	}
-	// }
-	// ENTER;
+
 
     int p2 = worldSize * worldSize;
 
 
-    int64 step = sizeOnNode / (worldSize + 1);
+    int64 step = *sizeOnNode / (worldSize + 1);
     
     int sendNumber = worldSize;
     for (int i = 0; i < worldSize; i++) {
@@ -63,38 +83,29 @@ void sample_sort_MPI_tuple3(Tuple3* A,
     }
 
     MPI_Barrier(MPI_COMM_WORLD);
-    MPI_Gather(&sample, sendNumber, mpi_tuple3, rootSampleRecv, sendNumber, mpi_tuple3, root, MPI_COMM_WORLD);
+    MPI_Gather(sample, sendNumber, MPI_Tuple3, rootSampleRecv, sendNumber, MPI_Tuple3, root, MPI_COMM_WORLD);
     // MPI_Barrier(MPI_COMM_WORLD);
 
     // cout << "gather" << endl;s
 
     if (rank == root) {
-
-
-        if (rank == 0) {
-        	for (int i = 0; i < p2; i++) {
-        		cout<<"("<<rootSampleRecv[i].B<<","<<rootSampleRecv[i].B2<<") ";
-        	}
+        local_sort_openMP_tuple3(rootSampleRecv, p2);
+        for (int i = 0; i < worldSize-1; i++) {
+            broadcastSample[i] = rootSampleRecv[(i+1) * worldSize];
         }
-        // local_sort_openMP_tuple3(rootSampleRecv, p2);
-        ENTER;
-
-        // for (int i = 0; i < worldSize-1; i++) {
-        //     broadcastSample[i] = rootSampleRecv[(i+1) * worldSize];
-        //     cout<<"("<<broadcastSample[i].B<<", "<<broadcastSample[i].B2<<")"<<endl;
-        // }
     }
 
     
 
-    // MPI_Bcast(broadcastSample, worldSize-1, MPI_LONG_LONG_INT, root, MPI_COMM_WORLD);
+    MPI_Bcast(broadcastSample, worldSize-1, MPI_Tuple3, root, MPI_COMM_WORLD);
 
-    // if (rank == root) {
-    //     for (int i = 0; i < worldSize-1; i++) {
-    //         cout<<"<"<<broadcastSample[i].B<<","<<broadcastSample[i].B2<<"> ";
-    //     }
-    //     ENTER;
-    // }
+
+
+    for (int i = 0; i < worldSize; i++) {
+        MPI_Scatter(rand_nums, num_elements_per_proc, MPI_FLOAT, sub_rand_nums, num_elements_per_proc, MPI_FLOAT, 0, MPI_COMM_WORLD);
+    }
+
+    // wyslij
 
 }
 
@@ -105,6 +116,6 @@ void sample_sort_MPI_tuple3(Tuple3* A,
 
 
 
-// void sample_sort_MPI_tuple3() {
+// void sample_sort_MPI_Tuple3() {
 
 // }

@@ -45,45 +45,36 @@ int main(int argc, char** argv) {
     MPI_Aint offsets[3] = {offsetof(Tuple3, B), offsetof(Tuple3, B2), offsetof(Tuple3, i)};
     MPI_Datatype dataType[3] = {MPI_LONG_LONG_INT, MPI_LONG_LONG_INT, MPI_LONG_LONG_INT};
     
-    MPI_Type_create_struct(3, blockcount, offsets, dataType, &mpi_tuple3);
-    MPI_Type_commit(&mpi_tuple3);
+    MPI_Type_create_struct(3, blockcount, offsets, dataType, &MPI_Tuple3);
+    MPI_Type_commit(&MPI_Tuple3);
 
-	srand (wordRank);
-
+	srand (time( NULL ) * wordRank);
     int p2 = worldSize * worldSize;
 
-	int size = 100;
+	int64 size = 100;
 	Tuple3* A = (Tuple3*) malloc (size * sizeof(Tuple3));
 	Tuple3* sample = (Tuple3*) malloc (worldSize * sizeof(Tuple3));
 	Tuple3* rootSampleRecv;
 	Tuple3* broadcastSample = (Tuple3*) malloc ((worldSize - 1) * sizeof(Tuple3));
     
-	// if (wordRank == root) {
+	if (wordRank == root) {
         rootSampleRecv = (Tuple3*) malloc (p2 * sizeof(Tuple3));
 		memset (rootSampleRecv,0,p2 * sizeof(Tuple3));
-    // }
+    }
 
 
 
 	
 	for (int i = 0; i < size; i++) {
-		A[i].B = (rand() % 20) + 1;
-		A[i].B2 = (rand() % 10) + 1;
+		A[i].B = (rand() % 50) + 1;
+		A[i].B2 = (rand() % 50) + 1;
 	}
-
-	// if (wordRank == root) {
-	// 	local_sort_openMP_tuple3(A, size);
-	// 	for (int i = 0; i < size; i++) {
-	// 		cout<<"("<<A[i].B<<","<<A[i].B2<<") ";
-	// 	}
-	// }
-	// ENTER;
 
 	sample_sort_MPI_tuple3(A, 
                            sample,
                            rootSampleRecv,
                            broadcastSample,
-                           size, 
+                           &size, 
                            wordRank, 
                            worldSize);
 

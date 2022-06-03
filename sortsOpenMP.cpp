@@ -5,6 +5,8 @@
 #include <time.h>
 #include <cstdio>
 #include <cstring>
+#include <vector>
+
 #include <omp.h>
 
 #define int64 long long int
@@ -35,7 +37,7 @@ typedef struct mpi_tuple3 {
 } Tuple3;
 
 
-MPI_Datatype mpi_tuple3;
+MPI_Datatype MPI_Tuple3;
 
 int get_block_start(int blockId, int blocksNumber, int dataSize) {
 	return (dataSize / blocksNumber) * blockId;
@@ -80,11 +82,11 @@ int get_block_start(int blockId, int blocksNumber, int dataSize) {
 
 
 
-void local_sort_openMP_tuple3(Tuple3* A, int64 size) {
+void local_sort_openMP_tuple3(vector<Tuple3>& A, int64 size) {
     
 	struct cmp_tuple3 {
 		bool operator ()(Tuple3 const& a, Tuple3 const& b) const {
-			return a.B > b.B || (a.B == b.B && a.B2 > b.B2);
+			return a.B < b.B || (a.B == b.B && a.B2 < b.B2);
 		}
 	};
 
