@@ -36,17 +36,6 @@ using namespace std;
 //     int64 i;
 // };
 
-bool tuple3Equal(Tuple3 t1, Tuple3 t2) {
-    return t1.B == t2.B && t1.B2 == t2.B2;
-}
-
-bool tuple3Greater(Tuple3 t1, Tuple3 t2) {
-    return t1.B > t2.B || (t1.B == t2.B && t1.B2 > t2.B2);
-}
-
-bool tuple3Smaller(Tuple3 t1, Tuple3 t2) {
-    return !tuple3Equal(t1, t2) && !tuple3Greater(t1, t2);
-}
 
 
 int64 binarySearchTuple3(vector<Tuple3>* arr, Tuple3 tuple, int64 l, int64 r)

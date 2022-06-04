@@ -38,8 +38,8 @@ int main(int argc, char** argv) {
 
 	MPI_Init(&argc, &argv);
 
-	int wordRank;
-	MPI_Comm_rank(MPI_COMM_WORLD, &wordRank);
+	int worldRank;
+	MPI_Comm_rank(MPI_COMM_WORLD, &worldRank);
 	int worldSize;
 	MPI_Comm_size(MPI_COMM_WORLD, &worldSize);
 
@@ -50,22 +50,24 @@ int main(int argc, char** argv) {
     MPI_Type_create_struct(3, blockcount, offsets, dataType, &MPI_Tuple3);
     MPI_Type_commit(&MPI_Tuple3);
 
-	srand (wordRank);
+	srand (worldRank);
     int p2 = worldSize * worldSize;
 
-	int64 size = 1000;
-	vector<Tuple3>* A_pointer, *A_sampleSorted_pointer, *tmp_pointer;
-	vector<Tuple3> A; A.resize(size);
-	vector<Tuple3> A_sampleSorted; A_sampleSorted.reserve(1.5 * size);
+	int64 size = 10000000;
+	vector<Tuple3>* tuple3_pointer, *tuple_sampleSorted_pointer, *tmp_pointer;
+	vector<Tuple3> tuple3_Arr; tuple3_Arr.resize(size);
+	vector<int64> B; B.reserve(1.5 * size);
+	vector<Tuple3> tuple3_sortResult; tuple3_sortResult.reserve(1.5 * size);
 	vector<Tuple3> sample; sample.resize(worldSize);
 	vector<Tuple3> rootSampleRecv;
 	vector<Tuple3> broadcastSample; broadcastSample.resize(worldSize - 1);
 	vector<int64> pivotsPositions; pivotsPositions.resize(worldSize - 1);
-	A_pointer = &A;
-	A_sampleSorted_pointer = &A_sampleSorted;
+	tuple3_pointer = &tuple3_Arr;
+	tuple_sampleSorted_pointer = &tuple3_sortResult;
 
+	bool allSingletones;
     
-	if (wordRank == root) {
+	if (worldRank == root) {
         rootSampleRecv.resize(p2);
     }
 
@@ -73,22 +75,32 @@ int main(int argc, char** argv) {
 
 	
 	for (int i = 0; i < size; i++) {
-		A[i].B = (rand() % 50) + 1;
-		A[i].B2 = (rand() % 50) + 1;
-	}
+		tuple3_Arr[i].B = (rand() % 50) + 1;
+		tuple3_Arr[i].B2 = (rand() % 50) + 1;
+		tuple3_Arr[i].i = i;
+ 	}
 
-	sample_sort_MPI_tuple3(A_pointer,
-						   A_sampleSorted_pointer,
+	sample_sort_MPI_tuple3(tuple3_pointer,
+						   tuple_sampleSorted_pointer,
                            &sample,
                            &rootSampleRecv,
                            &broadcastSample,
 						   &pivotsPositions,
                            &size, 
-                           wordRank, 
+                           worldRank, 
                            worldSize);
-	tmp_pointer = A_sampleSorted_pointer;
-	A_sampleSorted_pointer = A_pointer;
-	A_pointer = tmp_pointer;
+	tmp_pointer = tuple_sampleSorted_pointer;
+	tuple_sampleSorted_pointer = tuple3_pointer;
+	tuple3_pointer = tmp_pointer;
+
+
+	B.clear();
+	rebucketing_2h_group_rank(tuple3_pointer, 
+                              &B, 
+                              &allSingletones,
+                              worldRank,
+                              worldSize);
+
 
 
 	MPI_Finalize();

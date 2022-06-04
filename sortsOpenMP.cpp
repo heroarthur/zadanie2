@@ -43,6 +43,19 @@ int get_block_start(int blockId, int blocksNumber, int dataSize) {
 	return (dataSize / blocksNumber) * blockId;
 }
 
+bool tuple3Equal(Tuple3 t1, Tuple3 t2) {
+    return t1.B == t2.B && t1.B2 == t2.B2;
+}
+
+bool tuple3Greater(Tuple3 t1, Tuple3 t2) {
+    return t1.B > t2.B || (t1.B == t2.B && t1.B2 > t2.B2);
+}
+
+bool tuple3Smaller(Tuple3 t1, Tuple3 t2) {
+    return !tuple3Equal(t1, t2) && !tuple3Greater(t1, t2);
+}
+
+
 
 // void local_sort_openMP_tuple2(Tuple2* A, int64 size, int k) {
 
