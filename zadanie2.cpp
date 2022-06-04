@@ -32,6 +32,7 @@ using namespace std;
 // };
 
 
+
 int main(int argc, char** argv) {
 
 	MPI_Init(&argc, &argv);
@@ -51,14 +52,16 @@ int main(int argc, char** argv) {
 	srand (time( NULL ) * wordRank);
     int p2 = worldSize * worldSize;
 
-	int64 size = 100;
-	vector<Tuple3> A; A.reserve(size);
-	vector<Tuple3> sample; sample.reserve(worldSize);
+	int64 size = 40;
+	vector<Tuple3> A; A.resize(size);
+	vector<Tuple3> A_sampleSorted; A_sampleSorted.reserve(1.5 * size);
+	vector<Tuple3> sample; sample.resize(worldSize);
 	vector<Tuple3> rootSampleRecv;
-	vector<Tuple3> broadcastSample; broadcastSample.reserve(worldSize - 1);
+	vector<Tuple3> broadcastSample; broadcastSample.resize(worldSize - 1);
+	vector<int64> pivotsPositions; pivotsPositions.resize(worldSize - 1);
     
 	if (wordRank == root) {
-        rootSampleRecv.reserve(p2);
+        rootSampleRecv.resize(p2);
     }
 
 
@@ -69,10 +72,12 @@ int main(int argc, char** argv) {
 		A[i].B2 = (rand() % 50) + 1;
 	}
 
-	sample_sort_MPI_tuple3(&A, 
+	sample_sort_MPI_tuple3(&A,
+						   &A_sampleSorted,
                            &sample,
                            &rootSampleRecv,
                            &broadcastSample,
+						   &pivotsPositions,
                            &size, 
                            wordRank, 
                            worldSize);
