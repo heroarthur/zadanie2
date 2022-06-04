@@ -8,6 +8,7 @@
 #include <mpi.h>
 
 #include "sampleSort.cpp"
+#include "rebucketing.cpp"
 
 #define int64 long long int
 #define root 0
@@ -52,7 +53,7 @@ int main(int argc, char** argv) {
 	srand (wordRank);
     int p2 = worldSize * worldSize;
 
-	int64 size = 40;
+	int64 size = 1000;
 	vector<Tuple3>* A_pointer, *A_sampleSorted_pointer, *tmp_pointer;
 	vector<Tuple3> A; A.resize(size);
 	vector<Tuple3> A_sampleSorted; A_sampleSorted.reserve(1.5 * size);
