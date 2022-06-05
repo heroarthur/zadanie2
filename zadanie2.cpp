@@ -7,7 +7,10 @@
 #include <omp.h>
 #include <mpi.h>
 
-#include "sampleSort.cpp"
+#include "sampleSortTuple2.cpp"
+#include "sampleSortTuple3.cpp"
+
+
 #include "rebucketing.cpp"
 #include "reorder.cpp"
 

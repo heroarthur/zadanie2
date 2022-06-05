@@ -14,72 +14,53 @@
 
 #ifndef   sortsOpenMP
 #define   sortsOpenMP
+    #include "sortsOpenMP.cpp"
+#endif
 
-#include "sortsOpenMP.cpp"
-
+#ifndef   auxiliary
+#define   auxiliary
+    #include "auxiliary.cpp"
 #endif
 
 #include<bits/stdc++.h>
 
 #define root 0
 
-#define wyslijRaz (2147483647 / 10)
 
 using namespace std;
 
-// struct Tuple2 {
-//     char B[K];
-//     int64 i;
-// };
-
-// struct Tuple3 {
-//     int64 B;
-//     int64 B2;
-//     int64 i;
-// };
 
 
-
-int64 binarySearchTuple3(vector<Tuple3>* arr, Tuple3 tuple, int64 l, int64 r)
+int64 binarySearchTuple2(vector<Tuple2>* arr, Tuple2 tuple, int64 l, int64 r)
 {
     if (r >= l) {
         int64 mid = l + (r - l) / 2;
 
-        if (tuple3Equal(arr->data()[mid], tuple) || (tuple3Smaller(tuple, arr->data()[mid]) && tuple3Greater(tuple, arr->data()[mid-1])))
+        if (tuple2Equal(arr->data()[mid], tuple) || (tuple2Smaller(tuple, arr->data()[mid]) && tuple2Greater(tuple, arr->data()[mid-1])))
             return mid;
 
-        if (tuple3Greater(arr->data()[mid], tuple))
-            return binarySearchTuple3(arr, tuple, l, mid - 1);
+        if (tuple2Greater(arr->data()[mid], tuple))
+            return binarySearchTuple2(arr, tuple, l, mid - 1);
  
-        return binarySearchTuple3(arr, tuple, mid + 1, r);
+        return binarySearchTuple2(arr, tuple, mid + 1, r);
     }
     return -1;
 }
 
 
-void findPivotPositions(vector<Tuple3>* arr, vector<Tuple3>* pivotsTuples, vector<int64>* pivotsPositions, int rank) {
+void findPivotPositionsTuple2(vector<Tuple2>* arr, vector<Tuple2>* pivotsTuples, vector<int64>* pivotsPositions, int rank) {
     #pragma omp parallel for
     for (int i = 0; i < pivotsTuples->size(); i++) {
-        pivotsPositions->data()[i] = binarySearchTuple3(arr, pivotsTuples->data()[i], 0, arr->size());
+        pivotsPositions->data()[i] = binarySearchTuple2(arr, pivotsTuples->data()[i], 0, arr->size());
     }
 	pivotsPositions->push_back(arr->size());
 }
 
 
 
-int getNextSendSize(int64 currentPartialPosition, int64 endPosition, int worldSize) {
-    int partialSendSize = wyslijRaz; //2147483647 / worldSize;
-    int64 partialSendSizeInt64 = partialSendSize;
-    int64 diff = (endPosition - currentPartialPosition); 
-    if (diff < partialSendSizeInt64) {
-        return (int) diff;
-    }
-    return partialSendSize;
-}
 
-
-void getNextPartialPivots(vector<Tuple3>* arr, 
-                          vector<Tuple3>* partialArr, 
+void getNextPartialPivotsTuple2(vector<Tuple2>* arr, 
+                          vector<Tuple2>* partialArr, 
                           vector<int64>* pivotsPosition, 
                           vector<int64>* partialPivotsPosition,
 						  vector<int>* scattervPositions,
@@ -107,32 +88,22 @@ void getNextPartialPivots(vector<Tuple3>* arr,
 }
 
 
-bool doNextPartialRound(vector<int64>* pivotsPosition, 
-                        vector<int64>* partialPivotsPosition) {
-	for (int i = 0; i < pivotsPosition->size(); i++) {
-		if (pivotsPosition->data()[i] != partialPivotsPosition->data()[i]) {
-			return true;
-		}
-	}
-	return false;
-}
 
 
-
-void sendDataToProperPartition(vector<Tuple3>* A, vector<Tuple3>* A_sampleSorted, vector<int64>* pivotsPositions, int rank, int worldSize) {
+void sendDataToProperPartitionTuple2(vector<Tuple2>* A, vector<Tuple2>* A_sampleSorted, vector<int64>* pivotsPositions, int rank, int worldSize) {
     A_sampleSorted->clear();
 
     int nextPartitionPos = 0;
     int nextRecvNumber;
 
-	vector<Tuple3> partialArr;
+	vector<Tuple2> partialArr;
 	vector<int64> partialPivotsPositions; partialPivotsPositions.resize(pivotsPositions->size());
 	vector<int> scattervPositions; scattervPositions.resize(worldSize);
 	vector<int> displacement; displacement.resize(worldSize);
 
     vector<int> arrivingNumber; arrivingNumber.resize(worldSize);
     vector<int> arrivingDisplacement; arrivingDisplacement.resize(worldSize);
-    vector<Tuple3> tmp_buff;
+    vector<Tuple2> tmp_buff;
     int sizeTmpBuff;
 
 	partialPivotsPositions[0] = 0;
@@ -153,10 +124,9 @@ void sendDataToProperPartition(vector<Tuple3>* A, vector<Tuple3>* A_sampleSorted
 
 
     for (int partialSends = 0; partialSends < numberOfLoops; partialSends++) {
-
         partialArr.clear();
         scattervPositions.clear();
-        getNextPartialPivots(A, 
+        getNextPartialPivotsTuple2(A, 
                             &partialArr,
                             pivotsPositions, 
                             &partialPivotsPositions,
@@ -179,11 +149,11 @@ void sendDataToProperPartition(vector<Tuple3>* A, vector<Tuple3>* A_sampleSorted
         MPI_Alltoallv(partialArr.data(), 
                       scattervPositions.data(),
                       displacement.data(),
-                      MPI_Tuple3,
+                      MPI_Tuple2,
                       tmp_buff.data(),
                       arrivingNumber.data(),
                       arrivingDisplacement.data(),
-                      MPI_Tuple3,
+                      MPI_Tuple2,
                       MPI_COMM_WORLD);
 
         A_sampleSorted->insert(A_sampleSorted->end(), tmp_buff.begin(), tmp_buff.end());
@@ -195,11 +165,11 @@ void sendDataToProperPartition(vector<Tuple3>* A, vector<Tuple3>* A_sampleSorted
 }
 
 
-void sample_sort_MPI_tuple3(vector<Tuple3>* A, 
-                            vector<Tuple3>* A_sampleSorted,
-                            vector<Tuple3>* sample,
-                            vector<Tuple3>* rootSampleRecv,
-                            vector<Tuple3>* broadcastSample,
+void sample_sort_MPI_tuple2(vector<Tuple2>* A, 
+                            vector<Tuple2>* A_sampleSorted,
+                            vector<Tuple2>* sample,
+                            vector<Tuple2>* rootSampleRecv,
+                            vector<Tuple2>* broadcastSample,
                             vector<int64>* pivotsPositions,
                             int rank, 
                             int worldSize) {
@@ -209,7 +179,7 @@ void sample_sort_MPI_tuple3(vector<Tuple3>* A,
     broadcastSample->clear();
     broadcastSample->resize(worldSize-1);
 
-    local_sort_openMP_tuple3(A);
+    local_sort_openMP_tuple2(A);
 
     int p2 = worldSize * worldSize;
 
@@ -225,12 +195,12 @@ void sample_sort_MPI_tuple3(vector<Tuple3>* A,
     }
     
     MPI_Barrier(MPI_COMM_WORLD);
-    MPI_Gather((void*)sample->data(), sendNumber, MPI_Tuple3, (void*)rootSampleRecv->data(), sendNumber, MPI_Tuple3, root, MPI_COMM_WORLD);
+    MPI_Gather((void*)sample->data(), sendNumber, MPI_Tuple2, (void*)rootSampleRecv->data(), sendNumber, MPI_Tuple2, root, MPI_COMM_WORLD);
 
     // // cout << "gather" << endl;s
 
     if (rank == root) {
-        local_sort_openMP_tuple3(rootSampleRecv);
+        local_sort_openMP_tuple2(rootSampleRecv);
         
         for (int i = 0; i < worldSize-1; i++) {
             broadcastSample->data()[i] = rootSampleRecv->data()[(i+1) * worldSize];
@@ -239,59 +209,14 @@ void sample_sort_MPI_tuple3(vector<Tuple3>* A,
 
     
 
-    MPI_Bcast((void*)broadcastSample->data(), worldSize-1, MPI_Tuple3, root, MPI_COMM_WORLD);
+    MPI_Bcast((void*)broadcastSample->data(), worldSize-1, MPI_Tuple2, root, MPI_COMM_WORLD);
 
 
-    findPivotPositions(A, broadcastSample, pivotsPositions, rank);
+    findPivotPositionsTuple2(A, broadcastSample, pivotsPositions, rank);
     
-	sendDataToProperPartition(A, A_sampleSorted, pivotsPositions, rank, worldSize);
+	sendDataToProperPartitionTuple2(A, A_sampleSorted, pivotsPositions, rank, worldSize);
 
-	local_sort_openMP_tuple3(A_sampleSorted);
+	local_sort_openMP_tuple2(A_sampleSorted);
 }
 
 
-
-
-    // MPI_Scatter(pivotsPositions->data(), 1, MPI_Tuple3, &nextRecvNumber,
-    //           num_elements_per_proc, MPI_FLOAT, 0, MPI_COMM_WORLD);
-
-    // MPI_Scatter(const void *sendbuf, int sendcount, MPI_Datatype sendtype,
-    //            void *recvbuf, int recvcount, MPI_Datatype recvtype, int root,
-    //            MPI_Comm comm)
-
-
-    // MPI_Scatterv(A->data(), 
-    //              pivotsPositions->data(), 
-    //              pivotsPositions->data(),
-    //              MPI_Tuple3, 
-    //              A_sampleSorted->data() + nextPartitionPos, 
-    //              pivotsPositions->data()[rank],
-    //              MPI_Tuple3, 
-    //              0, 
-    //              MPI_COMM_WORLD);
-
-    
-
-    // if (rank == 1) {
-    //     cout<<
-    //     for (int i = 0; i < )
-    // }
-
-    // for (int i = 0; i < worldSize; i++) {
-        // MPI_Scatter(rand_nums, num_elements_per_proc, MPI_FLOAT, sub_rand_nums, num_elements_per_proc, MPI_FLOAT, 0, MPI_COMM_WORLD);
-    // }
-
-    // wyslij
-
-
-
-
-
-
-
-
-
-
-// void sample_sort_MPI_Tuple3() {
-
-// }
