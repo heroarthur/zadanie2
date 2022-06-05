@@ -22,7 +22,6 @@
 
 #define root 0
 
-#define wyslijRaz 5
 
 using namespace std;
 
@@ -55,7 +54,7 @@ void rebucketing_2h_group_rank(vector<Tuple3>* tuple,
         }
 
         allSingletonesCheck = localAllSingletones;
-        indexOffset = lastPossibleIndex;
+        indexOffset = lastPossibleIndex + 1;
         lastTuple = tuple->data()[lastPossibleIndex];
 
         MPI_Send(&allSingletonesCheck, 1, MPI_C_BOOL, 1, root, MPI_COMM_WORLD);
@@ -70,7 +69,7 @@ void rebucketing_2h_group_rank(vector<Tuple3>* tuple,
         int64 size = tuple->size();
         int64 lastPossibleIndex = size-1;
         B->resize(size);
-        B->data()[0] = 0;
+        B->data()[0] = tuple3Equal(lastTuple, tuple->data()[0]) ? indexOffset-1 : indexOffset;
         for (int64 i = 1; i < size; i++) {
             if (tuple3Equal(tuple->data()[i-1], tuple->data()[i])) {
                     allSingletonesCheck = false;
@@ -81,7 +80,7 @@ void rebucketing_2h_group_rank(vector<Tuple3>* tuple,
             }
         }
 
-        indexOffset += lastPossibleIndex;
+        indexOffset += lastPossibleIndex + 1;
         lastTuple = tuple->data()[lastPossibleIndex];
 
         if (rank < worldSize-1) {

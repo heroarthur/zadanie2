@@ -53,11 +53,11 @@ int main(int argc, char** argv) {
 	srand (worldRank);
     int p2 = worldSize * worldSize;
 
-	int64 size = 10000000;
+	int64 size = 20;
 	vector<Tuple3>* tuple3_pointer, *tuple_sampleSorted_pointer, *tmp_pointer;
 	vector<Tuple3> tuple3_Arr; tuple3_Arr.resize(size);
-	vector<int64> B; B.reserve(1.5 * size);
-	vector<Tuple3> tuple3_sortResult; tuple3_sortResult.reserve(1.5 * size);
+	vector<int64> B; B.reserve(1.2 * size);
+	vector<Tuple3> tuple3_sortResult; tuple3_sortResult.reserve(1.2 * size);
 	vector<Tuple3> sample; sample.resize(worldSize);
 	vector<Tuple3> rootSampleRecv;
 	vector<Tuple3> broadcastSample; broadcastSample.resize(worldSize - 1);
@@ -80,19 +80,36 @@ int main(int argc, char** argv) {
 		tuple3_Arr[i].i = i;
  	}
 
+	// if (worldRank == 0) {
+	// 	for (int i = 0; i < tuple3_pointer->size(); i++) {
+	// 		// cout<<"V("<<tuple3_pointer->data()[i].B<<"|"<<tuple3_pointer->data()[i].B2<<"|"<<tuple3_pointer->data()[i].i<<") "<<B.data()[i]<<endl;
+	// 		cout<<"V("<<tuple3_pointer->data()[i].B<<"|"<<tuple3_pointer->data()[i].B2<<") "<<endl;
+
+	// 	}
+	// 	ENTER;
+	// }
+
+	// local_sort_openMP_tuple3(tuple3_pointer);
+
 	sample_sort_MPI_tuple3(tuple3_pointer,
 						   tuple_sampleSorted_pointer,
                            &sample,
                            &rootSampleRecv,
                            &broadcastSample,
 						   &pivotsPositions,
-                           &size, 
                            worldRank, 
                            worldSize);
 	tmp_pointer = tuple_sampleSorted_pointer;
 	tuple_sampleSorted_pointer = tuple3_pointer;
 	tuple3_pointer = tmp_pointer;
 
+	// if (worldRank == 3) {
+	// 	for (int i = 0; i < tuple3_pointer->size(); i++) {
+	// 		// cout<<"V("<<tuple3_pointer->data()[i].B<<"|"<<tuple3_pointer->data()[i].B2<<"|"<<tuple3_pointer->data()[i].i<<") "<<B.data()[i]<<endl;
+	// 		cout<<"V("<<tuple3_pointer->data()[i].B<<"|"<<tuple3_pointer->data()[i].B2<<") "<<endl;
+	// 	}
+	// }
+	// cout<<"range "<<worldRank<<": "<<tuple3_pointer->size()<<endl;
 
 	B.clear();
 	rebucketing_2h_group_rank(tuple3_pointer, 
@@ -100,6 +117,44 @@ int main(int argc, char** argv) {
                               &allSingletones,
                               worldRank,
                               worldSize);
+
+
+	if (worldRank == 0) {
+		for (int i = 0; i < tuple3_pointer->size(); i++) {
+			cout<<"V("<<tuple3_pointer->data()[i].B<<"|"<<tuple3_pointer->data()[i].B2<<"|"<<tuple3_pointer->data()[i].i<<") "<<B.data()[i]<<endl;
+			// cout<<"V("<<tuple3_pointer->data()[i].B<<"|"<<tuple3_pointer->data()[i].B2<<") "<<endl;
+
+		}
+	}
+	MPI_Barrier(MPI_COMM_WORLD);
+
+	if (worldRank == 1) {
+		for (int i = 0; i < tuple3_pointer->size(); i++) {
+			cout<<"V("<<tuple3_pointer->data()[i].B<<"|"<<tuple3_pointer->data()[i].B2<<"|"<<tuple3_pointer->data()[i].i<<") "<<B.data()[i]<<endl;
+			// cout<<"V("<<tuple3_pointer->data()[i].B<<"|"<<tuple3_pointer->data()[i].B2<<") "<<endl;
+
+		}
+	}
+	MPI_Barrier(MPI_COMM_WORLD);
+
+	if (worldRank == 2) {
+		for (int i = 0; i < tuple3_pointer->size(); i++) {
+			cout<<"V("<<tuple3_pointer->data()[i].B<<"|"<<tuple3_pointer->data()[i].B2<<"|"<<tuple3_pointer->data()[i].i<<") "<<B.data()[i]<<endl;
+			// cout<<"V("<<tuple3_pointer->data()[i].B<<"|"<<tuple3_pointer->data()[i].B2<<") "<<endl;
+
+		}
+	}
+	MPI_Barrier(MPI_COMM_WORLD);
+
+	if (worldRank == 3) {
+		for (int i = 0; i < tuple3_pointer->size(); i++) {
+			cout<<"V("<<tuple3_pointer->data()[i].B<<"|"<<tuple3_pointer->data()[i].B2<<"|"<<tuple3_pointer->data()[i].i<<") "<<B.data()[i]<<endl;
+			// cout<<"V("<<tuple3_pointer->data()[i].B<<"|"<<tuple3_pointer->data()[i].B2<<") "<<endl;
+
+		}
+	}
+	MPI_Barrier(MPI_COMM_WORLD);
+
 
 
 

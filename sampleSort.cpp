@@ -21,7 +21,7 @@
 
 #define root 0
 
-#define wyslijRaz 5
+#define wyslijRaz (2147483647 / 10)
 
 using namespace std;
 
@@ -55,12 +55,23 @@ int64 binarySearchTuple3(vector<Tuple3>* arr, Tuple3 tuple, int64 l, int64 r)
 }
 
 
-void findPivotPositions(vector<Tuple3>* arr, vector<Tuple3>* pivotsTuples, vector<int64>* pivotsPositions) {
+void findPivotPositions(vector<Tuple3>* arr, vector<Tuple3>* pivotsTuples, vector<int64>* pivotsPositions, int rank) {
     #pragma omp parallel for
     for (int i = 0; i < pivotsTuples->size(); i++) {
         pivotsPositions->data()[i] = binarySearchTuple3(arr, pivotsTuples->data()[i], 0, arr->size());
     }
 	pivotsPositions->push_back(arr->size());
+
+    // if (rank == 2) {
+    //     for (int i = 0; i < pivotsPositions->size(); i++) {
+    //         cout<<pivotsPositions->data()[i]<<" ";
+    //     }
+    //     cout<<endl;
+    //     for (int i = 0; i < arr->size(); i++) {
+    //         cout<<arr->data()[i].B<<"|"<<arr->data()[i].B2<<" ";
+    //     }
+    //     ENTER;
+    // }
 }
 
 
@@ -92,19 +103,16 @@ void getNextPartialPivots(vector<Tuple3>* arr,
     }
 
     partialArr->reserve(partialArraSize);
-	displacement->data()[0] = 0;
-
+    int displacementSum = 0;
 
     for (int i = 0; i < pivotsPosition->size(); i++) {
         nextSendSize = getNextSendSize(partialPivotsPosition->data()[i], pivotsPosition->data()[i], worldSize);
 		scattervPositions->push_back(nextSendSize);
         partialArr->insert(partialArr->end(), arr->begin() + partialPivotsPosition->data()[i], arr->begin() + partialPivotsPosition->data()[i] + nextSendSize);
         partialPivotsPosition->data()[i] += nextSendSize;
+        displacement->data()[i] = displacementSum;
+        displacementSum += nextSendSize;
     }
-
-	for (int i = 1; i < pivotsPosition->size(); i++) {
-		displacement->data()[i] = displacement->data()[i-1] + scattervPositions->data()[i];
-	}
 }
 
 
@@ -121,6 +129,7 @@ bool doNextPartialRound(vector<int64>* pivotsPosition,
 
 
 void sendDataToProperPartition(vector<Tuple3>* A, vector<Tuple3>* A_sampleSorted, vector<int64>* pivotsPositions, int rank, int worldSize) {
+    A_sampleSorted->clear();
 
     int nextPartitionPos = 0;
     int nextRecvNumber;
@@ -129,6 +138,9 @@ void sendDataToProperPartition(vector<Tuple3>* A, vector<Tuple3>* A_sampleSorted
 	vector<int64> partialPivotsPositions; partialPivotsPositions.resize(pivotsPositions->size());
 	vector<int> scattervPositions; scattervPositions.resize(worldSize);
 	vector<int> displacement; displacement.resize(worldSize);
+
+    vector<Tuple3> tmp_buff;
+
 	partialPivotsPositions[0] = 0;
 	for (int i = 1; i < pivotsPositions->size(); i++) {
 		partialPivotsPositions[i] = pivotsPositions->data()[i-1];
@@ -138,11 +150,10 @@ void sendDataToProperPartition(vector<Tuple3>* A, vector<Tuple3>* A_sampleSorted
 	for (int i = 1; i < pivotsPositions->size(); i++) {
 		numberOfPartSendThisProces = max(numberOfPartSendThisProces, (int) ceil((double)((pivotsPositions->data()[i] - pivotsPositions->data()[i-1]) / (double)wyslijRaz)));
 	}
-
 	int currentProcesPartSends = 0;
 
 	
-	for (int p = 0; p < 1; p++) {
+	for (int p = 0; p < worldSize; p++) {
 
 		if (rank == p) {
 			currentProcesPartSends = numberOfPartSendThisProces;
@@ -152,34 +163,56 @@ void sendDataToProperPartition(vector<Tuple3>* A, vector<Tuple3>* A_sampleSorted
 
 		for (int sends = 0; sends < currentProcesPartSends; sends++) {
 
-			if (rank == 0) {
-			partialArr.clear();
-			scattervPositions.clear();
-			getNextPartialPivots(A, 
-								&partialArr,
-								pivotsPositions, 
-								&partialPivotsPositions,
-								&scattervPositions,
-								&displacement,
-								worldSize);
-
-
+			if (rank == p) {
+                partialArr.clear();
+                scattervPositions.clear();
+                getNextPartialPivots(A, 
+                                    &partialArr,
+                                    pivotsPositions, 
+                                    &partialPivotsPositions,
+                                    &scattervPositions,
+                                    &displacement,
+                                    worldSize);
 			}
 
 			MPI_Scatter(scattervPositions.data(), 1, MPI_INT, &nextRecvNumber, 1, MPI_INT, p, MPI_COMM_WORLD);
 
-			int64 previousSize = A_sampleSorted->size();
-			A_sampleSorted->resize(previousSize + nextRecvNumber);
+			// int64 previousSize = A_sampleSorted->size();
+            // int64 newSize = previousSize + nextRecvNumber;
+			// A_sampleSorted->resize(newSize);
+            tmp_buff.resize(nextRecvNumber);
+            // if (rank == p) {
+            //     for (int i = 0; i < scattervPositions.size(); i++) {
+            //         cout<<scattervPositions.data()[i]<<" ";
+            //     }
+            //     cout<<endl;
+
+            //     for (int i = 0; i < displacement.size(); i++) {
+            //         cout<<displacement.data()[i]<<" ";
+            //     }
+            //     cout<<endl;
+
+
+
+            //     for (int i = 0; i < partialArr.size(); i++) {
+            //         cout<<"("<<partialArr.data()[i].B<<","<<partialArr.data()[i].B2<<") ";
+            //     }
+            //     ENTER;
+                
+            // }
 
 			MPI_Scatterv(partialArr.data(), 
 						scattervPositions.data(), 
 						displacement.data(),
 						MPI_Tuple3, 
-						A_sampleSorted->data() + previousSize, 
+						tmp_buff.data(), 
 						nextRecvNumber,
 						MPI_Tuple3, 
-						0, 
+						p, 
 						MPI_COMM_WORLD);
+
+            A_sampleSorted->insert(A_sampleSorted->end(), tmp_buff.begin(), tmp_buff.end());
+            tmp_buff.clear();
 		}
 	}
 }
@@ -191,32 +224,37 @@ void sample_sort_MPI_tuple3(vector<Tuple3>* A,
                             vector<Tuple3>* rootSampleRecv,
                             vector<Tuple3>* broadcastSample,
                             vector<int64>* pivotsPositions,
-                            int64* sizeOnNode, 
                             int rank, 
                             int worldSize) {
 
-    local_sort_openMP_tuple3(A);
-    // cout<<"local sorted "<<worldSize<<" "<<rank<<endl;
-
 	A_sampleSorted->clear();
+    sample->clear();
+    broadcastSample->clear();
+    broadcastSample->resize(worldSize-1);
+
+    local_sort_openMP_tuple3(A);
 
     int p2 = worldSize * worldSize;
 
-
-    int64 step = *sizeOnNode / (worldSize + 1);
+    int64 step = ceil((double) A->size() / (double) worldSize);
     
     int sendNumber = worldSize;
     for (int i = 0; i < worldSize; i++) {
-        sample->data()[i] = A->data()[(i + 1) * step];
+        sample->push_back(A->data()[minInt64(i * step, A->size()-1)]);
     }
+    
+    if (rank == root) {
+        rootSampleRecv->resize(p2);
+    }
+    
     MPI_Barrier(MPI_COMM_WORLD);
-    MPI_Gather(sample->data(), sendNumber, MPI_Tuple3, (void*)rootSampleRecv->data(), sendNumber, MPI_Tuple3, root, MPI_COMM_WORLD);
-    MPI_Barrier(MPI_COMM_WORLD);
+    MPI_Gather((void*)sample->data(), sendNumber, MPI_Tuple3, (void*)rootSampleRecv->data(), sendNumber, MPI_Tuple3, root, MPI_COMM_WORLD);
 
     // // cout << "gather" << endl;s
 
     if (rank == root) {
         local_sort_openMP_tuple3(rootSampleRecv);
+        
         for (int i = 0; i < worldSize-1; i++) {
             broadcastSample->data()[i] = rootSampleRecv->data()[(i+1) * worldSize];
         }
@@ -227,7 +265,7 @@ void sample_sort_MPI_tuple3(vector<Tuple3>* A,
     MPI_Bcast((void*)broadcastSample->data(), worldSize-1, MPI_Tuple3, root, MPI_COMM_WORLD);
 
 
-    findPivotPositions(A, broadcastSample, pivotsPositions);
+    findPivotPositions(A, broadcastSample, pivotsPositions, rank);
     
 	sendDataToProperPartition(A, A_sampleSorted, pivotsPositions, rank, worldSize);
 
