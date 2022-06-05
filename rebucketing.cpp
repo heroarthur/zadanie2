@@ -102,7 +102,7 @@ void rebucketing_2h_group_rank(vector<Tuple3>* tuple,
 // } Tuple2;
 
 
-void rebucketing_2h_group_rank(vector<Tuple2>* tuple, 
+void assign_h_group_rank(vector<Tuple2>* tuple, 
                                vector<int64>* B, 
                                int rank,
                                int worldSize) {
