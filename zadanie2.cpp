@@ -43,12 +43,17 @@ int main(int argc, char** argv) {
 	int worldSize;
 	MPI_Comm_size(MPI_COMM_WORLD, &worldSize);
 
-	int blockcount[3]={1,1,1};
-    MPI_Aint offsets[3] = {offsetof(Tuple3, B), offsetof(Tuple3, B2), offsetof(Tuple3, i)};
-    MPI_Datatype dataType[3] = {MPI_LONG_LONG_INT, MPI_LONG_LONG_INT, MPI_LONG_LONG_INT};
-    
-    MPI_Type_create_struct(3, blockcount, offsets, dataType, &MPI_Tuple3);
+	int blockcountTuple3[3]={1,1,1};
+    MPI_Aint offsetsTuple3[3] = {offsetof(Tuple3, B), offsetof(Tuple3, B2), offsetof(Tuple3, i)};
+    MPI_Datatype dataTypleTuple3[3] = {MPI_LONG_LONG_INT, MPI_LONG_LONG_INT, MPI_LONG_LONG_INT};
+    MPI_Type_create_struct(3, blockcountTuple3, offsetsTuple3, dataTypleTuple3, &MPI_Tuple3);
     MPI_Type_commit(&MPI_Tuple3);
+
+	int blockcountTuple2[2]={K,1};
+    MPI_Aint offsetsTuple2[2] = {offsetof(Tuple2, B), offsetof(Tuple2, i)};
+    MPI_Datatype dataTypleTuple2[2] = {MPI_CHAR, MPI_LONG_LONG_INT};
+    MPI_Type_create_struct(2, blockcountTuple2, offsetsTuple2, dataTypleTuple2, &MPI_Tuple2);
+    MPI_Type_commit(&MPI_Tuple2);
 
 	srand (worldRank);
     int p2 = worldSize * worldSize;

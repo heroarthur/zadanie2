@@ -10,7 +10,7 @@
 #include <omp.h>
 
 #define int64 long long int
-#define K 33
+#define K 13
 #define ENTER cout<<endl<<endl
 
 
@@ -19,16 +19,12 @@ using namespace std;
 
 
 
-struct Tuple2 {
+typedef struct mpi_tuple2 {
     char B[K];
     int64 i;
-};
+} Tuple2;
 
-// struct Tuple3 {
-//     int64 B;
-//     int64 B2;
-//     int64 i;
-// };
+
 
 typedef struct mpi_tuple3 {
     int64 B;
@@ -37,6 +33,7 @@ typedef struct mpi_tuple3 {
 } Tuple3;
 
 
+MPI_Datatype MPI_Tuple2;
 MPI_Datatype MPI_Tuple3;
 
 int get_block_start(int blockId, int blocksNumber, int dataSize) {
@@ -54,6 +51,12 @@ bool tuple3Greater(Tuple3 t1, Tuple3 t2) {
 bool tuple3Smaller(Tuple3 t1, Tuple3 t2) {
     return !tuple3Equal(t1, t2) && !tuple3Greater(t1, t2);
 }
+
+
+bool tuple2Equal(Tuple2 t1, Tuple2 t2) {
+	return strcmp(t1.B, t2.B) == 0;
+}
+
 
 
 
