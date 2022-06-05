@@ -71,7 +71,7 @@ int main(int argc, char** argv) {
 	srand (worldRank);
     int p2 = worldSize * worldSize;
 
-	int64 size = 20;
+	int64 size = 10000000;
 	vector<Tuple3>* tuple3_pointer, *tuple_sampleSorted_pointer, *tmp_pointer;
 	vector<Tuple3> tuple3_Arr; tuple3_Arr.resize(size);
 	vector<int64> B; B.reserve(1.2 * size);
@@ -121,57 +121,23 @@ int main(int argc, char** argv) {
 	tuple_sampleSorted_pointer = tuple3_pointer;
 	tuple3_pointer = tmp_pointer;
 
-	// if (worldRank == 3) {
+	// if (worldRank == 0) {
 	// 	for (int i = 0; i < tuple3_pointer->size(); i++) {
 	// 		// cout<<"V("<<tuple3_pointer->data()[i].B<<"|"<<tuple3_pointer->data()[i].B2<<"|"<<tuple3_pointer->data()[i].i<<") "<<B.data()[i]<<endl;
 	// 		cout<<"V("<<tuple3_pointer->data()[i].B<<"|"<<tuple3_pointer->data()[i].B2<<") "<<endl;
 	// 	}
 	// }
-	// cout<<"range "<<worldRank<<": "<<tuple3_pointer->size()<<endl;
+	// cout<<"rank "<<worldRank<<": "<<tuple3_pointer->size()<<endl;
 
-	B.clear();
-	rebucketing_2h_group_rank(tuple3_pointer, 
-                              &B, 
-                              &allSingletones,
-                              worldRank,
-                              worldSize);
+	// B.clear();
+	// rebucketing_2h_group_rank(tuple3_pointer, 
+    //                           &B, 
+    //                           &allSingletones,
+    //                           worldRank,
+    //                           worldSize);
 
 
-	if (worldRank == 0) {
-		for (int i = 0; i < tuple3_pointer->size(); i++) {
-			cout<<"V("<<tuple3_pointer->data()[i].B<<"|"<<tuple3_pointer->data()[i].B2<<"|"<<tuple3_pointer->data()[i].i<<") "<<B.data()[i]<<endl;
-			// cout<<"V("<<tuple3_pointer->data()[i].B<<"|"<<tuple3_pointer->data()[i].B2<<") "<<endl;
 
-		}
-	}
-	MPI_Barrier(MPI_COMM_WORLD);
-
-	if (worldRank == 1) {
-		for (int i = 0; i < tuple3_pointer->size(); i++) {
-			cout<<"V("<<tuple3_pointer->data()[i].B<<"|"<<tuple3_pointer->data()[i].B2<<"|"<<tuple3_pointer->data()[i].i<<") "<<B.data()[i]<<endl;
-			// cout<<"V("<<tuple3_pointer->data()[i].B<<"|"<<tuple3_pointer->data()[i].B2<<") "<<endl;
-
-		}
-	}
-	MPI_Barrier(MPI_COMM_WORLD);
-
-	if (worldRank == 2) {
-		for (int i = 0; i < tuple3_pointer->size(); i++) {
-			cout<<"V("<<tuple3_pointer->data()[i].B<<"|"<<tuple3_pointer->data()[i].B2<<"|"<<tuple3_pointer->data()[i].i<<") "<<B.data()[i]<<endl;
-			// cout<<"V("<<tuple3_pointer->data()[i].B<<"|"<<tuple3_pointer->data()[i].B2<<") "<<endl;
-
-		}
-	}
-	MPI_Barrier(MPI_COMM_WORLD);
-
-	if (worldRank == 3) {
-		for (int i = 0; i < tuple3_pointer->size(); i++) {
-			cout<<"V("<<tuple3_pointer->data()[i].B<<"|"<<tuple3_pointer->data()[i].B2<<"|"<<tuple3_pointer->data()[i].i<<") "<<B.data()[i]<<endl;
-			// cout<<"V("<<tuple3_pointer->data()[i].B<<"|"<<tuple3_pointer->data()[i].B2<<") "<<endl;
-
-		}
-	}
-	MPI_Barrier(MPI_COMM_WORLD);
 
 
 

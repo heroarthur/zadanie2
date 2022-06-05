@@ -6,6 +6,8 @@
 #include <cstdio>
 #include <cstring>
 #include <vector>
+#include <numeric>
+
 
 #include <omp.h>
 #include <mpi.h>
@@ -61,17 +63,6 @@ void findPivotPositions(vector<Tuple3>* arr, vector<Tuple3>* pivotsTuples, vecto
         pivotsPositions->data()[i] = binarySearchTuple3(arr, pivotsTuples->data()[i], 0, arr->size());
     }
 	pivotsPositions->push_back(arr->size());
-
-    // if (rank == 2) {
-    //     for (int i = 0; i < pivotsPositions->size(); i++) {
-    //         cout<<pivotsPositions->data()[i]<<" ";
-    //     }
-    //     cout<<endl;
-    //     for (int i = 0; i < arr->size(); i++) {
-    //         cout<<arr->data()[i].B<<"|"<<arr->data()[i].B2<<" ";
-    //     }
-    //     ENTER;
-    // }
 }
 
 
@@ -139,7 +130,10 @@ void sendDataToProperPartition(vector<Tuple3>* A, vector<Tuple3>* A_sampleSorted
 	vector<int> scattervPositions; scattervPositions.resize(worldSize);
 	vector<int> displacement; displacement.resize(worldSize);
 
+    vector<int> arrivingNumber; arrivingNumber.resize(worldSize);
+    vector<int> arrivingDisplacement; arrivingDisplacement.resize(worldSize);
     vector<Tuple3> tmp_buff;
+    int sizeTmpBuff;
 
 	partialPivotsPositions[0] = 0;
 	for (int i = 1; i < pivotsPositions->size(); i++) {
@@ -151,70 +145,53 @@ void sendDataToProperPartition(vector<Tuple3>* A, vector<Tuple3>* A_sampleSorted
 		numberOfPartSendThisProces = max(numberOfPartSendThisProces, (int) ceil((double)((pivotsPositions->data()[i] - pivotsPositions->data()[i-1]) / (double)wyslijRaz)));
 	}
 	int currentProcesPartSends = 0;
+	
+    int numberOfLoops;
+	// for (int p = 0; p < worldSize; p++) {
+
+    MPI_Allreduce(&numberOfPartSendThisProces, &numberOfLoops, 1, MPI_INT, MPI_MAX,MPI_COMM_WORLD);
+
+
+    for (int partialSends = 0; partialSends < numberOfLoops; partialSends++) {
+
+        partialArr.clear();
+        scattervPositions.clear();
+        getNextPartialPivots(A, 
+                            &partialArr,
+                            pivotsPositions, 
+                            &partialPivotsPositions,
+                            &scattervPositions,
+                            &displacement,
+                            worldSize);
+
+        MPI_Alltoall((void*)scattervPositions.data(), 1, MPI_INT, (void*)arrivingNumber.data(), 1, MPI_INT, MPI_COMM_WORLD);
+
+
+        sizeTmpBuff = accumulate(arrivingNumber.begin(), arrivingNumber.end(), 0);
+
+        arrivingDisplacement.data()[0] = 0;
+        for (int i = 1; i < arrivingDisplacement.size(); i++) {
+            arrivingDisplacement.data()[i] = arrivingDisplacement.data()[i-1] + arrivingNumber.data()[i-1];
+        }
+
+        tmp_buff.resize(sizeTmpBuff);
+
+        MPI_Alltoallv(partialArr.data(), 
+                      scattervPositions.data(),
+                      displacement.data(),
+                      MPI_Tuple3,
+                      tmp_buff.data(),
+                      arrivingNumber.data(),
+                      arrivingDisplacement.data(),
+                      MPI_Tuple3,
+                      MPI_COMM_WORLD);
+
+        A_sampleSorted->insert(A_sampleSorted->end(), tmp_buff.begin(), tmp_buff.end());
+        tmp_buff.clear();
+    }
+
 
 	
-	for (int p = 0; p < worldSize; p++) {
-
-		if (rank == p) {
-			currentProcesPartSends = numberOfPartSendThisProces;
-		}
-
-		MPI_Bcast(&currentProcesPartSends, 1, MPI_INT, p, MPI_COMM_WORLD);
-
-		for (int sends = 0; sends < currentProcesPartSends; sends++) {
-
-			if (rank == p) {
-                partialArr.clear();
-                scattervPositions.clear();
-                getNextPartialPivots(A, 
-                                    &partialArr,
-                                    pivotsPositions, 
-                                    &partialPivotsPositions,
-                                    &scattervPositions,
-                                    &displacement,
-                                    worldSize);
-			}
-
-			MPI_Scatter(scattervPositions.data(), 1, MPI_INT, &nextRecvNumber, 1, MPI_INT, p, MPI_COMM_WORLD);
-
-			// int64 previousSize = A_sampleSorted->size();
-            // int64 newSize = previousSize + nextRecvNumber;
-			// A_sampleSorted->resize(newSize);
-            tmp_buff.resize(nextRecvNumber);
-            // if (rank == p) {
-            //     for (int i = 0; i < scattervPositions.size(); i++) {
-            //         cout<<scattervPositions.data()[i]<<" ";
-            //     }
-            //     cout<<endl;
-
-            //     for (int i = 0; i < displacement.size(); i++) {
-            //         cout<<displacement.data()[i]<<" ";
-            //     }
-            //     cout<<endl;
-
-
-
-            //     for (int i = 0; i < partialArr.size(); i++) {
-            //         cout<<"("<<partialArr.data()[i].B<<","<<partialArr.data()[i].B2<<") ";
-            //     }
-            //     ENTER;
-                
-            // }
-
-			MPI_Scatterv(partialArr.data(), 
-						scattervPositions.data(), 
-						displacement.data(),
-						MPI_Tuple3, 
-						tmp_buff.data(), 
-						nextRecvNumber,
-						MPI_Tuple3, 
-						p, 
-						MPI_COMM_WORLD);
-
-            A_sampleSorted->insert(A_sampleSorted->end(), tmp_buff.begin(), tmp_buff.end());
-            tmp_buff.clear();
-		}
-	}
 }
 
 
