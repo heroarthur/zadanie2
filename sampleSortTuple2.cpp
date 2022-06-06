@@ -118,7 +118,6 @@ void sendDataToProperPartitionTuple2(vector<Tuple2>* A, vector<Tuple2>* A_sample
 	int currentProcesPartSends = 0;
 	
     int numberOfLoops;
-	// for (int p = 0; p < worldSize; p++) {
 
     MPI_Allreduce(&numberOfPartSendThisProces, &numberOfLoops, 1, MPI_INT, MPI_MAX,MPI_COMM_WORLD);
 

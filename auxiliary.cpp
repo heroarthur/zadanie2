@@ -20,6 +20,7 @@
 
 #define root 0
 #define wyslijRaz (2147483647 / 10)
+#define int64 long long int
 
 
 using namespace std;
@@ -77,6 +78,9 @@ int64 minInt64(int64 a, int64 b) {
 	return a < b ? a : b;
 }
 
+int64 maxInt64(int64 a, int64 b) {
+	return a > b ? a : b;
+}
 
 
 bool doNextPartialRound(vector<int64>* pivotsPosition, 

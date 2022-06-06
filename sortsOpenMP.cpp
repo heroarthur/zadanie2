@@ -9,7 +9,6 @@
 
 #include <omp.h>
 
-#define int64 long long int
 #define K 13
 #define ENTER cout<<endl<<endl
 

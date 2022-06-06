@@ -9,10 +9,9 @@
 
 #include "sampleSortTuple2.cpp"
 #include "sampleSortTuple3.cpp"
-
-
 #include "rebucketing.cpp"
 #include "reorder.cpp"
+
 
 #define int64 long long int
 #define root 0
@@ -61,12 +60,12 @@ int main(int argc, char** argv) {
     MPI_Type_create_struct(2, blockcountTuple2, offsetsTuple2, dataTypleTuple2, &MPI_Tuple2);
     MPI_Type_commit(&MPI_Tuple2);
 
-	// MPI_ArrData
+	// ISA_Data
 	int blockcountArrData[2]={1,1};
-    MPI_Aint offsetsArrData[2] = {offsetof(ArrData, rank), offsetof(ArrData, size)};
+    MPI_Aint offsetsArrData[2] = {offsetof(ISA_Data, SA_I), offsetof(ISA_Data, B_i)};
     MPI_Datatype dataTypeArrData[2] = {MPI_LONG_LONG_INT, MPI_LONG_LONG_INT};
-    MPI_Type_create_struct(2, blockcountArrData, offsetsArrData, dataTypeArrData, &MPI_ArrData);
-    MPI_Type_commit(&MPI_ArrData);
+    MPI_Type_create_struct(2, blockcountArrData, offsetsArrData, dataTypeArrData, &MPI_ISA_Data);
+    MPI_Type_commit(&MPI_ISA_Data);
 
 
 
