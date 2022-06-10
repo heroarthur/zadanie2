@@ -170,3 +170,7 @@ bool doNextPartialSend(vector<int64>* pivotsPosition,
 int getNodeToSend(int64 id, int64 nodeSize) {
     return id / nodeSize;
 }
+
+
+
+

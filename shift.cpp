@@ -27,6 +27,11 @@
 
 using namespace std;
 
+// usunieta
+// typedef struct shift {
+//     int64 i;
+//     int64 B_i_h;
+// } Shift_data;
 
 
 
@@ -72,19 +77,19 @@ void shift(vector<int64>* B,
 
         if (target_i >= 0) {
             TwoInts64 data;
-            data.i = target_i;
-            data.B_i_h = B->data()[i];
+            data.i1 = target_i;
+            data.i2 = B->data()[i];
             dataForPartitions[targetNode].push_back(data);
         }
         if (curr_i + h > dataSize) {
             TwoInts64 data;
-            data.i = i;
-            data.B_i_h = 0;
+            data.i1 = i;
+            data.i2 = 0;
             dataForPartitions[currNode].push_back(data);
         }
     }
 
-    vector<ISA_Data> partialArr; partialArr.reserve(worldSize * wyslijRaz);
+    vector<TwoInts64> partialArr; partialArr.reserve(worldSize * wyslijRaz);
     vector<int64> partialPivotsPosition; partialPivotsPosition.resize(worldSize); 
     fill(partialPivotsPosition.begin(), partialPivotsPosition.end(), 0);
 
@@ -104,7 +109,7 @@ void shift(vector<int64>* B,
     vector<int> arrivingNumber; arrivingNumber.resize(worldSize);
     vector<int> arrivingDisplacement; arrivingDisplacement.resize(worldSize);
     int sizeTmpBuff;
-    vector<ISA_Data> tmp_buff; 
+    vector<TwoInts64> tmp_buff; 
 
     for (int partialSends = 0; partialSends < globalMaxPartialSend; partialSends++) {
         getNextPartialSend(&dataForPartitions, 
@@ -128,17 +133,18 @@ void shift(vector<int64>* B,
         MPI_Alltoallv(partialArr.data(), 
                 scattervPositions.data(),
                 displacement.data(),
-                MPI_ISA_Data,
+                MPI_TwoInts64,
                 tmp_buff.data(),
                 arrivingNumber.data(),
                 arrivingDisplacement.data(),
-                MPI_ISA_Data,
+                MPI_TwoInts64,
                 MPI_COMM_WORLD);
 
         int64 offset = rank * newNodeSize;
+
         #pragma omp parallel for
         for (int i = 0; i < tmp_buff.size(); i++) {
-            B_new->data()[tmp_buff.data()[i].SA_I - offset] = tmp_buff.data()[i].B_i;
+            B_new->data()[tmp_buff.data()[i].i1 - offset] = tmp_buff.data()[i].i2;
         }
         tmp_buff.clear();
     }

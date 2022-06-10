@@ -112,37 +112,6 @@ void reorder_and_rebalance(vector<int64>* B,
 
         tmp_buff.resize(sizeTmpBuff);
 
-        // if (rank == 1) {
-        //     cout<<"size buff "<<sizeTmpBuff<<endl;
-            
-        //     cout<<"wypisanie danych do alltoallv"<<endl<<endl;
-        //     cout<<"size partial array "<<partialArr.size()<<endl;
-        //     for (int i = 0; i < partialArr.size(); i++) {
-        //         cout<<partialArr.data()[i].SA_I<<" ";
-        //     }
-        //     cout<<endl<<endl;
-
-        //     for (int i = 0; i < scattervPositions.size(); i++) {
-        //         cout<<scattervPositions.data()[i]<<" ";
-        //     }
-        //     cout<<endl<<endl;
-
-        //     for (int i = 0; i < displacement.size(); i++) {
-        //         cout<<displacement.data()[i]<<" ";
-        //     }
-        //     cout<<endl<<endl;
-
-        //     for (int i = 0; i < arrivingNumber.size(); i++) {
-        //         cout<<arrivingNumber.data()[i]<<" ";
-        //     }
-        //     cout<<endl<<endl;
-
-        //     for (int i = 0; i < arrivingDisplacement.size(); i++) {
-        //         cout<<arrivingDisplacement.data()[i]<<" ";
-        //     }
-        //     cout<<endl<<endl;
-        // }
-
         MPI_Alltoallv(partialArr.data(), 
                 scattervPositions.data(),
                 displacement.data(),
@@ -157,15 +126,9 @@ void reorder_and_rebalance(vector<int64>* B,
 
         // #pragma omp parallel for
         for (int i = 0; i < tmp_buff.size(); i++) {
-            // cout<<"indeksy "<<tmp_buff.data()[i].SA_I<<" "<<tmp_buff.data()[i].B_i<<endl;
             B_new->data()[tmp_buff.data()[i].i1 - offset] = tmp_buff.data()[i].i2;
         }
 
         tmp_buff.clear();
     }
 }
-
-// int MPI_Alltoallv(const void *sendbuf, const int *sendcounts,
-//                   const int *sdispls, MPI_Datatype sendtype, void *recvbuf,
-//                   const int *recvcounts, const int *rdispls, MPI_Datatype recvtype, MPI_Comm comm)
-
