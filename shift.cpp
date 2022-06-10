@@ -28,64 +28,7 @@
 using namespace std;
 
 
-typedef struct shift {
-    int64 i;
-    int64 B_i_h;
-} Shift_data;
 
-MPI_Datatype MPI_SHIFT_Data;
-
-
-
-
-void getNextPartialSend(vector<vector<ISA_Data>>* dataForPartitions, 
-                        vector<ISA_Data>* partialArr, 
-                        vector<int64>* partialPivotsPosition,
-						vector<int>* scattervPositions,
-						vector<int>* displacement,
-                        int worldSize) {
-
-    partialArr->clear();
-    scattervPositions->clear();
-    displacement->clear();
-
-    int pivot = 0;
-    for(int node = 0; node < worldSize; node++) {
-        for(int i = partialPivotsPosition->data()[node]; i < minInt64(partialPivotsPosition->data()[node] + wyslijRaz, dataForPartitions->data()[node].size()); i++) {
-            partialArr->push_back(dataForPartitions->data()[node].data()[i]);
-            pivot++;
-        }
-        scattervPositions->push_back(pivot);
-    }
-    displacement->push_back(0);
-    int nextDispl;
-    for(int i = 1; i < worldSize; i++) {
-        nextDispl = displacement->data()[i-1] + scattervPositions->data()[i-1];
-        displacement->push_back(nextDispl);
-    }
-}
-
-bool doNextPartialSend(vector<int64>* pivotsPosition, 
-                       vector<int64>* partialPivotsPosition) {
-    
-    for(int i = 0; i < pivotsPosition->size(); i++) {
-        if (pivotsPosition->data()[i] > partialPivotsPosition->data()[i]) {
-            return true;
-        }
-    }
-    return false;
-}
-
-
-
-
-
-
-
-
-int getNodeToSend(int64 id, int64 nodeSize) {
-    return id / nodeSize;
-}
 
 void shift(vector<int64>* B, 
            vector<int64>* B_new, 
@@ -110,7 +53,7 @@ void shift(vector<int64>* B,
         B_new->resize(lastNodeSize);
     }
 
-    vector<vector<Shift_data>> dataForPartitions; dataForPartitions.resize(worldSize);
+    vector<vector<TwoInts64>> dataForPartitions; dataForPartitions.resize(worldSize);
 
     for (int i = 0; i < worldSize; i++) {
         dataForPartitions[i].clear();
@@ -128,13 +71,13 @@ void shift(vector<int64>* B,
         targetNode = target_i / nodeSize;
 
         if (target_i >= 0) {
-            Shift_data data;
+            TwoInts64 data;
             data.i = target_i;
             data.B_i_h = B->data()[i];
             dataForPartitions[targetNode].push_back(data);
         }
         if (curr_i + h > dataSize) {
-            Shift_data data;
+            TwoInts64 data;
             data.i = i;
             data.B_i_h = 0;
             dataForPartitions[currNode].push_back(data);

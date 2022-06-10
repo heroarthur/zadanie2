@@ -10,8 +10,8 @@
 #include "sampleSortTuple2.cpp"
 #include "sampleSortTuple3.cpp"
 #include "rebucketing.cpp"
-// #include "reorder.cpp"
-// #include "shift.cpp"
+#include "reorder.cpp"
+#include "shift.cpp"
 
 #include "generateTestData.cpp"
 
@@ -62,35 +62,39 @@ int main(int argc, char** argv) {
     MPI_Type_create_struct(2, blockcountTuple2, offsetsTuple2, dataTypleTuple2, &MPI_Tuple2);
     MPI_Type_commit(&MPI_Tuple2);
 
-	// // ISA_Data
-	// int blockcountArrData[2]={1,1};
-    // MPI_Aint offsetsArrData[2] = {offsetof(ISA_Data, SA_I), offsetof(ISA_Data, B_i)};
-    // MPI_Datatype dataTypeArrData[2] = {MPI_LONG_LONG_INT, MPI_LONG_LONG_INT};
-    // MPI_Type_create_struct(2, blockcountArrData, offsetsArrData, dataTypeArrData, &MPI_ISA_Data);
-    // MPI_Type_commit(&MPI_ISA_Data);
+	// TwoInts64
+	int blockcountArrData[2]={1,1};
+    MPI_Aint offsetsArrData[2] = {offsetof(TwoInts64, i1), offsetof(TwoInts64, i2)};
+    MPI_Datatype dataTypeArrData[2] = {MPI_LONG_LONG_INT, MPI_LONG_LONG_INT};
+    MPI_Type_create_struct(2, blockcountArrData, offsetsArrData, dataTypeArrData, &MPI_TwoInts64);
+    MPI_Type_commit(&MPI_TwoInts64);
 
-	// // SHIFT_data 
-	// int blockcountArrData2[2]={1,1};
-    // MPI_Aint offsetsArrData2[2] = {offsetof(Shift_data, i), offsetof(Shift_data, B_i_h)};
-    // MPI_Datatype dataTypeArrData2[2] = {MPI_LONG_LONG_INT, MPI_LONG_LONG_INT};
-    // MPI_Type_create_struct(2, blockcountArrData2, offsetsArrData2, dataTypeArrData2, &MPI_SHIFT_Data);
-    // MPI_Type_commit(&MPI_SHIFT_Data);
 
 
 	srand (worldRank);
     int p2 = worldSize * worldSize;
 
-	int64 size = 20;
-	vector<Tuple2>* tuple2_pointer, *tuple_sampleSorted_pointer, *tmp_pointer;
+	int64 size = 10000000;
+	vector<Tuple2> *tuple2_pointer, *tuple_sampleSorted_pointer, *tmp_pointer;
 	vector<Tuple2> tuple2_Arr; tuple2_Arr.resize(size);
+	
 	vector<int64> B; B.reserve(1.2 * size);
+	vector<int64> B_new; B_new.reserve(1.2 * size);
+	vector<int64> *B_pointer, *B_new_pointer, *B_tmp_pointer;
+
 	vector<Tuple2> tuple2_sortResult; tuple2_sortResult.reserve(1.2 * size);
 	vector<Tuple2> sample; sample.resize(worldSize);
 	vector<Tuple2> rootSampleRecv;
 	vector<Tuple2> broadcastSample; broadcastSample.resize(worldSize - 1);
 	vector<int64> pivotsPositions; pivotsPositions.resize(worldSize - 1);
+	
 	tuple2_pointer = &tuple2_Arr;
 	tuple_sampleSorted_pointer = &tuple2_sortResult;
+
+	B_pointer = &B;
+	B_new_pointer = &B_new;
+
+	vector<int64> SA;
 
 	bool allSingletones;
     
@@ -102,11 +106,17 @@ int main(int argc, char** argv) {
 
 	for (int i = 0; i < size; i++) {
 		fillCharArray(tuple2_Arr[i].B);
-		tuple2_Arr[i].i = i;
+		tuple2_Arr[i].i = i + worldRank * size;
  	}
+
+	if (worldRank == root) {
+		tuple2_Arr[0].B[0] = '$';
+	}
 
 
 	MPI_Barrier(MPI_COMM_WORLD);
+
+
 
 
 	sample_sort_MPI_tuple2(tuple2_pointer,
@@ -122,33 +132,51 @@ int main(int argc, char** argv) {
 	tuple2_pointer = tmp_pointer;
 
 
-	if (worldRank == 0) {
-		for (int i = 0; i < tuple2_pointer->size(); i++) {
-			printf("tora %s\n", tuple2_pointer->data()[i].B);
-		}
-	}
-	MPI_Barrier(MPI_COMM_WORLD);
-	if (worldRank == 1) {
-		for (int i = 0; i < tuple2_pointer->size(); i++) {
-			printf("tora %s\n", tuple2_pointer->data()[i].B);
-		}
-	}
-	MPI_Barrier(MPI_COMM_WORLD);
-	if (worldRank == 2) {
-		for (int i = 0; i < tuple2_pointer->size(); i++) {
-			printf("tora %s\n", tuple2_pointer->data()[i].B);
-		}
-	}
-	MPI_Barrier(MPI_COMM_WORLD);
-	if (worldRank == 3) {
-		for (int i = 0; i < tuple2_pointer->size(); i++) {
-			printf("tora %s\n", tuple2_pointer->data()[i].B);
-		}
-	}
-	MPI_Barrier(MPI_COMM_WORLD);
+	assign_h_group_rank(tuple2_pointer, 
+						B_pointer, 
+						worldRank,
+						worldSize);
 
-	cout<<"rank: "<<worldRank<<" "<<tuple2_pointer->size()<<endl;
 
+	initialize_SA(&SA, tuple2_pointer);
+
+
+	reorder_and_rebalance(B_pointer, 
+                          B_new_pointer, 
+                          &SA, 
+                          worldRank, 
+                          worldSize);
+	B_tmp_pointer = B_new_pointer;
+	B_new_pointer = B_pointer;
+	B_pointer = B_tmp_pointer;
+
+	// MPI_Barrier(MPI_COMM_WORLD);
+	// cout<<"rank "<<worldRank<<" "<<B_pointer->size()<<endl;
+
+	// if (worldRank == 0) {
+	// 	for (int i = 0; i < SA.size(); i++) {
+	// 		printf("%lld\n", SA.data()[i]);
+	// 	}
+	// }
+	// MPI_Barrier(MPI_COMM_WORLD);
+	// if (worldRank == 1) {
+	// 	for (int i = 0; i < SA.size(); i++) {
+	// 		printf("%lld\n", SA.data()[i]);
+	// 	}
+	// }
+	// MPI_Barrier(MPI_COMM_WORLD);
+	// if (worldRank == 2) {
+	// 	for (int i = 0; i < SA.size(); i++) {
+	// 		printf("%lld\n", SA.data()[i]);
+	// 	}
+	// }
+	// MPI_Barrier(MPI_COMM_WORLD);
+	// if (worldRank == 3) {
+	// 	for (int i = 0; i < SA.size(); i++) {
+	// 		printf("%lld\n", SA.data()[i]);
+	// 	}
+	// }
+	// MPI_Barrier(MPI_COMM_WORLD);
 
 	MPI_Finalize();
 

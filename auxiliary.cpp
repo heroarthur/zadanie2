@@ -16,13 +16,13 @@
 #endif
 
 
-#include<bits/stdc++.h>
+#include <bits/stdc++.h>
 
 #define root 0
 #define wyslijRaz (2147483647 / 10)
 #define int64 long long int
-#define charArrayLen 32
-
+#define charArrayLen 4
+ //(2147483647 / 10)
 
 using namespace std;
 
@@ -33,7 +33,6 @@ typedef struct mpi_tuple2 {
 } Tuple2;
 
 
-
 typedef struct mpi_tuple3 {
     int64 B;
     int64 B2;
@@ -41,9 +40,16 @@ typedef struct mpi_tuple3 {
 } Tuple3;
 
 
+typedef struct twoInts64 {
+    int64 i1;
+    int64 i2;
+} TwoInts64;
 
 MPI_Datatype MPI_Tuple2;
 MPI_Datatype MPI_Tuple3;
+
+MPI_Datatype MPI_TwoInts64;
+
 
 int get_block_start(int blockId, int blocksNumber, int dataSize) {
 	return (dataSize / blocksNumber) * blockId;
@@ -103,4 +109,64 @@ int getNextSendSize(int64 currentPartialPosition, int64 endPosition, int worldSi
         return (int) diff;
     }
     return partialSendSize;
+}
+
+
+
+void initialize_SA(vector<int64>* SA, vector<Tuple2>* tuple2) {
+    SA->resize(tuple2->size());
+
+    #pragma omp parallel for
+    for (int i = 0; i < tuple2->size(); i++) {
+        SA->data()[i] = tuple2->data()[i].i;
+    }
+}
+
+
+
+
+void getNextPartialSend(vector<vector<TwoInts64>>* dataForPartitions, 
+                        vector<TwoInts64>* partialArr, 
+                        vector<int64>* partialPivotsPosition,
+						vector<int>* scattervPositions,
+						vector<int>* displacement,
+                        int worldSize) {
+
+    partialArr->clear();
+    scattervPositions->clear();
+    displacement->clear();
+
+    int pivot = 0;
+    
+    for(int node = 0; node < worldSize; node++) {
+        pivot = 0;
+        // cout<<"data for partition "<<dataForPartitions->data()[node].size()<<endl;
+        for(int i = partialPivotsPosition->data()[node]; i < minInt64(partialPivotsPosition->data()[node] + wyslijRaz, dataForPartitions->data()[node].size()); i++) {
+            partialArr->push_back(dataForPartitions->data()[node].data()[i]);
+            pivot++;
+        }
+        // cout<<"pivot size "<<pivot<<endl;
+        scattervPositions->push_back(pivot);
+    }
+    displacement->push_back(0);
+    int nextDispl;
+    for(int i = 1; i < worldSize; i++) {
+        nextDispl = displacement->data()[i-1] + scattervPositions->data()[i-1];
+        displacement->push_back(nextDispl);
+    }
+}
+
+bool doNextPartialSend(vector<int64>* pivotsPosition, 
+                       vector<int64>* partialPivotsPosition) {
+    
+    for(int i = 0; i < pivotsPosition->size(); i++) {
+        if (pivotsPosition->data()[i] > partialPivotsPosition->data()[i]) {
+            return true;
+        }
+    }
+    return false;
+}
+
+int getNodeToSend(int64 id, int64 nodeSize) {
+    return id / nodeSize;
 }

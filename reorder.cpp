@@ -28,64 +28,6 @@
 using namespace std;
 
 
-typedef struct isa {
-    int64 SA_I;
-    int64 B_i;
-} ISA_Data;
-
-MPI_Datatype MPI_ISA_Data;
-
-
-
-void getNextPartialSend(vector<vector<ISA_Data>>* dataForPartitions, 
-                        vector<ISA_Data>* partialArr, 
-                        vector<int64>* partialPivotsPosition,
-						vector<int>* scattervPositions,
-						vector<int>* displacement,
-                        int worldSize) {
-
-    partialArr->clear();
-    scattervPositions->clear();
-    displacement->clear();
-
-    int pivot = 0;
-    for(int node = 0; node < worldSize; node++) {
-        for(int i = partialPivotsPosition->data()[node]; i < minInt64(partialPivotsPosition->data()[node] + wyslijRaz, dataForPartitions->data()[node].size()); i++) {
-            partialArr->push_back(dataForPartitions->data()[node].data()[i]);
-            pivot++;
-        }
-        scattervPositions->push_back(pivot);
-    }
-    displacement->push_back(0);
-    int nextDispl;
-    for(int i = 1; i < worldSize; i++) {
-        nextDispl = displacement->data()[i-1] + scattervPositions->data()[i-1];
-        displacement->push_back(nextDispl);
-    }
-}
-
-bool doNextPartialSend(vector<int64>* pivotsPosition, 
-                       vector<int64>* partialPivotsPosition) {
-    
-    for(int i = 0; i < pivotsPosition->size(); i++) {
-        if (pivotsPosition->data()[i] > partialPivotsPosition->data()[i]) {
-            return true;
-        }
-    }
-    return false;
-}
-
-
-
-
-
-
-
-
-int getNodeToSend(int64 id, int64 nodeSize) {
-    return id / nodeSize;
-}
-
 void reorder_and_rebalance(vector<int64>* B, 
                            vector<int64>* B_new, 
                            vector<int64>* SA, 
@@ -94,8 +36,7 @@ void reorder_and_rebalance(vector<int64>* B,
     int64 dataSize;
     int64 nodeSize = B->size();
 
-    MPI_Allreduce(&nodeSize, &dataSize, 1, MPI_LONG_LONG_INT, MPI_MAX, MPI_COMM_WORLD);
-
+    MPI_Allreduce(&nodeSize, &dataSize, 1, MPI_LONG_LONG_INT, MPI_SUM, MPI_COMM_WORLD);
 
     int64 newNodeSize = dataSize / worldSize;
     int64 lastNodeSize = dataSize - (worldSize-1) * newNodeSize;
@@ -107,7 +48,7 @@ void reorder_and_rebalance(vector<int64>* B,
         B_new->resize(lastNodeSize);
     }
 
-    vector<vector<ISA_Data>> dataForPartitions; dataForPartitions.resize(worldSize);
+    vector<vector<TwoInts64>> dataForPartitions; dataForPartitions.resize(worldSize);
 
     for (int i = 0; i < worldSize; i++) {
         dataForPartitions[i].clear();
@@ -117,17 +58,20 @@ void reorder_and_rebalance(vector<int64>* B,
     for (int thread = 0; thread < worldSize; thread++) {
         for (int i = 0; i < nodeSize; i++) {
             if (thread == getNodeToSend(SA->data()[i], newNodeSize)) {
-                ISA_Data data;
-                data.SA_I = SA->data()[i];
-                data.B_i = B->data()[i];
+                TwoInts64 data;
+                data.i1 = SA->data()[i];
+                data.i2 = B->data()[i];
                 dataForPartitions[thread].push_back(data);
             }
         }
+        // cout<<"data size "<<dataForPartitions.data()[thread].size()<<endl;
     }
 
-    vector<ISA_Data> partialArr; partialArr.reserve(worldSize * wyslijRaz);
+    vector<TwoInts64> partialArr; partialArr.reserve(worldSize * wyslijRaz);
     vector<int64> partialPivotsPosition; partialPivotsPosition.resize(worldSize); 
     fill(partialPivotsPosition.begin(), partialPivotsPosition.end(), 0);
+
+
 
     int64 localMaxPartialSend = 0;
     int64 tmpPartialSend = 0;
@@ -136,16 +80,18 @@ void reorder_and_rebalance(vector<int64>* B,
         localMaxPartialSend = maxInt64(localMaxPartialSend, tmpPartialSend);
     }
 
+
     int64 globalMaxPartialSend;
     
     MPI_Allreduce(&localMaxPartialSend, &globalMaxPartialSend, 1, MPI_LONG_LONG_INT, MPI_MAX, MPI_COMM_WORLD);
+    // cout<<"ile sendow max "<<globalMaxPartialSend<<endl;
 
     vector<int> scattervPositions;
     vector<int> displacement;
     vector<int> arrivingNumber; arrivingNumber.resize(worldSize);
     vector<int> arrivingDisplacement; arrivingDisplacement.resize(worldSize);
     int sizeTmpBuff;
-    vector<ISA_Data> tmp_buff; 
+    vector<TwoInts64> tmp_buff; 
 
     for (int partialSends = 0; partialSends < globalMaxPartialSend; partialSends++) {
         getNextPartialSend(&dataForPartitions, 
@@ -166,24 +112,60 @@ void reorder_and_rebalance(vector<int64>* B,
 
         tmp_buff.resize(sizeTmpBuff);
 
+        // if (rank == 1) {
+        //     cout<<"size buff "<<sizeTmpBuff<<endl;
+            
+        //     cout<<"wypisanie danych do alltoallv"<<endl<<endl;
+        //     cout<<"size partial array "<<partialArr.size()<<endl;
+        //     for (int i = 0; i < partialArr.size(); i++) {
+        //         cout<<partialArr.data()[i].SA_I<<" ";
+        //     }
+        //     cout<<endl<<endl;
+
+        //     for (int i = 0; i < scattervPositions.size(); i++) {
+        //         cout<<scattervPositions.data()[i]<<" ";
+        //     }
+        //     cout<<endl<<endl;
+
+        //     for (int i = 0; i < displacement.size(); i++) {
+        //         cout<<displacement.data()[i]<<" ";
+        //     }
+        //     cout<<endl<<endl;
+
+        //     for (int i = 0; i < arrivingNumber.size(); i++) {
+        //         cout<<arrivingNumber.data()[i]<<" ";
+        //     }
+        //     cout<<endl<<endl;
+
+        //     for (int i = 0; i < arrivingDisplacement.size(); i++) {
+        //         cout<<arrivingDisplacement.data()[i]<<" ";
+        //     }
+        //     cout<<endl<<endl;
+        // }
+
         MPI_Alltoallv(partialArr.data(), 
                 scattervPositions.data(),
                 displacement.data(),
-                MPI_ISA_Data,
+                MPI_TwoInts64,
                 tmp_buff.data(),
                 arrivingNumber.data(),
                 arrivingDisplacement.data(),
-                MPI_ISA_Data,
+                MPI_TwoInts64,
                 MPI_COMM_WORLD);
 
         int64 offset = rank * newNodeSize;
-        #pragma omp parallel for
+
+        // #pragma omp parallel for
         for (int i = 0; i < tmp_buff.size(); i++) {
-            B_new->data()[tmp_buff.data()[i].SA_I - offset] = tmp_buff.data()[i].B_i;
+            // cout<<"indeksy "<<tmp_buff.data()[i].SA_I<<" "<<tmp_buff.data()[i].B_i<<endl;
+            B_new->data()[tmp_buff.data()[i].i1 - offset] = tmp_buff.data()[i].i2;
         }
+
         tmp_buff.clear();
     }
 }
 
-
+// int MPI_Alltoallv(const void *sendbuf, const int *sendcounts,
+//                   const int *sdispls, MPI_Datatype sendtype, void *recvbuf,
+//                   const int *recvcounts, const int *rdispls, MPI_Datatype recvtype, MPI_Comm comm)
 
