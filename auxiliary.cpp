@@ -21,6 +21,7 @@
 #define root 0
 #define wyslijRaz (2147483647 / 10)
 #define int64 long long int
+#define charArrayLen 12
 
 
 using namespace std;

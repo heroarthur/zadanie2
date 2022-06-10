@@ -11,6 +11,7 @@
 #include "sampleSortTuple3.cpp"
 #include "rebucketing.cpp"
 #include "reorder.cpp"
+#include "shift.cpp"
 
 
 #define int64 long long int
@@ -67,69 +68,56 @@ int main(int argc, char** argv) {
     MPI_Type_create_struct(2, blockcountArrData, offsetsArrData, dataTypeArrData, &MPI_ISA_Data);
     MPI_Type_commit(&MPI_ISA_Data);
 
-
+	// SHIFT_data 
+	int blockcountArrData2[2]={1,1};
+    MPI_Aint offsetsArrData2[2] = {offsetof(Shift_data, i), offsetof(Shift_data, B_i_h)};
+    MPI_Datatype dataTypeArrData2[2] = {MPI_LONG_LONG_INT, MPI_LONG_LONG_INT};
+    MPI_Type_create_struct(2, blockcountArrData2, offsetsArrData2, dataTypeArrData2, &MPI_SHIFT_Data);
+    MPI_Type_commit(&MPI_SHIFT_Data);
 
 
 	srand (worldRank);
     int p2 = worldSize * worldSize;
 
-	int64 size = 10000000;
-	vector<Tuple3>* tuple3_pointer, *tuple_sampleSorted_pointer, *tmp_pointer;
-	vector<Tuple3> tuple3_Arr; tuple3_Arr.resize(size);
-	vector<int64> B; B.reserve(1.2 * size);
-	vector<Tuple3> tuple3_sortResult; tuple3_sortResult.reserve(1.2 * size);
-	vector<Tuple3> sample; sample.resize(worldSize);
-	vector<Tuple3> rootSampleRecv;
-	vector<Tuple3> broadcastSample; broadcastSample.resize(worldSize - 1);
-	vector<int64> pivotsPositions; pivotsPositions.resize(worldSize - 1);
-	tuple3_pointer = &tuple3_Arr;
-	tuple_sampleSorted_pointer = &tuple3_sortResult;
+	// int64 size = 10000000;
+	// vector<Tuple3>* tuple3_pointer, *tuple_sampleSorted_pointer, *tmp_pointer;
+	// vector<Tuple3> tuple3_Arr; tuple3_Arr.resize(size);
+	// vector<int64> B; B.reserve(1.2 * size);
+	// vector<Tuple3> tuple3_sortResult; tuple3_sortResult.reserve(1.2 * size);
+	// vector<Tuple3> sample; sample.resize(worldSize);
+	// vector<Tuple3> rootSampleRecv;
+	// vector<Tuple3> broadcastSample; broadcastSample.resize(worldSize - 1);
+	// vector<int64> pivotsPositions; pivotsPositions.resize(worldSize - 1);
+	// tuple3_pointer = &tuple3_Arr;
+	// tuple_sampleSorted_pointer = &tuple3_sortResult;
 
-	bool allSingletones;
+	// bool allSingletones;
     
-	if (worldRank == root) {
-        rootSampleRecv.resize(p2);
-    }
-
-
-
+	// if (worldRank == root) {
+    //     rootSampleRecv.resize(p2);
+    // }
 	
-	for (int i = 0; i < size; i++) {
-		tuple3_Arr[i].B = (rand() % 50) + 1;
-		tuple3_Arr[i].B2 = (rand() % 50) + 1;
-		tuple3_Arr[i].i = i;
- 	}
+	// for (int i = 0; i < size; i++) {
+	// 	tuple3_Arr[i].B = (rand() % 50) + 1;
+	// 	tuple3_Arr[i].B2 = (rand() % 50) + 1;
+	// 	tuple3_Arr[i].i = i;
+ 	// }
 
-	// if (worldRank == 0) {
-	// 	for (int i = 0; i < tuple3_pointer->size(); i++) {
-	// 		// cout<<"V("<<tuple3_pointer->data()[i].B<<"|"<<tuple3_pointer->data()[i].B2<<"|"<<tuple3_pointer->data()[i].i<<") "<<B.data()[i]<<endl;
-	// 		cout<<"V("<<tuple3_pointer->data()[i].B<<"|"<<tuple3_pointer->data()[i].B2<<") "<<endl;
 
-	// 	}
-	// 	ENTER;
-	// }
 
-	// local_sort_openMP_tuple3(tuple3_pointer);
 
-	sample_sort_MPI_tuple3(tuple3_pointer,
-						   tuple_sampleSorted_pointer,
-                           &sample,
-                           &rootSampleRecv,
-                           &broadcastSample,
-						   &pivotsPositions,
-                           worldRank, 
-                           worldSize);
-	tmp_pointer = tuple_sampleSorted_pointer;
-	tuple_sampleSorted_pointer = tuple3_pointer;
-	tuple3_pointer = tmp_pointer;
+	// sample_sort_MPI_tuple3(tuple3_pointer,
+	// 					   tuple_sampleSorted_pointer,
+    //                        &sample,
+    //                        &rootSampleRecv,
+    //                        &broadcastSample,
+	// 					   &pivotsPositions,
+    //                        worldRank, 
+    //                        worldSize);
+	// tmp_pointer = tuple_sampleSorted_pointer;
+	// tuple_sampleSorted_pointer = tuple3_pointer;
+	// tuple3_pointer = tmp_pointer;
 
-	// if (worldRank == 0) {
-	// 	for (int i = 0; i < tuple3_pointer->size(); i++) {
-	// 		// cout<<"V("<<tuple3_pointer->data()[i].B<<"|"<<tuple3_pointer->data()[i].B2<<"|"<<tuple3_pointer->data()[i].i<<") "<<B.data()[i]<<endl;
-	// 		cout<<"V("<<tuple3_pointer->data()[i].B<<"|"<<tuple3_pointer->data()[i].B2<<") "<<endl;
-	// 	}
-	// }
-	// cout<<"rank "<<worldRank<<": "<<tuple3_pointer->size()<<endl;
 
 	// B.clear();
 	// rebucketing_2h_group_rank(tuple3_pointer, 
@@ -150,7 +138,3 @@ int main(int argc, char** argv) {
 }
 
 
-
-// real    0m37,157s
-// user    0m36,686s
-// sys     0m0,460s

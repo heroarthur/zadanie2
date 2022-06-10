@@ -28,12 +28,13 @@
 using namespace std;
 
 
-typedef struct isa {
-    int64 SA_I;
-    int64 B_i;
-} ISA_Data;
+typedef struct shift {
+    int64 i;
+    int64 B_i_h;
+} Shift_data;
 
-MPI_Datatype MPI_ISA_Data;
+MPI_Datatype MPI_SHIFT_Data;
+
 
 
 
@@ -86,16 +87,18 @@ int getNodeToSend(int64 id, int64 nodeSize) {
     return id / nodeSize;
 }
 
-void reorder_and_rebalance(vector<int64>* B, 
-                           vector<int64>* B_new, 
-                           vector<int64>* SA, 
-                           int rank, 
-                           int worldSize) {
+void shift(vector<int64>* B, 
+           vector<int64>* B_new, 
+           int64 h,
+           int rank, 
+           int worldSize) {
+
     int64 dataSize;
     int64 nodeSize = B->size();
 
     MPI_Allreduce(&nodeSize, &dataSize, 1, MPI_LONG_LONG_INT, MPI_MAX, MPI_COMM_WORLD);
 
+    cout<<"rank: "<<rank<<" "<<dataSize<<endl;
 
     int64 newNodeSize = dataSize / worldSize;
     int64 lastNodeSize = dataSize - (worldSize-1) * newNodeSize;
@@ -107,21 +110,34 @@ void reorder_and_rebalance(vector<int64>* B,
         B_new->resize(lastNodeSize);
     }
 
-    vector<vector<ISA_Data>> dataForPartitions; dataForPartitions.resize(worldSize);
+    vector<vector<Shift_data>> dataForPartitions; dataForPartitions.resize(worldSize);
 
     for (int i = 0; i < worldSize; i++) {
         dataForPartitions[i].clear();
     }
 
-    #pragma omp parallel for
-    for (int thread = 0; thread < worldSize; thread++) {
-        for (int i = 0; i < nodeSize; i++) {
-            if (thread == getNodeToSend(SA->data()[i], newNodeSize)) {
-                ISA_Data data;
-                data.SA_I = SA->data()[i];
-                data.B_i = B->data()[i];
-                dataForPartitions[thread].push_back(data);
-            }
+    int64 curr_i;
+    int64 target_i;
+    int targetNode;
+    int currNode;
+
+    for (int i = 0; i < nodeSize; i++) {
+        curr_i = rank * nodeSize + i;
+        target_i = curr_i - h;
+        currNode = curr_i / nodeSize;
+        targetNode = target_i / nodeSize;
+
+        if (target_i >= 0) {
+            Shift_data data;
+            data.i = target_i;
+            data.B_i_h = B->data()[i];
+            dataForPartitions[targetNode].push_back(data);
+        }
+        if (curr_i + h > dataSize) {
+            Shift_data data;
+            data.i = i;
+            data.B_i_h = 0;
+            dataForPartitions[currNode].push_back(data);
         }
     }
 
@@ -184,6 +200,5 @@ void reorder_and_rebalance(vector<int64>* B,
         tmp_buff.clear();
     }
 }
-
 
 
