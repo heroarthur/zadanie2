@@ -32,7 +32,6 @@ using namespace std;
 
 char getRandomCharacter() {
     int v = rand() % 4;
-
     switch (v) {
     case 0:
         return 'A';
@@ -41,8 +40,8 @@ char getRandomCharacter() {
         return 'C';
         break;
     case 2:
-        break;
         return 'G';
+        break;
     }
     return 'T';
 }

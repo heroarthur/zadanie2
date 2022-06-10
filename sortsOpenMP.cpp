@@ -75,7 +75,7 @@ void local_sort_openMP_tuple2(vector<Tuple2>* A) {
     
 	struct cmp_tuple2 {
 		bool operator ()(Tuple2 const& a, Tuple2 const& b) const {
-			return strcmp(a.B, b.B) > 0;
+			return strcmp(a.B, b.B) < 0;
 		}
 	};
 

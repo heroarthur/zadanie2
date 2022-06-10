@@ -180,6 +180,8 @@ void sample_sort_MPI_tuple2(vector<Tuple2>* A,
 
     local_sort_openMP_tuple2(A);
 
+
+
     int p2 = worldSize * worldSize;
 
     int64 step = ceil((double) A->size() / (double) worldSize);
@@ -196,7 +198,6 @@ void sample_sort_MPI_tuple2(vector<Tuple2>* A,
     MPI_Barrier(MPI_COMM_WORLD);
     MPI_Gather((void*)sample->data(), sendNumber, MPI_Tuple2, (void*)rootSampleRecv->data(), sendNumber, MPI_Tuple2, root, MPI_COMM_WORLD);
 
-    // // cout << "gather" << endl;s
 
     if (rank == root) {
         local_sort_openMP_tuple2(rootSampleRecv);
@@ -210,9 +211,8 @@ void sample_sort_MPI_tuple2(vector<Tuple2>* A,
 
     MPI_Bcast((void*)broadcastSample->data(), worldSize-1, MPI_Tuple2, root, MPI_COMM_WORLD);
 
-
     findPivotPositionsTuple2(A, broadcastSample, pivotsPositions, rank);
-    
+        
 	sendDataToProperPartitionTuple2(A, A_sampleSorted, pivotsPositions, rank, worldSize);
 
 	local_sort_openMP_tuple2(A_sampleSorted);

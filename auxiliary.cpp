@@ -21,14 +21,14 @@
 #define root 0
 #define wyslijRaz (2147483647 / 10)
 #define int64 long long int
-#define charArrayLen 12
+#define charArrayLen 32
 
 
 using namespace std;
 
 
 typedef struct mpi_tuple2 {
-    char B[K];
+    char B[charArrayLen];
     int64 i;
 } Tuple2;
 

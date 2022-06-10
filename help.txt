@@ -1,0 +1,49 @@
+	// int64 size = 10000000;
+	// vector<Tuple3>* tuple3_pointer, *tuple_sampleSorted_pointer, *tmp_pointer;
+	// vector<Tuple3> tuple3_Arr; tuple3_Arr.resize(size);
+	// vector<int64> B; B.reserve(1.2 * size);
+	// vector<Tuple3> tuple3_sortResult; tuple3_sortResult.reserve(1.2 * size);
+	// vector<Tuple3> sample; sample.resize(worldSize);
+	// vector<Tuple3> rootSampleRecv;
+	// vector<Tuple3> broadcastSample; broadcastSample.resize(worldSize - 1);
+	// vector<int64> pivotsPositions; pivotsPositions.resize(worldSize - 1);
+	// tuple3_pointer = &tuple3_Arr;
+	// tuple_sampleSorted_pointer = &tuple3_sortResult;
+
+	// bool allSingletones;
+    
+	// if (worldRank == root) {
+    //     rootSampleRecv.resize(p2);
+    // }
+	
+	// for (int i = 0; i < size; i++) {
+	// 	tuple3_Arr[i].B = (rand() % 50) + 1;
+	// 	tuple3_Arr[i].B2 = (rand() % 50) + 1;
+	// 	tuple3_Arr[i].i = i;
+ 	// }
+
+
+
+
+	// sample_sort_MPI_tuple3(tuple3_pointer,
+	// 					   tuple_sampleSorted_pointer,
+    //                        &sample,
+    //                        &rootSampleRecv,
+    //                        &broadcastSample,
+	// 					   &pivotsPositions,
+    //                        worldRank, 
+    //                        worldSize);
+	// tmp_pointer = tuple_sampleSorted_pointer;
+	// tuple_sampleSorted_pointer = tuple3_pointer;
+	// tuple3_pointer = tmp_pointer;
+
+
+	// B.clear();
+	// rebucketing_2h_group_rank(tuple3_pointer, 
+    //                           &B, 
+    //                           &allSingletones,
+    //                           worldRank,
+    //                           worldSize);
+
+
+
