@@ -222,45 +222,37 @@ void sample_sort_MPI_tuple2(vector<Tuple2>** A,
 
     local_sort_openMP_tuple2(*A);
 
-    // cout<<"size A "<<(*A)->size()<<endl;
-
     int p2 = worldSize * worldSize;
 
     int64 step = ceil((double) (*A)->size() / (double) worldSize);
-
-    // if (rank == 0) {
-    //     for (int i = 0; i < (*A)->size(); i++) {
-    //         printf("sample %s\n", (*A)->data()[i].B);
-    //     }
-    // }
-    // cout<<"step "<<step<<endl;
     
     int sendNumber = worldSize;
     for (int i = 0; i < worldSize; i++) {
-        sample->push_back((*A)->data()[minInt64(i * step, (*A)->size()-1)]);
-        
+        sample->push_back((*A)->data()[minInt64(i * step, (*A)->size()-1)]);   
     }
     
-    if (rank == root) {
-        rootSampleRecv->resize(p2);
-    }
+    // if (rank == root) {
+    rootSampleRecv->resize(p2);
+    // }
     
     MPI_Barrier(MPI_COMM_WORLD);
-    MPI_Gather((void*)sample->data(), sendNumber, MPI_Tuple2, (void*)rootSampleRecv->data(), sendNumber, MPI_Tuple2, root, MPI_COMM_WORLD);
+    MPI_Allgather((void*)sample->data(), sendNumber, MPI_Tuple2, (void*)rootSampleRecv->data(), sendNumber, MPI_Tuple2, MPI_COMM_WORLD);
 
-
-    if (rank == root) {
-        local_sort_openMP_tuple2(rootSampleRecv);
-        
-        for (int i = 0; i < worldSize-1; i++) {
-            broadcastSample->data()[i] = rootSampleRecv->data()[(i+1) * worldSize];
-            // printf("sample %s\n", broadcastSample->data()[i].B);
-        }
+    // if (rank == root) {
+    local_sort_openMP_tuple2(rootSampleRecv);
+    for (int i = 0; i < worldSize-1; i++) {
+        broadcastSample->data()[i] = rootSampleRecv->data()[(i+1) * worldSize];
     }
+    // if (rank == 3) {
+    //     for (int i = 0; i < broadcastSample->size(); i++) {
+    //         // cout<<broadcastSample->data()[i]<<" ";
+    //         printf("%s\n", broadcastSample->data()[i].B);
+    //     }
+    // cout<<endl;
+    // }
+    // }
 
-    
-
-    MPI_Bcast((void*)broadcastSample->data(), worldSize-1, MPI_Tuple2, root, MPI_COMM_WORLD);
+    // MPI_Bcast((void*)broadcastSample->data(), worldSize-1, MPI_Tuple2, root, MPI_COMM_WORLD);
 
     findPivotPositionsTuple2(*A, broadcastSample, pivotsPositions, rank);
         
