@@ -33,6 +33,16 @@ using namespace std;
 
 int64 binarySearchTuple2(vector<Tuple2>* arr, Tuple2 tuple, int64 l, int64 r)
 {
+    if (tuple2Greater(tuple, arr->data()[arr->size()-1])) {
+        return arr->size();
+    }
+
+    if (tuple2Smaller(tuple, arr->data()[0])) {
+        return 0;
+    }
+    // printf("tuple binary search %s   %s\n", arr->data()[arr->size()-1].B, tuple.B);
+
+
     if (r >= l) {
         int64 mid = l + (r - l) / 2;
 
@@ -49,11 +59,31 @@ int64 binarySearchTuple2(vector<Tuple2>* arr, Tuple2 tuple, int64 l, int64 r)
 
 
 void findPivotPositionsTuple2(vector<Tuple2>* arr, vector<Tuple2>* pivotsTuples, vector<int64>* pivotsPositions, int rank) {
+    // if (rank == 0)
+        // cout<<"drukujemy wartosci"<<endl;
+
+    // cout<<"arr size "<<arr->size()<<endl;
+    pivotsPositions->resize(pivotsTuples->size());
+
     #pragma omp parallel for
     for (int i = 0; i < pivotsTuples->size(); i++) {
+        if (rank == 0) {
+            // printf("%s\n", pivotsTuples->data()[i].B);
+        }
+
         pivotsPositions->data()[i] = binarySearchTuple2(arr, pivotsTuples->data()[i], 0, arr->size());
     }
+	// pivotsPositions->push_back(tuple2Greater(pivotsTuples->data()[pivotsTuples->size()-1], arr->data()[arr->size()-1]) ? 0 : arr->size());
 	pivotsPositions->push_back(arr->size());
+
+
+    // if (rank == 3) {
+    //     cout<<endl<<"PIVOTS POSITION"<<endl;
+    //     for (int i = 0; i < pivotsPositions->size(); i++) {
+    //         cout<<pivotsPositions->data()[i]<<" ";
+    //     }
+    //     cout<<endl<<endl;
+    // }
 }
 
 
@@ -68,6 +98,9 @@ void getNextPartialPivotsTuple2(vector<Tuple2>* arr,
                           int worldSize) {
     int partialArraSize = 0;
     int nextSendSize;
+
+    partialArr->clear();
+    scattervPositions->clear();
     
     for (int i = 0; i < pivotsPosition->size(); i++) {
         nextSendSize = getNextSendSize(partialPivotsPosition->data()[i], pivotsPosition->data()[i], worldSize);
@@ -75,9 +108,11 @@ void getNextPartialPivotsTuple2(vector<Tuple2>* arr,
     }
 
     partialArr->reserve(partialArraSize);
+    // cout<<"partialArraySendSize "<<partialArraSize<<endl;
     int displacementSum = 0;
 
     for (int i = 0; i < pivotsPosition->size(); i++) {
+        // cout<<"next send size "<<nextSendSize<<endl;
         nextSendSize = getNextSendSize(partialPivotsPosition->data()[i], pivotsPosition->data()[i], worldSize);
 		scattervPositions->push_back(nextSendSize);
         partialArr->insert(partialArr->end(), arr->begin() + partialPivotsPosition->data()[i], arr->begin() + partialPivotsPosition->data()[i] + nextSendSize);
@@ -123,8 +158,8 @@ void sendDataToProperPartitionTuple2(vector<Tuple2>* A, vector<Tuple2>* A_sample
 
 
     for (int partialSends = 0; partialSends < numberOfLoops; partialSends++) {
-        partialArr.clear();
-        scattervPositions.clear();
+        // partialArr.clear();
+        // scattervPositions.clear();
         getNextPartialPivotsTuple2(A, 
                             &partialArr,
                             pivotsPositions, 
@@ -144,6 +179,13 @@ void sendDataToProperPartitionTuple2(vector<Tuple2>* A, vector<Tuple2>* A_sample
         }
 
         tmp_buff.resize(sizeTmpBuff);
+
+        // if (rank == 0) {
+        //     cout<<"wysylamy"<<partialArr.size()<<endl;
+        //     for (int i = 0; i < partialArr.size(); i++) {
+        //         printf("value %s\n", partialArr.data()[i].B);
+        //     }
+        // }
 
         MPI_Alltoallv(partialArr.data(), 
                       scattervPositions.data(),
@@ -180,15 +222,23 @@ void sample_sort_MPI_tuple2(vector<Tuple2>** A,
 
     local_sort_openMP_tuple2(*A);
 
-
+    // cout<<"size A "<<(*A)->size()<<endl;
 
     int p2 = worldSize * worldSize;
 
     int64 step = ceil((double) (*A)->size() / (double) worldSize);
+
+    // if (rank == 0) {
+    //     for (int i = 0; i < (*A)->size(); i++) {
+    //         printf("sample %s\n", (*A)->data()[i].B);
+    //     }
+    // }
+    // cout<<"step "<<step<<endl;
     
     int sendNumber = worldSize;
     for (int i = 0; i < worldSize; i++) {
         sample->push_back((*A)->data()[minInt64(i * step, (*A)->size()-1)]);
+        
     }
     
     if (rank == root) {
@@ -204,6 +254,7 @@ void sample_sort_MPI_tuple2(vector<Tuple2>** A,
         
         for (int i = 0; i < worldSize-1; i++) {
             broadcastSample->data()[i] = rootSampleRecv->data()[(i+1) * worldSize];
+            // printf("sample %s\n", broadcastSample->data()[i].B);
         }
     }
 
@@ -217,10 +268,10 @@ void sample_sort_MPI_tuple2(vector<Tuple2>** A,
 
 	local_sort_openMP_tuple2(*A_help);
 
-    vector<Tuple2>* A_tmp_pointer;
+    vector<Tuple2> *A_tmp_pointer;
     A_tmp_pointer = *A_help;
 	*A_help = *A;
-	*A_help = A_tmp_pointer;
+	*A = A_tmp_pointer;
 }
 
 

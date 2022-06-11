@@ -74,7 +74,7 @@ int main(int argc, char** argv) {
 	srand (worldRank);
     int p2 = worldSize * worldSize;
 
-	int64 size = 100000;
+	int64 size = 1000000;
 	vector<Tuple2> *tuple2_pointer, *tuple2_help_pointer, *tmp_pointer;
 	vector<Tuple2> tuple2_Arr; tuple2_Arr.resize(size);
 	
@@ -122,50 +122,71 @@ int main(int argc, char** argv) {
 	MPI_Barrier(MPI_COMM_WORLD);
 
 
-
-
-	sample_sort_MPI_tuple2(&tuple2_pointer,
-						   &tuple2_help_pointer,
-                           &sample,
-                           &rootSampleRecv,
-                           &broadcastSample,
-						   &pivotsPositions,
-                           worldRank, 
-                           worldSize);
-
-
-	assign_h_group_rank(tuple2_pointer, 
-						B_pointer, 
-						worldRank,
-						worldSize);
-
-
-	initialize_SA(&SA, tuple2_pointer);
-
-
-	reorder_and_rebalance(&B_pointer, 
-                          &B_help_pointer, 
-                          &SA,
-						  &dataForPartitions,
-                          worldRank, 
-                          worldSize);
-
-
-
-	// cout<<"rank "<<worldRank<<" "<<B_pointer->size()<<endl;
-	// print_MPI_vector(B_pointer, worldRank, worldSize);
-	MPI_Barrier(MPI_COMM_WORLD);
-
-
-	for (int i = 0; i < 3000; i++) {
-		shift_by_h(&B_pointer, 
-				&B_help_pointer, 
-				&SA,
-				&dataForPartitions,
-				10,
+	for (int i = 0; i < 20; i++) {
+		sample_sort_MPI_tuple2(&tuple2_pointer,
+				&tuple2_help_pointer,
+				&sample,
+				&rootSampleRecv,
+				&broadcastSample,
+				&pivotsPositions,
 				worldRank, 
 				worldSize);
+		// tmp_pointer = tuple2_help_pointer;
+		// tuple2_help_pointer = tuple2_pointer;
+		// tuple2_pointer = tmp_pointer;
+
+		// print_MPI_tuple2(tuple2_pointer, worldRank, worldSize);
+		// cout<<"rank "<<worldRank<<" rozmiar "<<tuple2_pointer->size()<<endl;
+
+		// if (worldRank == 0) {
+		// 	cout<<"wartosci po przesortowaniu"<<endl;
+		// 	for (int i = 0; i < tuple2_pointer->size(); i++) {
+		// 		printf("%s\n", tuple2_pointer->data()[i].B);
+		// 	}
+		// }
+
+		// if (worldRank == 3) {
+		// cout<<"size po sortowaniu "<<tuple2_pointer->size()<<endl;
+			// cout<<"size po sortowaniu "<<tuple2_help_pointer->size()<<endl;
+		// }
+
+		// MPI_Barrier(MPI_COMM_WORLD);
+		// cout<<tuple2_pointer->size();
+		// cout<<tuple2_help_pointer->size();
 	}
+
+
+
+	// assign_h_group_rank(tuple2_pointer, 
+	// 					B_pointer, 
+	// 					worldRank,
+	// 					worldSize);
+
+
+	// initialize_SA(&SA, tuple2_pointer);
+
+
+	// reorder_and_rebalance(&B_pointer, 
+    //                       &B_help_pointer, 
+    //                       &SA,
+	// 					  &dataForPartitions,
+    //                       worldRank, 
+    //                       worldSize);
+
+
+
+	// // cout<<"rank "<<worldRank<<" "<<B_pointer->size()<<endl;
+	// // print_MPI_vector(B_pointer, worldRank, worldSize);
+
+	// for (int i = 0; i < 5000; i++) {
+	// 	shift_by_h(&B_pointer, 
+	// 			&B_help_pointer, 
+	// 			&SA,
+	// 			&dataForPartitions,
+	// 			10,
+	// 			worldRank, 
+	// 			worldSize);
+	// }
 
 
 

@@ -21,7 +21,7 @@
 #define root 0
 #define wyslijRaz (2147483647 / 10)
 #define int64 long long int
-#define charArrayLen 4
+#define charArrayLen 8
 #define EMPTY_HELP_PARAM 0
  //(2147483647 / 10)
 
@@ -29,7 +29,7 @@ using namespace std;
 
 
 typedef struct mpi_tuple2 {
-    char B[charArrayLen];
+    char B[charArrayLen+1];
     int64 i;
 } Tuple2;
 
@@ -105,6 +105,7 @@ bool doNextPartialRound(vector<int64>* pivotsPosition,
 int getNextSendSize(int64 currentPartialPosition, int64 endPosition, int worldSize) {
     int partialSendSize = wyslijRaz; //2147483647 / worldSize;
     int64 partialSendSizeInt64 = partialSendSize;
+    // cout<<"end position "<<endPosition<<endl;
     int64 diff = (endPosition - currentPartialPosition); 
     if (diff < partialSendSizeInt64) {
         return (int) diff;
@@ -297,14 +298,31 @@ void print_MPI_vector(vector<int64>* v, int rank, int worldSize) {
 }
 
 
-void print_MPI_vector_orig(vector<int64> v, int rank, int worldSize) { 
+// void print_MPI_vector_orig(vector<int64>* v, int rank, int worldSize) { 
 
+//     for (int r = 0; r < worldSize; r++) {
+//         if (r == rank) {
+// 		    for (int i = 0; i < v.size(); i++) {
+// 		    	printf("%lld\n", v.data()[i]);
+// 		    }
+// 	    }
+//         MPI_Barrier(MPI_COMM_WORLD);
+//     }
+// }
+
+
+void print_MPI_tuple2(vector<Tuple2>* v, int rank, int worldSize) { 
+    MPI_Barrier(MPI_COMM_WORLD);
     for (int r = 0; r < worldSize; r++) {
         if (r == rank) {
-		    for (int i = 0; i < v.size(); i++) {
-		    	printf("%lld\n", v.data()[i]);
+		    for (int i = 0; i < v->size(); i++) {
+		    	printf("%s\n", v->data()[i].B);
 		    }
 	    }
         MPI_Barrier(MPI_COMM_WORLD);
     }
+    MPI_Barrier(MPI_COMM_WORLD);
+    if (rank == 0)
+        cout<<endl<<endl;
+    MPI_Barrier(MPI_COMM_WORLD);
 }
