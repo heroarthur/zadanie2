@@ -74,13 +74,13 @@ int main(int argc, char** argv) {
 	srand (worldRank);
     int p2 = worldSize * worldSize;
 
-	int64 size = 10000000;
-	vector<Tuple2> *tuple2_pointer, *tuple_sampleSorted_pointer, *tmp_pointer;
+	int64 size = 30000000;
+	vector<Tuple2> *tuple2_pointer, *tuple2_help_pointer, *tmp_pointer;
 	vector<Tuple2> tuple2_Arr; tuple2_Arr.resize(size);
 	
-	vector<int64> B; B.reserve(1.2 * size);
-	vector<int64> B_new; B_new.reserve(1.2 * size);
-	vector<int64> *B_pointer, *B_new_pointer, *B_tmp_pointer;
+	vector<int64> B_1; B_1.reserve(1.2 * size);
+	vector<int64> B_2; B_2.reserve(1.2 * size);
+	vector<int64> *B_pointer, *B_help_pointer, *B_tmp_pointer;
 
 	vector<Tuple2> tuple2_sortResult; tuple2_sortResult.reserve(1.2 * size);
 	vector<Tuple2> sample; sample.resize(worldSize);
@@ -89,10 +89,10 @@ int main(int argc, char** argv) {
 	vector<int64> pivotsPositions; pivotsPositions.resize(worldSize - 1);
 	
 	tuple2_pointer = &tuple2_Arr;
-	tuple_sampleSorted_pointer = &tuple2_sortResult;
+	tuple2_help_pointer = &tuple2_sortResult;
 
-	B_pointer = &B;
-	B_new_pointer = &B_new;
+	B_pointer = &B_1;
+	B_help_pointer = &B_2;
 
 	vector<int64> SA;
 
@@ -119,17 +119,14 @@ int main(int argc, char** argv) {
 
 
 
-	sample_sort_MPI_tuple2(tuple2_pointer,
-						   tuple_sampleSorted_pointer,
+	sample_sort_MPI_tuple2(&tuple2_pointer,
+						   &tuple2_help_pointer,
                            &sample,
                            &rootSampleRecv,
                            &broadcastSample,
 						   &pivotsPositions,
                            worldRank, 
                            worldSize);
-	tmp_pointer = tuple_sampleSorted_pointer;
-	tuple_sampleSorted_pointer = tuple2_pointer;
-	tuple2_pointer = tmp_pointer;
 
 
 	assign_h_group_rank(tuple2_pointer, 
@@ -141,42 +138,27 @@ int main(int argc, char** argv) {
 	initialize_SA(&SA, tuple2_pointer);
 
 
-	reorder_and_rebalance(B_pointer, 
-                          B_new_pointer, 
-                          &SA, 
+	reorder_and_rebalance(&B_pointer, 
+                          &B_help_pointer, 
+                          &SA,
                           worldRank, 
                           worldSize);
-	B_tmp_pointer = B_new_pointer;
-	B_new_pointer = B_pointer;
-	B_pointer = B_tmp_pointer;
 
-	// MPI_Barrier(MPI_COMM_WORLD);
+
+
 	// cout<<"rank "<<worldRank<<" "<<B_pointer->size()<<endl;
+	// print_MPI_vector(B_pointer, worldRank, worldSize);
+	MPI_Barrier(MPI_COMM_WORLD);
 
-	// if (worldRank == 0) {
-	// 	for (int i = 0; i < SA.size(); i++) {
-	// 		printf("%lld\n", SA.data()[i]);
-	// 	}
-	// }
-	// MPI_Barrier(MPI_COMM_WORLD);
-	// if (worldRank == 1) {
-	// 	for (int i = 0; i < SA.size(); i++) {
-	// 		printf("%lld\n", SA.data()[i]);
-	// 	}
-	// }
-	// MPI_Barrier(MPI_COMM_WORLD);
-	// if (worldRank == 2) {
-	// 	for (int i = 0; i < SA.size(); i++) {
-	// 		printf("%lld\n", SA.data()[i]);
-	// 	}
-	// }
-	// MPI_Barrier(MPI_COMM_WORLD);
-	// if (worldRank == 3) {
-	// 	for (int i = 0; i < SA.size(); i++) {
-	// 		printf("%lld\n", SA.data()[i]);
-	// 	}
-	// }
-	// MPI_Barrier(MPI_COMM_WORLD);
+	shift_by_h(&B_pointer, 
+               &B_help_pointer, 
+               &SA,
+			   10,
+               worldRank, 
+               worldSize);
+
+
+	// print_MPI_vector(B_pointer, worldRank, worldSize);
 
 	MPI_Finalize();
 

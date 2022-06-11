@@ -22,6 +22,7 @@
 #define wyslijRaz (2147483647 / 10)
 #define int64 long long int
 #define charArrayLen 4
+#define EMPTY_HELP_PARAM 0
  //(2147483647 / 10)
 
 using namespace std;
@@ -159,6 +160,7 @@ void getNextPartialSend(vector<vector<TwoInts64>>* dataForPartitions,
 bool doNextPartialSend(vector<int64>* pivotsPosition, 
                        vector<int64>* partialPivotsPosition) {
     
+
     for(int i = 0; i < pivotsPosition->size(); i++) {
         if (pivotsPosition->data()[i] > partialPivotsPosition->data()[i]) {
             return true;
@@ -167,10 +169,143 @@ bool doNextPartialSend(vector<int64>* pivotsPosition,
     return false;
 }
 
-int getNodeToSend(int64 id, int64 nodeSize) {
+inline int getNodeToSend(int64 id, int64 nodeSize) {
     return id / nodeSize;
 }
 
 
 
 
+void do_sending_operation(vector<int64>** B, 
+                          vector<int64>** B_help, 
+                          vector<int64>* SA,
+                          int64 help_param, 
+                          int rank, 
+                          int worldSize,
+                          void (*prepareDataToSent)(vector<int64>*, vector<int64>*, int64, int64, int64, int64, vector<vector<TwoInts64>>*, int, int)) {
+    int64 dataSize;
+    int64 nodeSize = (*B)->size();
+
+    MPI_Allreduce(&nodeSize, &dataSize, 1, MPI_LONG_LONG_INT, MPI_SUM, MPI_COMM_WORLD);
+
+    int64 newNodeSize = dataSize / worldSize;
+    int64 lastNodeSize = dataSize - (worldSize-1) * newNodeSize;
+    
+    if (rank < worldSize-1) {
+        (*B_help)->resize(newNodeSize);
+    }
+    else {
+        (*B_help)->resize(lastNodeSize);
+    }
+
+    vector<vector<TwoInts64>> dataForPartitions; dataForPartitions.resize(worldSize);
+
+    for (int i = 0; i < worldSize; i++) {
+        dataForPartitions[i].clear();
+    }
+
+
+    prepareDataToSent(*B, SA, newNodeSize, nodeSize, dataSize, help_param, &dataForPartitions, rank, worldSize);
+
+
+    vector<TwoInts64> partialArr; partialArr.reserve(worldSize * wyslijRaz);
+    vector<int64> partialPivotsPosition; partialPivotsPosition.resize(worldSize); 
+    fill(partialPivotsPosition.begin(), partialPivotsPosition.end(), 0);
+
+
+
+    int64 localMaxPartialSend = 0;
+    int64 tmpPartialSend = 0;
+    for (int i = 0; i < worldSize; i++) {
+        tmpPartialSend = ceil((double) dataForPartitions[i].size() / (double) wyslijRaz);
+        localMaxPartialSend = maxInt64(localMaxPartialSend, tmpPartialSend);
+    }
+
+
+    int64 globalMaxPartialSend;
+    
+    MPI_Allreduce(&localMaxPartialSend, &globalMaxPartialSend, 1, MPI_LONG_LONG_INT, MPI_MAX, MPI_COMM_WORLD);
+    // cout<<"ile sendow max "<<globalMaxPartialSend<<endl;
+
+    vector<int> scattervPositions;
+    vector<int> displacement;
+    vector<int> arrivingNumber; arrivingNumber.resize(worldSize);
+    vector<int> arrivingDisplacement; arrivingDisplacement.resize(worldSize);
+    int sizeTmpBuff;
+    vector<TwoInts64> tmp_buff; 
+
+    for (int partialSends = 0; partialSends < globalMaxPartialSend; partialSends++) {
+        getNextPartialSend(&dataForPartitions, 
+                           &partialArr, 
+                           &partialPivotsPosition,
+						   &scattervPositions,
+						   &displacement,
+                           worldSize);
+
+        MPI_Alltoall((void*)scattervPositions.data(), 1, MPI_INT, (void*)arrivingNumber.data(), 1, MPI_INT, MPI_COMM_WORLD);
+
+        sizeTmpBuff = accumulate(arrivingNumber.begin(), arrivingNumber.end(), 0);
+
+        arrivingDisplacement.data()[0] = 0;
+        for (int i = 1; i < arrivingDisplacement.size(); i++) {
+            arrivingDisplacement.data()[i] = arrivingDisplacement.data()[i-1] + arrivingNumber.data()[i-1];
+        }
+
+        tmp_buff.resize(sizeTmpBuff);
+
+        MPI_Alltoallv(partialArr.data(), 
+                scattervPositions.data(),
+                displacement.data(),
+                MPI_TwoInts64,
+                tmp_buff.data(),
+                arrivingNumber.data(),
+                arrivingDisplacement.data(),
+                MPI_TwoInts64,
+                MPI_COMM_WORLD);
+
+        int64 offset = rank * newNodeSize;
+
+        // #pragma omp parallel for
+        for (int i = 0; i < tmp_buff.size(); i++) {
+            (*B_help)->data()[tmp_buff.data()[i].i1 - offset] = tmp_buff.data()[i].i2;
+        }
+
+        tmp_buff.clear();
+    }
+
+    vector<int64>* B_tmp_pointer;
+    
+    B_tmp_pointer = *B_help;
+	*B_help = *B;
+	*B = *B_help;
+}
+
+
+void print_MPI_vector(vector<int64>* v, int rank, int worldSize) { 
+    MPI_Barrier(MPI_COMM_WORLD);
+    for (int r = 0; r < worldSize; r++) {
+        if (r == rank) {
+		    for (int i = 0; i < v->size(); i++) {
+		    	printf("%lld ", v->data()[i]);
+		    }
+	    }
+        MPI_Barrier(MPI_COMM_WORLD);
+    }
+    MPI_Barrier(MPI_COMM_WORLD);
+    if (rank == 0)
+        cout<<endl<<endl;
+    MPI_Barrier(MPI_COMM_WORLD);
+}
+
+
+void print_MPI_vector_orig(vector<int64> v, int rank, int worldSize) { 
+
+    for (int r = 0; r < worldSize; r++) {
+        if (r == rank) {
+		    for (int i = 0; i < v.size(); i++) {
+		    	printf("%lld\n", v.data()[i]);
+		    }
+	    }
+        MPI_Barrier(MPI_COMM_WORLD);
+    }
+}

@@ -164,8 +164,8 @@ void sendDataToProperPartitionTuple2(vector<Tuple2>* A, vector<Tuple2>* A_sample
 }
 
 
-void sample_sort_MPI_tuple2(vector<Tuple2>* A, 
-                            vector<Tuple2>* A_sampleSorted,
+void sample_sort_MPI_tuple2(vector<Tuple2>** A, 
+                            vector<Tuple2>** A_help,
                             vector<Tuple2>* sample,
                             vector<Tuple2>* rootSampleRecv,
                             vector<Tuple2>* broadcastSample,
@@ -173,22 +173,22 @@ void sample_sort_MPI_tuple2(vector<Tuple2>* A,
                             int rank, 
                             int worldSize) {
 
-	A_sampleSorted->clear();
+	(*A_help)->clear();
     sample->clear();
     broadcastSample->clear();
     broadcastSample->resize(worldSize-1);
 
-    local_sort_openMP_tuple2(A);
+    local_sort_openMP_tuple2(*A);
 
 
 
     int p2 = worldSize * worldSize;
 
-    int64 step = ceil((double) A->size() / (double) worldSize);
+    int64 step = ceil((double) (*A)->size() / (double) worldSize);
     
     int sendNumber = worldSize;
     for (int i = 0; i < worldSize; i++) {
-        sample->push_back(A->data()[minInt64(i * step, A->size()-1)]);
+        sample->push_back((*A)->data()[minInt64(i * step, (*A)->size()-1)]);
     }
     
     if (rank == root) {
@@ -211,11 +211,16 @@ void sample_sort_MPI_tuple2(vector<Tuple2>* A,
 
     MPI_Bcast((void*)broadcastSample->data(), worldSize-1, MPI_Tuple2, root, MPI_COMM_WORLD);
 
-    findPivotPositionsTuple2(A, broadcastSample, pivotsPositions, rank);
+    findPivotPositionsTuple2(*A, broadcastSample, pivotsPositions, rank);
         
-	sendDataToProperPartitionTuple2(A, A_sampleSorted, pivotsPositions, rank, worldSize);
+	sendDataToProperPartitionTuple2(*A, *A_help, pivotsPositions, rank, worldSize);
 
-	local_sort_openMP_tuple2(A_sampleSorted);
+	local_sort_openMP_tuple2(*A_help);
+
+    vector<Tuple2>* A_tmp_pointer;
+    A_tmp_pointer = *A_help;
+	*A_help = *A;
+	*A_help = A_tmp_pointer;
 }
 
 
