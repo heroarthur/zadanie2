@@ -236,12 +236,19 @@ void sample_sort_MPI_tuple2(vector<Tuple2>** A,
     // }
     
     MPI_Barrier(MPI_COMM_WORLD);
+    // double start = MPI_Wtime();
     MPI_Allgather((void*)sample->data(), sendNumber, MPI_Tuple2, (void*)rootSampleRecv->data(), sendNumber, MPI_Tuple2, MPI_COMM_WORLD);
 
+
     // if (rank == root) {
+    double start = MPI_Wtime();
     local_sort_openMP_tuple2(rootSampleRecv);
+    double end = MPI_Wtime();
+    cout<<(end - start)<<endl;
+
     for (int i = 0; i < worldSize-1; i++) {
         broadcastSample->data()[i] = rootSampleRecv->data()[(i+1) * worldSize];
+
     }
     // if (rank == 3) {
     //     for (int i = 0; i < broadcastSample->size(); i++) {
