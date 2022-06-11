@@ -54,24 +54,33 @@ void prepareDataForShiftSent(vector<int64>* B,
     int64 target_i;
     int targetNode;
     int currNode;
+    int lastNodeIndex = worldSize-1;
+    int data_size_minus_one = dataSize-1;
+    TwoInts64 data;
 
+    int64 offset = rank * newNodeSize;
+    // #pragma omp parallel for
     for (int i = 0; i < B->size(); i++) {
-        curr_i = rank * newNodeSize + i;
+        curr_i = offset + i;
         target_i = curr_i - h;
-        currNode = min((int) (curr_i / newNodeSize), worldSize-1);
-        targetNode = min((int) (target_i / newNodeSize), worldSize-1);
+        currNode = min((int) (curr_i / newNodeSize), lastNodeIndex);
+        targetNode = min((int) (target_i / newNodeSize), lastNodeIndex);
 
         if (target_i >= 0) {
-            TwoInts64 data;
             data.i1 = target_i;
             data.i2 = B->data()[i];
-            dataForPartitions->data()[targetNode].push_back(data);
+            // #pragma omp critical
+            {
+                dataForPartitions->data()[targetNode].push_back(data);
+            }
         }
-        if (curr_i + h > dataSize-1) {
-            TwoInts64 data;
+        if (curr_i + h > data_size_minus_one) {
             data.i1 = curr_i;
             data.i2 = 0;
-            dataForPartitions->data()[currNode].push_back(data);
+            // #pragma omp critical
+            {
+                dataForPartitions->data()[currNode].push_back(data);
+            }
         }
     }
 }
@@ -80,6 +89,7 @@ void prepareDataForShiftSent(vector<int64>* B,
 void shift_by_h(vector<int64>** B, 
                 vector<int64>** B_new, 
                 vector<int64>* SA,
+                vector<vector<TwoInts64>>* dataForPartitions,
                 int64 h,
                 int rank, 
                 int worldSize) {
@@ -87,6 +97,7 @@ void shift_by_h(vector<int64>** B,
     do_sending_operation(B, 
                          B_new, 
                          SA,
+                         dataForPartitions,
                          h, 
                          rank, 
                          worldSize,

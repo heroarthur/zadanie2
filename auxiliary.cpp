@@ -160,7 +160,6 @@ void getNextPartialSend(vector<vector<TwoInts64>>* dataForPartitions,
 bool doNextPartialSend(vector<int64>* pivotsPosition, 
                        vector<int64>* partialPivotsPosition) {
     
-
     for(int i = 0; i < pivotsPosition->size(); i++) {
         if (pivotsPosition->data()[i] > partialPivotsPosition->data()[i]) {
             return true;
@@ -179,6 +178,7 @@ inline int getNodeToSend(int64 id, int64 nodeSize) {
 void do_sending_operation(vector<int64>** B, 
                           vector<int64>** B_help, 
                           vector<int64>* SA,
+                          vector<vector<TwoInts64>>* dataForPartitions,
                           int64 help_param, 
                           int rank, 
                           int worldSize,
@@ -198,14 +198,13 @@ void do_sending_operation(vector<int64>** B,
         (*B_help)->resize(lastNodeSize);
     }
 
-    vector<vector<TwoInts64>> dataForPartitions; dataForPartitions.resize(worldSize);
 
     for (int i = 0; i < worldSize; i++) {
-        dataForPartitions[i].clear();
+        dataForPartitions->data()[i].clear();
     }
 
 
-    prepareDataToSent(*B, SA, newNodeSize, nodeSize, dataSize, help_param, &dataForPartitions, rank, worldSize);
+    prepareDataToSent(*B, SA, newNodeSize, nodeSize, dataSize, help_param, dataForPartitions, rank, worldSize);
 
 
     vector<TwoInts64> partialArr; partialArr.reserve(worldSize * wyslijRaz);
@@ -217,7 +216,7 @@ void do_sending_operation(vector<int64>** B,
     int64 localMaxPartialSend = 0;
     int64 tmpPartialSend = 0;
     for (int i = 0; i < worldSize; i++) {
-        tmpPartialSend = ceil((double) dataForPartitions[i].size() / (double) wyslijRaz);
+        tmpPartialSend = ceil((double) dataForPartitions->data()[i].size() / (double) wyslijRaz);
         localMaxPartialSend = maxInt64(localMaxPartialSend, tmpPartialSend);
     }
 
@@ -235,7 +234,7 @@ void do_sending_operation(vector<int64>** B,
     vector<TwoInts64> tmp_buff; 
 
     for (int partialSends = 0; partialSends < globalMaxPartialSend; partialSends++) {
-        getNextPartialSend(&dataForPartitions, 
+        getNextPartialSend(dataForPartitions, 
                            &partialArr, 
                            &partialPivotsPosition,
 						   &scattervPositions,

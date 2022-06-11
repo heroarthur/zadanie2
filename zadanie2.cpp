@@ -74,7 +74,7 @@ int main(int argc, char** argv) {
 	srand (worldRank);
     int p2 = worldSize * worldSize;
 
-	int64 size = 30000000;
+	int64 size = 100000;
 	vector<Tuple2> *tuple2_pointer, *tuple2_help_pointer, *tmp_pointer;
 	vector<Tuple2> tuple2_Arr; tuple2_Arr.resize(size);
 	
@@ -87,6 +87,11 @@ int main(int argc, char** argv) {
 	vector<Tuple2> rootSampleRecv;
 	vector<Tuple2> broadcastSample; broadcastSample.resize(worldSize - 1);
 	vector<int64> pivotsPositions; pivotsPositions.resize(worldSize - 1);
+
+	vector<vector<TwoInts64>> dataForPartitions; dataForPartitions.resize(worldSize);
+	for (int i = 0; i < worldSize; i++) {
+		dataForPartitions.data()[i].reserve(size / (worldSize-2));
+	}
 	
 	tuple2_pointer = &tuple2_Arr;
 	tuple2_help_pointer = &tuple2_sortResult;
@@ -141,6 +146,7 @@ int main(int argc, char** argv) {
 	reorder_and_rebalance(&B_pointer, 
                           &B_help_pointer, 
                           &SA,
+						  &dataForPartitions,
                           worldRank, 
                           worldSize);
 
@@ -150,12 +156,17 @@ int main(int argc, char** argv) {
 	// print_MPI_vector(B_pointer, worldRank, worldSize);
 	MPI_Barrier(MPI_COMM_WORLD);
 
-	shift_by_h(&B_pointer, 
-               &B_help_pointer, 
-               &SA,
-			   10,
-               worldRank, 
-               worldSize);
+
+	for (int i = 0; i < 3000; i++) {
+		shift_by_h(&B_pointer, 
+				&B_help_pointer, 
+				&SA,
+				&dataForPartitions,
+				10,
+				worldRank, 
+				worldSize);
+	}
+
 
 
 	// print_MPI_vector(B_pointer, worldRank, worldSize);

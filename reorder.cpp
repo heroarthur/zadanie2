@@ -56,13 +56,15 @@ void prepareDataForReorderSent(vector<int64>* B,
 
 void reorder_and_rebalance(vector<int64>** B, 
                            vector<int64>** B_new, 
-                           vector<int64>* SA, 
+                           vector<int64>* SA,
+                           vector<vector<TwoInts64>>* dataForPartitions,
                            int rank, 
                            int worldSize) {
 
     do_sending_operation(B, 
                          B_new, 
                          SA,
+                         dataForPartitions,
                          EMPTY_HELP_PARAM, 
                          rank, 
                          worldSize,
