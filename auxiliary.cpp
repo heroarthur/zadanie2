@@ -52,6 +52,19 @@ MPI_Datatype MPI_Tuple3;
 MPI_Datatype MPI_TwoInts64;
 
 
+struct cmp_tuple3 {
+    bool operator ()(Tuple3 const& a, Tuple3 const& b) const {
+        return a.B < b.B || (a.B == b.B && a.B2 < b.B2);
+    }
+};
+
+
+struct cmp_tuple2 {
+    bool operator ()(Tuple2 const& a, Tuple2 const& b) const {
+        return strcmp(a.B, b.B) < 0;
+    }
+};
+
 int get_block_start(int blockId, int blocksNumber, int dataSize) {
 	return (dataSize / blocksNumber) * blockId;
 }
@@ -277,7 +290,7 @@ void do_sending_operation(vector<int64>** B,
     
     B_tmp_pointer = *B_help;
 	*B_help = *B;
-	*B = *B_help;
+	*B = B_tmp_pointer;
 }
 
 
@@ -325,4 +338,19 @@ void print_MPI_tuple2(vector<Tuple2>* v, int rank, int worldSize) {
     if (rank == 0)
         cout<<endl<<endl;
     MPI_Barrier(MPI_COMM_WORLD);
+}
+
+
+void switchPointersTuple2(vector<Tuple2>** A1, vector<Tuple2>** A2) {
+    vector<Tuple2> *A_tmp_pointer;
+    A_tmp_pointer = *A2;
+	*A2 = *A1;
+	*A1 = A_tmp_pointer;
+}
+
+void switchPointersInt64(vector<int64>** A1, vector<int64>** A2) {
+    vector<int64> *A_tmp_pointer;
+    A_tmp_pointer = *A2;
+	*A2 = *A1;
+	*A1 = A_tmp_pointer;
 }

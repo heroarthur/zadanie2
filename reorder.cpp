@@ -69,6 +69,8 @@ void reorder_and_rebalance(vector<int64>** B,
                          rank, 
                          worldSize,
                          &prepareDataForReorderSent);
+    
+    switchPointersInt64(B, B_new);
 }
 
 

@@ -125,8 +125,9 @@ void getNextPartialPivotsTuple2(vector<Tuple2>* arr,
 
 
 
-void sendDataToProperPartitionTuple2(vector<Tuple2>* A, vector<Tuple2>* A_sampleSorted, vector<int64>* pivotsPositions, int rank, int worldSize) {
+void sendDataToProperPartitionTuple2(vector<Tuple2>* A, vector<Tuple2>* A_sampleSorted, vector<int64>* pivotsPositions, vector<int64>* allArrivingDisplacement, int rank, int worldSize) {
     A_sampleSorted->clear();
+    vector<int64> allArrivingNumbers;
 
     int nextPartitionPos = 0;
     int nextRecvNumber;
@@ -177,6 +178,7 @@ void sendDataToProperPartitionTuple2(vector<Tuple2>* A, vector<Tuple2>* A_sample
         for (int i = 1; i < arrivingDisplacement.size(); i++) {
             arrivingDisplacement.data()[i] = arrivingDisplacement.data()[i-1] + arrivingNumber.data()[i-1];
         }
+        allArrivingNumbers.insert(allArrivingNumbers.end(), arrivingNumber.begin(), arrivingNumber.end());
 
         tmp_buff.resize(sizeTmpBuff);
 
@@ -201,13 +203,52 @@ void sendDataToProperPartitionTuple2(vector<Tuple2>* A, vector<Tuple2>* A_sample
         tmp_buff.clear();
     }
 
+    allArrivingDisplacement->resize(allArrivingNumbers.size() + 1);
+    allArrivingDisplacement->data()[0] = 0;
+    for (int i = 1; i < allArrivingDisplacement->size(); i++) {
+        allArrivingDisplacement->data()[i] = allArrivingDisplacement->data()[i-1] + allArrivingNumbers.data()[i-1];
+    }
+}
 
-	
+int64 roundToPowerOf2(int64 v) {
+    int64 power = 1;
+    while(power < v) {
+        power*=2;
+    }
+    return power;
 }
 
 
-void sample_sort_MPI_tuple2(vector<Tuple2>** A, 
-                            vector<Tuple2>** A_help,
+void mergeSortedParts(vector<Tuple2>* A, vector<int64>* allArrivingDisplacement, int rank) {
+    int blocksNumber = allArrivingDisplacement->size()-1;
+    int64 roundBlocksNumber = roundToPowerOf2(blocksNumber);
+    vector<int64> addPadding; addPadding.resize(roundBlocksNumber - blocksNumber);
+    fill(addPadding.begin(), addPadding.end(), allArrivingDisplacement->data()[blocksNumber]);
+    allArrivingDisplacement->insert(allArrivingDisplacement->end(), addPadding.begin(), addPadding.end());
+    int blocksNumberWithPadding = allArrivingDisplacement->size()-1;
+	
+    for (int mergeStep = 1; mergeStep < blocksNumberWithPadding; mergeStep *= 2)
+	{
+		int mergesInStep = (blocksNumberWithPadding / (2 * mergeStep));
+        // cout<<"number of merges "<<mergesInStep<<endl;
+		// #pragma omp parallel for
+		for (int i = 0; i < mergesInStep; i++) {
+            int64 indexMergeStart = 2 * mergeStep * i;
+            int64 indexMergeMid = indexMergeStart + mergeStep;
+            int64 indexMergeEnd = indexMergeMid + mergeStep;
+            // if (rank == 0)
+            //     cout<<"indeksy "<<indexMergeStart<<" "<<indexMergeMid<<" "<<indexMergeEnd<<endl;
+			inplace_merge(A->begin() + allArrivingDisplacement->data()[indexMergeStart], 
+                          A->begin() + allArrivingDisplacement->data()[indexMergeMid], 
+                          A->begin() + allArrivingDisplacement->data()[indexMergeEnd], cmp_tuple2());
+		}
+	}
+}
+
+
+
+void sample_sort_MPI_tuple2(vector<Tuple2>* A, 
+                            vector<Tuple2>* A_help,
                             vector<Tuple2>* sample,
                             vector<Tuple2>* rootSampleRecv,
                             vector<Tuple2>* broadcastSample,
@@ -215,20 +256,22 @@ void sample_sort_MPI_tuple2(vector<Tuple2>** A,
                             int rank, 
                             int worldSize) {
 
-	(*A_help)->clear();
+	A_help->clear();
     sample->clear();
     broadcastSample->clear();
     broadcastSample->resize(worldSize-1);
 
-    local_sort_openMP_tuple2(*A);
+    vector<int64> allArrivingDisplacement;
+
+    local_sort_openMP_tuple2(A);
 
     int p2 = worldSize * worldSize;
 
-    int64 step = ceil((double) (*A)->size() / (double) worldSize);
+    int64 step = ceil((double) A->size() / (double) worldSize);
     
     int sendNumber = worldSize;
     for (int i = 0; i < worldSize; i++) {
-        sample->push_back((*A)->data()[minInt64(i * step, (*A)->size()-1)]);   
+        sample->push_back(A->data()[minInt64(i * step, A->size()-1)]);   
     }
     
     rootSampleRecv->resize(p2);
@@ -238,22 +281,18 @@ void sample_sort_MPI_tuple2(vector<Tuple2>** A,
 
     local_sort_openMP_tuple2(rootSampleRecv);
 
-
     for (int i = 0; i < worldSize-1; i++) {
         broadcastSample->data()[i] = rootSampleRecv->data()[(i+1) * worldSize];
-
     }
 
-    findPivotPositionsTuple2(*A, broadcastSample, pivotsPositions, rank);
+    findPivotPositionsTuple2(A, broadcastSample, pivotsPositions, rank);
         
-	sendDataToProperPartitionTuple2(*A, *A_help, pivotsPositions, rank, worldSize);
+	sendDataToProperPartitionTuple2(A, A_help, pivotsPositions, &allArrivingDisplacement, rank, worldSize);
 
-	local_sort_openMP_tuple2(*A_help);
+    MPI_Barrier(MPI_COMM_WORLD);
 
-    vector<Tuple2> *A_tmp_pointer;
-    A_tmp_pointer = *A_help;
-	*A_help = *A;
-	*A = A_tmp_pointer;
+    mergeSortedParts(A_help, &allArrivingDisplacement, rank);
 }
+
 
 

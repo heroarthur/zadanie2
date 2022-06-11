@@ -33,11 +33,7 @@ using namespace std;
 
 void local_sort_openMP_tuple3(vector<Tuple3>* A) {
     
-	struct cmp_tuple3 {
-		bool operator ()(Tuple3 const& a, Tuple3 const& b) const {
-			return a.B < b.B || (a.B == b.B && a.B2 < b.B2);
-		}
-	};
+
 
     // posortowac wszystkie czesci lokalnie
 	int blocksNumber = 0;
@@ -72,14 +68,7 @@ void local_sort_openMP_tuple3(vector<Tuple3>* A) {
 
 
 void local_sort_openMP_tuple2(vector<Tuple2>* A) {
-    
-	struct cmp_tuple2 {
-		bool operator ()(Tuple2 const& a, Tuple2 const& b) const {
-			return strcmp(a.B, b.B) < 0;
-		}
-	};
 
-    // posortowac wszystkie czesci lokalnie
 	int blocksNumber = 0;
 	#pragma omp parallel
 	{
@@ -90,13 +79,15 @@ void local_sort_openMP_tuple2(vector<Tuple2>* A) {
 		int blockEnd = get_block_start(blockId+1, blocksNumber, A->size()) + (blockId == blocksNumber-1 ? lastElemensSize : 0);
 		std::sort(A->begin() + blockStart, A->begin() + blockEnd, cmp_tuple2());
 	}
+	// std::sort(A->begin(), A->end(), cmp_tuple2());
 
 	int merges = blocksNumber / 2;
 	for (int mergeStep = 1; mergeStep < blocksNumber; mergeStep *= 2 )
 	{
 		int mergesInStep = (blocksNumber / (2 * mergeStep));
 
-		#pragma omp parallel for
+		// todo dodaj private i zobacz czy szybciej
+		// #pragma omp parallel for
 		for (int i = 0; i < mergesInStep; i++) {
 			int64 halfMergeLen = (A->size() / blocksNumber) * mergeStep;
 			int64 mergeStart = i * 2 * halfMergeLen;

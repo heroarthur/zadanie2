@@ -74,7 +74,7 @@ int main(int argc, char** argv) {
 	srand (worldRank);
     int p2 = worldSize * worldSize;
 
-	int64 size = 1000000;
+	int64 size = 100000;
 	vector<Tuple2> *tuple2_pointer, *tuple2_help_pointer, *tmp_pointer;
 	vector<Tuple2> tuple2_Arr; tuple2_Arr.resize(size);
 	
@@ -90,7 +90,7 @@ int main(int argc, char** argv) {
 
 	vector<vector<TwoInts64>> dataForPartitions; dataForPartitions.resize(worldSize);
 	for (int i = 0; i < worldSize; i++) {
-		dataForPartitions.data()[i].reserve(size / (worldSize-2));
+		dataForPartitions.data()[i].reserve(size / max(1, (worldSize-2)));
 	}
 	
 	tuple2_pointer = &tuple2_Arr;
@@ -122,37 +122,19 @@ int main(int argc, char** argv) {
 	MPI_Barrier(MPI_COMM_WORLD);
 
 
-	for (int i = 0; i < 20; i++) {
-		sample_sort_MPI_tuple2(&tuple2_pointer,
-				&tuple2_help_pointer,
+	for (int i = 0; i < 25; i++) {
+		sample_sort_MPI_tuple2(tuple2_pointer,
+				tuple2_help_pointer,
 				&sample,
 				&rootSampleRecv,
 				&broadcastSample,
 				&pivotsPositions,
 				worldRank, 
 				worldSize);
-		// tmp_pointer = tuple2_help_pointer;
-		// tuple2_help_pointer = tuple2_pointer;
-		// tuple2_pointer = tmp_pointer;
+		switchPointersTuple2(&tuple2_pointer, &tuple2_help_pointer);
 
 		// print_MPI_tuple2(tuple2_pointer, worldRank, worldSize);
 		// cout<<"rank "<<worldRank<<" rozmiar "<<tuple2_pointer->size()<<endl;
-
-		// if (worldRank == 0) {
-		// 	cout<<"wartosci po przesortowaniu"<<endl;
-		// 	for (int i = 0; i < tuple2_pointer->size(); i++) {
-		// 		printf("%s\n", tuple2_pointer->data()[i].B);
-		// 	}
-		// }
-
-		// if (worldRank == 3) {
-		// cout<<"size po sortowaniu "<<tuple2_pointer->size()<<endl;
-			// cout<<"size po sortowaniu "<<tuple2_help_pointer->size()<<endl;
-		// }
-
-		// MPI_Barrier(MPI_COMM_WORLD);
-		// cout<<tuple2_pointer->size();
-		// cout<<tuple2_help_pointer->size();
 	}
 
 

@@ -102,4 +102,6 @@ void shift_by_h(vector<int64>** B,
                          rank, 
                          worldSize,
                          &prepareDataForShiftSent);
+
+    switchPointersInt64(B, B_new);
 }
