@@ -52,6 +52,17 @@ MPI_Datatype MPI_Tuple3;
 MPI_Datatype MPI_TwoInts64;
 
 
+typedef struct helpingVectors {
+    vector<TwoInts64> partialArr; 
+    vector<int64> partialPivotsPosition;
+    vector<int> scattervPositions;
+    vector<int> displacement;
+    vector<int> arrivingNumber;
+    vector<int> arrivingDisplacement;
+    vector<TwoInts64> tmp_buff; 
+} HelpingVectors;
+
+
 struct cmp_tuple3 {
     bool operator ()(Tuple3 const& a, Tuple3 const& b) const {
         return a.B < b.B || (a.B == b.B && a.B2 < b.B2);
@@ -128,7 +139,8 @@ int getNextSendSize(int64 currentPartialPosition, int64 endPosition, int worldSi
 
 
 
-void initialize_SA(vector<int64>* SA, vector<Tuple2>* tuple2) {
+void initialize_SA(vector<int64>* __restrict__ SA, 
+                   vector<Tuple2>* __restrict__ tuple2) {
     SA->resize(tuple2->size());
 
     #pragma omp parallel for
@@ -193,6 +205,7 @@ void do_sending_operation(vector<int64>* B,
                           vector<int64>* B_help, 
                           vector<int64>* SA,
                           vector<vector<TwoInts64>>* dataForPartitions,
+                          HelpingVectors* helpVectors,
                           int64 help_param, 
                           int rank, 
                           int worldSize,
@@ -298,18 +311,6 @@ void print_MPI_vector(vector<int64>* v, int rank, int worldSize) {
 }
 
 
-// void print_MPI_vector_orig(vector<int64>* v, int rank, int worldSize) { 
-
-//     for (int r = 0; r < worldSize; r++) {
-//         if (r == rank) {
-// 		    for (int i = 0; i < v.size(); i++) {
-// 		    	printf("%lld\n", v.data()[i]);
-// 		    }
-// 	    }
-//         MPI_Barrier(MPI_COMM_WORLD);
-//     }
-// }
-
 
 void print_MPI_tuple2(vector<Tuple2>* v, int rank, int worldSize) { 
     MPI_Barrier(MPI_COMM_WORLD);
@@ -340,4 +341,15 @@ void switchPointersInt64(vector<int64>** A1, vector<int64>** A2) {
     A_tmp_pointer = *A2;
 	*A2 = *A1;
 	*A1 = A_tmp_pointer;
+}
+
+
+void initializeHelpingVectors(HelpingVectors* vectors, int worldSize) {
+    vectors->partialArr.reserve(worldSize * wyslijRaz);
+    vectors->partialPivotsPosition.resize(worldSize);
+    vectors->scattervPositions.reserve(worldSize);
+    vectors->displacement.reserve(worldSize);
+    vectors->arrivingNumber.resize(worldSize);
+    vectors->arrivingDisplacement.resize(worldSize);
+    vectors->tmp_buff.reserve(worldSize * wyslijRaz);
 }

@@ -74,7 +74,7 @@ int main(int argc, char** argv) {
 	srand (worldRank);
     int p2 = worldSize * worldSize;
 
-	int64 size = 100000;
+	int64 size = 1000000;
 	vector<Tuple2> *tuple2_pointer, *tuple2_help_pointer, *tmp_pointer;
 	vector<Tuple2> tuple2_Arr; tuple2_Arr.resize(size);
 	
@@ -93,6 +93,9 @@ int main(int argc, char** argv) {
 		dataForPartitions.data()[i].reserve(size / max(1, (worldSize-2)));
 	}
 	
+	HelpingVectors helpVectors;
+	initializeHelpingVectors(&helpVectors, worldSize);
+
 	tuple2_pointer = &tuple2_Arr;
 	tuple2_help_pointer = &tuple2_sortResult;
 
@@ -133,23 +136,39 @@ int main(int argc, char** argv) {
 
 
 
+	assign_h_group_rank(tuple2_pointer, 
+					B_pointer, 
+					worldRank,
+					worldSize);
+	
+	initialize_SA(&SA, tuple2_pointer);
 
 
+	for (int i = 0; i < 1; i++) {
+		reorder_and_rebalance(&B_pointer, 
+		                      &B_help_pointer, 
+		                      &SA,
+							  &dataForPartitions,
+							  &helpVectors,
+		                      worldRank, 
+		                      worldSize);
 
-	for (int i = 0; i < 50; i++) {
-		assign_h_group_rank(tuple2_pointer, 
-							B_pointer, 
-							worldRank,
-							worldSize);
+		shift_by_h(&B_pointer, 
+				   &B_help_pointer, 
+				   &SA,
+				   &dataForPartitions,
+				   &helpVectors,
+				   10,
+				   worldRank, 
+				   worldSize);
 	}
 
-	// initialize_SA(&SA, tuple2_pointer);
-
+	// 
 
 	// reorder_and_rebalance(&B_pointer, 
     //                       &B_help_pointer, 
     //                       &SA,
-	// 					  &dataForPartitions,
+	// 					  	 &dataForPartitions,
     //                       worldRank, 
     //                       worldSize);
 

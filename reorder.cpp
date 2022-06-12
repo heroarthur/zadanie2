@@ -39,7 +39,7 @@ void prepareDataForReorderSent(vector<int64>* B,
                                vector<vector<TwoInts64>>* dataForPartitions,
                                int rank,
                                int worldSize) {
-
+    
     #pragma omp parallel for
     for (int thread = 0; thread < worldSize; thread++) {
         for (int i = 0; i < nodeSize; i++) {
@@ -58,6 +58,7 @@ void reorder_and_rebalance(vector<int64>** B,
                            vector<int64>** B_new, 
                            vector<int64>* SA,
                            vector<vector<TwoInts64>>* dataForPartitions,
+                           HelpingVectors* helpVectors,
                            int rank, 
                            int worldSize) {
 
@@ -65,6 +66,7 @@ void reorder_and_rebalance(vector<int64>** B,
                          *B_new, 
                          SA,
                          dataForPartitions,
+                         helpVectors,
                          EMPTY_HELP_PARAM, 
                          rank, 
                          worldSize,

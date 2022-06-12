@@ -47,3 +47,102 @@
 
 
 
+vector<TwoInts64> partialArr; partialArr.reserve(worldSize * wyslijRaz);
+vector<int64> partialPivotsPosition; partialPivotsPosition.resize(worldSize); 
+vector<int> scattervPositions;
+vector<int> displacement;
+vector<int> arrivingNumber; arrivingNumber.resize(worldSize);
+vector<int> arrivingDisplacement; arrivingDisplacement.resize(worldSize);
+vector<TwoInts64> tmp_buff; 
+
+
+void do_sending_operation(vector<int64>* B, 
+                          vector<int64>* B_help, 
+                          vector<int64>* SA,
+                          vector<vector<TwoInts64>>* dataForPartitions,
+                          int64 help_param, 
+                          int rank, 
+                          int worldSize,
+                          void (*prepareDataToSent)(vector<int64>*, vector<int64>*, int64, int64, int64, int64, vector<vector<TwoInts64>>*, int, int)) {
+    int64 dataSize;
+    int64 nodeSize = B->size();
+
+    MPI_Allreduce(&nodeSize, &dataSize, 1, MPI_LONG_LONG_INT, MPI_SUM, MPI_COMM_WORLD);
+
+    int64 newNodeSize = dataSize / worldSize;
+    int64 lastNodeSize = dataSize - (worldSize-1) * newNodeSize;
+    
+    if (rank < worldSize-1) {
+        B_help->resize(newNodeSize);
+    }
+    else {
+        B_help->resize(lastNodeSize);
+    }
+
+    for (int i = 0; i < worldSize; i++) {
+        dataForPartitions->data()[i].clear();
+    }
+
+    prepareDataToSent(B, SA, newNodeSize, nodeSize, dataSize, help_param, dataForPartitions, rank, worldSize);
+
+    vector<TwoInts64> partialArr; partialArr.reserve(worldSize * wyslijRaz);
+    vector<int64> partialPivotsPosition; partialPivotsPosition.resize(worldSize); 
+    fill(partialPivotsPosition.begin(), partialPivotsPosition.end(), 0);
+
+    int64 localMaxPartialSend = 0;
+    int64 tmpPartialSend = 0;
+    for (int i = 0; i < worldSize; i++) {
+        tmpPartialSend = ceil((double) dataForPartitions->data()[i].size() / (double) wyslijRaz);
+        localMaxPartialSend = maxInt64(localMaxPartialSend, tmpPartialSend);
+    }
+
+    int64 globalMaxPartialSend;
+    
+    MPI_Allreduce(&localMaxPartialSend, &globalMaxPartialSend, 1, MPI_LONG_LONG_INT, MPI_MAX, MPI_COMM_WORLD);
+
+    vector<int> scattervPositions;
+    vector<int> displacement;
+    vector<int> arrivingNumber; arrivingNumber.resize(worldSize);
+    vector<int> arrivingDisplacement; arrivingDisplacement.resize(worldSize);
+    int sizeTmpBuff;
+    vector<TwoInts64> tmp_buff; 
+
+    for (int partialSends = 0; partialSends < globalMaxPartialSend; partialSends++) {
+        getNextPartialSend(dataForPartitions, 
+                           &partialArr, 
+                           &partialPivotsPosition,
+						   &scattervPositions,
+						   &displacement,
+                           worldSize);
+
+        MPI_Alltoall((void*)scattervPositions.data(), 1, MPI_INT, (void*)arrivingNumber.data(), 1, MPI_INT, MPI_COMM_WORLD);
+
+        sizeTmpBuff = accumulate(arrivingNumber.begin(), arrivingNumber.end(), 0);
+
+        arrivingDisplacement.data()[0] = 0;
+        for (int i = 1; i < arrivingDisplacement.size(); i++) {
+            arrivingDisplacement.data()[i] = arrivingDisplacement.data()[i-1] + arrivingNumber.data()[i-1];
+        }
+
+        tmp_buff.resize(sizeTmpBuff);
+
+        MPI_Alltoallv(partialArr.data(), 
+                scattervPositions.data(),
+                displacement.data(),
+                MPI_TwoInts64,
+                tmp_buff.data(),
+                arrivingNumber.data(),
+                arrivingDisplacement.data(),
+                MPI_TwoInts64,
+                MPI_COMM_WORLD);
+
+        int64 offset = rank * newNodeSize;
+
+        // #pragma omp parallel for
+        for (int i = 0; i < tmp_buff.size(); i++) {
+            B_help->data()[tmp_buff.data()[i].i1 - offset] = tmp_buff.data()[i].i2;
+        }
+
+        tmp_buff.clear();
+    }
+}
