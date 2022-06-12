@@ -83,15 +83,22 @@ typedef struct helpingVectorsSampleSort2 {
 } HelpingVectorsSampleSort2;
 
 
-// typedef struct helpingVectorsSampleSort3 {
-//     vector<Tuple3> partialArr; 
-//     vector<int64> partialPivotsPosition;
-//     vector<int> scattervPositions;
-//     vector<int> displacement;
-//     vector<int> arrivingNumber;
-//     vector<int> arrivingDisplacement;
-//     vector<TwoInts64> tmp_buff; 
-// } HelpingVectorsSampleSort3;
+typedef struct helpingVectorsSampleSort3 {
+    vector<int> scattervPositions;
+    vector<int> displacement;
+    vector<int> arrivingNumber;
+    vector<int> arrivingDisplacement;
+    vector<int64> partialPivotsPosition;
+    vector<int64> allArrivingNumbers;
+    vector<int64> allArrivingDisplacement;
+    vector<int64> addPadding;
+    vector<int64> pivotsPositions;
+    vector<Tuple3> partialArr; 
+    vector<Tuple3> tmp_buff;
+    vector<Tuple3> sample;
+    vector<Tuple3> rootSampleRecv;
+    vector<Tuple3> broadcastSample;
+} HelpingVectorsSampleSort3;
 
 
 
@@ -100,7 +107,6 @@ struct cmp_tuple3 {
         return a.B < b.B || (a.B == b.B && a.B2 < b.B2);
     }
 };
-
 
 struct cmp_tuple2 {
     bool operator ()(Tuple2 const& a, Tuple2 const& b) const {
@@ -124,7 +130,6 @@ bool tuple3Smaller(Tuple3 t1, Tuple3 t2) {
     return !tuple3Equal(t1, t2) && !tuple3Greater(t1, t2);
 }
 
-
 bool tuple2Equal(Tuple2 t1, Tuple2 t2) {
 	return strcmp(t1.B, t2.B) == 0;
 }
@@ -136,7 +141,6 @@ bool tuple2Greater(Tuple2 t1, Tuple2 t2) {
 bool tuple2Smaller(Tuple2 t1, Tuple2 t2) {
     return !tuple2Equal(t1, t2) && !tuple2Greater(t1, t2);
 }
-
 
 int64 minInt64(int64 a, int64 b) {
 	return a < b ? a : b;
@@ -170,7 +174,6 @@ int getNextSendSize(int64 currentPartialPosition, int64 endPosition, int worldSi
 }
 
 
-
 void initialize_SA(vector<int64>* __restrict__ SA, 
                    vector<Tuple2>* __restrict__ tuple2) {
     SA->resize(tuple2->size());
@@ -180,8 +183,6 @@ void initialize_SA(vector<int64>* __restrict__ SA,
         SA->data()[i] = tuple2->data()[i].i;
     }
 }
-
-
 
 
 void getNextPartialSend(vector<vector<TwoInts64>>* dataForPartitions, 
@@ -226,11 +227,10 @@ bool doNextPartialSend(vector<int64>* pivotsPosition,
     return false;
 }
 
+
 inline int getNodeToSend(int64 id, int64 nodeSize) {
     return id / nodeSize;
 }
-
-
 
 
 void do_sending_operation(vector<int64>* B, 
@@ -297,6 +297,7 @@ void do_sending_operation(vector<int64>* B,
 
         helpVectors->tmp_buff.resize(sizeTmpBuff);
 
+        double start = MPI_Wtime();
         MPI_Alltoallv(helpVectors->partialArr.data(), 
                 helpVectors->scattervPositions.data(),
                 helpVectors->displacement.data(),
@@ -306,6 +307,9 @@ void do_sending_operation(vector<int64>* B,
                 helpVectors->arrivingDisplacement.data(),
                 MPI_TwoInts64,
                 MPI_COMM_WORLD);
+        double koniec = MPI_Wtime();
+
+	    cout<<"czas "<<(koniec - start) * worldSize<<endl;
 
         int64 offset = rank * newNodeSize;
 
@@ -336,7 +340,6 @@ void print_MPI_vector(vector<int64>* v, int rank, int worldSize) {
 }
 
 
-
 void print_MPI_tuple2(vector<Tuple2>* v, int rank, int worldSize) { 
     MPI_Barrier(MPI_COMM_WORLD);
     for (int r = 0; r < worldSize; r++) {
@@ -354,12 +357,22 @@ void print_MPI_tuple2(vector<Tuple2>* v, int rank, int worldSize) {
 }
 
 
+int64 roundToPowerOf2(int64 v) {
+    int64 power = 1;
+    while(power < v) {
+        power*=2;
+    }
+    return power;
+}
+
+
 void switchPointersTuple2(vector<Tuple2>** A1, vector<Tuple2>** A2) {
     vector<Tuple2> *A_tmp_pointer;
     A_tmp_pointer = *A2;
 	*A2 = *A1;
 	*A1 = A_tmp_pointer;
 }
+
 
 void switchPointersInt64(vector<int64>** A1, vector<int64>** A2) {
     vector<int64> *A_tmp_pointer;
@@ -385,9 +398,9 @@ void initializeHelpingVectorsSendingOperations(HelpingVectorsSendingOperations* 
 }
 
 
-
 void initializeHelpingVectorsSampleSort2(HelpingVectorsSampleSort2* vectors, int worldSize) {
     vectors->partialArr.reserve(worldSize * wyslijRaz);
+    vectors->pivotsPositions.resize(worldSize-1);   
     vectors->partialPivotsPosition.resize(worldSize);
     vectors->scattervPositions.resize(worldSize);
     vectors->displacement.reserve(worldSize);
@@ -400,6 +413,22 @@ void initializeHelpingVectorsSampleSort2(HelpingVectorsSampleSort2* vectors, int
     vectors->sample.reserve(worldSize);
     vectors->rootSampleRecv.resize(worldSize * worldSize);
     vectors->broadcastSample.resize(worldSize-1);
-    vectors->pivotsPositions.resize(worldSize-1);   
 }
 
+
+void initializeHelpingVectorsSampleSort3(HelpingVectorsSampleSort3* vectors, int worldSize) {
+    vectors->partialArr.reserve(worldSize * wyslijRaz);
+    vectors->pivotsPositions.resize(worldSize-1);   
+    vectors->partialPivotsPosition.resize(worldSize);
+    vectors->scattervPositions.resize(worldSize);
+    vectors->displacement.reserve(worldSize);
+    vectors->arrivingNumber.resize(worldSize);
+    vectors->arrivingDisplacement.resize(worldSize);
+    vectors->allArrivingNumbers.reserve(worldSize * 2 * vectorMemoryAllocationFactor);
+    vectors->allArrivingDisplacement.reserve(worldSize * 2 * vectorMemoryAllocationFactor);
+    vectors->addPadding.reserve(worldSize * vectorMemoryAllocationFactor);
+    vectors->tmp_buff.reserve(worldSize * wyslijRaz);
+    vectors->sample.reserve(worldSize);
+    vectors->rootSampleRecv.resize(worldSize * worldSize);
+    vectors->broadcastSample.resize(worldSize-1);
+}

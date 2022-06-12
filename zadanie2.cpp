@@ -73,8 +73,8 @@ int main(int argc, char** argv) {
 
 	srand (worldRank);
     int p2 = worldSize * worldSize;
-
-	int64 singleNodeDataSize = 100;
+	int64 allDataSize = 1000000 * 4;
+	int64 singleNodeDataSize = allDataSize / worldSize;
 	vector<Tuple2> *tuple2_pointer, *tuple2_help_pointer, *tmp_pointer;
 	vector<Tuple2> tuple2_Arr; tuple2_Arr.reserve(1.2 * singleNodeDataSize); tuple2_Arr.resize(singleNodeDataSize);
 	
@@ -114,7 +114,7 @@ int main(int argc, char** argv) {
 
 	MPI_Barrier(MPI_COMM_WORLD);
 
-	for (int i = 0; i < 100; i++) {
+	// for (int i = 0; i < 100; i++) {
 		sample_sort_MPI_tuple2(tuple2_pointer,
 						tuple2_help_pointer,
 						&helpVectorsSampleSort2,
@@ -122,64 +122,33 @@ int main(int argc, char** argv) {
 						worldSize);
 		switchPointersTuple2(&tuple2_pointer, &tuple2_help_pointer);
 
-		// if (worldRank == root)
-		// 	cout<<tuple2_pointer->size()<<endl;
-	}
+	// }
 
 
 
 
-	// assign_h_group_rank(tuple2_pointer, 
-	// 				B_pointer, 
-	// 				worldRank,
-	// 				worldSize);
+	assign_h_group_rank(tuple2_pointer, 
+					B_pointer, 
+					worldRank,
+					worldSize);
 	
 
 	initialize_SA(&SA, tuple2_pointer);
 
+	reorder_and_rebalance(&B_pointer, 
+							&B_help_pointer, 
+							&SA,
+							&helpVectorsSendingOperations,
+							worldRank, 
+							worldSize);
 
-	for (int i = 0; i < 0; i++) {
-		reorder_and_rebalance(&B_pointer, 
-		                      &B_help_pointer, 
-		                      &SA,
-							  &dataForPartitions,
-							  &helpVectors,
-		                      worldRank, 
-		                      worldSize);
-
-		shift_by_h(&B_pointer, 
-				   &B_help_pointer, 
-				   &SA,
-				   &dataForPartitions,
-				   &helpVectors,
-				   10,
-				   worldRank, 
-				   worldSize);
-	}
-
-
-	// reorder_and_rebalance(&B_pointer, 
-    //                       &B_help_pointer, 
-    //                       &SA,
-	// 					  	 &dataForPartitions,
-    //                       worldRank, 
-    //                       worldSize);
-
-
-
-	// // cout<<"rank "<<worldRank<<" "<<B_pointer->size()<<endl;
-	// // print_MPI_vector(B_pointer, worldRank, worldSize);
-
-	// for (int i = 0; i < 5000; i++) {
-	// 	shift_by_h(&B_pointer, 
-	// 			&B_help_pointer, 
-	// 			&SA,
-	// 			&dataForPartitions,
-	// 			10,
-	// 			worldRank, 
-	// 			worldSize);
-	// }
-
+	shift_by_h(&B_pointer, 
+				&B_help_pointer, 
+				&SA,
+				&helpVectorsSendingOperations,
+				10,
+				worldRank, 
+				worldSize);
 
 
 	// print_MPI_vector(B_pointer, worldRank, worldSize);

@@ -31,8 +31,20 @@ using namespace std;
 
 
 
-int64 binarySearchTuple3(vector<Tuple3>* arr, Tuple3 tuple, int64 l, int64 r)
+
+int64 binarySearchTuple3(vector<Tuple3>* arr, 
+                         Tuple3 tuple, 
+                         int64 l, 
+                         int64 r)
 {
+    if (tuple3Greater(tuple, arr->data()[arr->size()-1])) {
+        return arr->size();
+    }
+
+    if (tuple3Smaller(tuple, arr->data()[0])) {
+        return 0;
+    }
+
     if (r >= l) {
         int64 mid = l + (r - l) / 2;
 
@@ -48,8 +60,14 @@ int64 binarySearchTuple3(vector<Tuple3>* arr, Tuple3 tuple, int64 l, int64 r)
 }
 
 
-void findPivotPositionsTuple3(vector<Tuple3>* arr, vector<Tuple3>* pivotsTuples, vector<int64>* pivotsPositions, int rank) {
-    #pragma omp parallel for
+void findPivotPositionsTuple3(vector<Tuple3>* arr, 
+                              vector<Tuple3>* pivotsTuples, 
+                              vector<int64>* pivotsPositions, 
+                              int rank) {
+
+    pivotsPositions->resize(pivotsTuples->size());
+
+    // #pragma omp parallel for
     for (int i = 0; i < pivotsTuples->size(); i++) {
         pivotsPositions->data()[i] = binarySearchTuple3(arr, pivotsTuples->data()[i], 0, arr->size());
     }
@@ -58,29 +76,29 @@ void findPivotPositionsTuple3(vector<Tuple3>* arr, vector<Tuple3>* pivotsTuples,
 
 
 
-
-
 void getNextPartialPivotsTuple3(vector<Tuple3>* arr, 
-                          vector<Tuple3>* partialArr, 
-                          vector<int64>* pivotsPosition, 
-                          vector<int64>* partialPivotsPosition,
-						  vector<int>* scattervPositions,
-						  vector<int>* displacement,
-                          int worldSize) {
+                                vector<Tuple3>* partialArr, 
+                                vector<int64>* pivotsPosition, 
+                                vector<int64>* partialPivotsPosition,
+                                vector<int>* scattervPositions,
+                                vector<int>* displacement,
+                                int worldSize) {
+
     int partialArraSize = 0;
     int nextSendSize;
+
+    partialArr->clear();
     
     for (int i = 0; i < pivotsPosition->size(); i++) {
         nextSendSize = getNextSendSize(partialPivotsPosition->data()[i], pivotsPosition->data()[i], worldSize);
         partialArraSize += nextSendSize;
     }
 
-    partialArr->reserve(partialArraSize);
     int displacementSum = 0;
 
     for (int i = 0; i < pivotsPosition->size(); i++) {
         nextSendSize = getNextSendSize(partialPivotsPosition->data()[i], pivotsPosition->data()[i], worldSize);
-		scattervPositions->push_back(nextSendSize);
+		scattervPositions->data()[i] = nextSendSize;
         partialArr->insert(partialArr->end(), arr->begin() + partialPivotsPosition->data()[i], arr->begin() + partialPivotsPosition->data()[i] + nextSendSize);
         partialPivotsPosition->data()[i] += nextSendSize;
         displacement->data()[i] = displacementSum;
@@ -90,32 +108,33 @@ void getNextPartialPivotsTuple3(vector<Tuple3>* arr,
 
 
 
+void sendDataToProperPartitionTuple3(vector<Tuple3>* A, 
+                                     vector<Tuple3>* A_sampleSorted, 
+                                     HelpingVectorsSampleSort3* helpVectors,
+                                     int rank, 
+                                     int worldSize) {
 
-
-void sendDataToProperPartitionTuple3(vector<Tuple3>* A, vector<Tuple3>* A_sampleSorted, vector<int64>* pivotsPositions, int rank, int worldSize) {
     A_sampleSorted->clear();
 
     int nextPartitionPos = 0;
     int nextRecvNumber;
 
-	vector<Tuple3> partialArr;
-	vector<int64> partialPivotsPositions; partialPivotsPositions.resize(pivotsPositions->size());
-	vector<int> scattervPositions; scattervPositions.resize(worldSize);
-	vector<int> displacement; displacement.resize(worldSize);
-
-    vector<int> arrivingNumber; arrivingNumber.resize(worldSize);
-    vector<int> arrivingDisplacement; arrivingDisplacement.resize(worldSize);
-    vector<Tuple3> tmp_buff;
+	helpVectors->partialPivotsPosition.resize(helpVectors->pivotsPositions.size());
+	helpVectors->scattervPositions.resize(worldSize);
+	helpVectors->displacement.resize(worldSize);
+    helpVectors->arrivingNumber.resize(worldSize);
+    helpVectors->arrivingDisplacement.resize(worldSize);
+    
     int sizeTmpBuff;
 
-	partialPivotsPositions[0] = 0;
-	for (int i = 1; i < pivotsPositions->size(); i++) {
-		partialPivotsPositions[i] = pivotsPositions->data()[i-1];
+	helpVectors->partialPivotsPosition[0] = 0;
+	for (int i = 1; i < helpVectors->pivotsPositions.size(); i++) {
+		helpVectors->partialPivotsPosition[i] = helpVectors->pivotsPositions.data()[i-1];
 	}
 
-	int numberOfPartSendThisProces = ceil(((double)pivotsPositions->data()[0] / (double)wyslijRaz));
-	for (int i = 1; i < pivotsPositions->size(); i++) {
-		numberOfPartSendThisProces = max(numberOfPartSendThisProces, (int) ceil((double)((pivotsPositions->data()[i] - pivotsPositions->data()[i-1]) / (double)wyslijRaz)));
+	int numberOfPartSendThisProces = ceil(((double)helpVectors->pivotsPositions.data()[0] / (double)wyslijRaz));
+	for (int i = 1; i < helpVectors->pivotsPositions.size(); i++) {
+		numberOfPartSendThisProces = max(numberOfPartSendThisProces, (int) ceil((double)((helpVectors->pivotsPositions.data()[i] - helpVectors->pivotsPositions.data()[i-1]) / (double)wyslijRaz)));
 	}
 	int currentProcesPartSends = 0;
 	
@@ -126,97 +145,115 @@ void sendDataToProperPartitionTuple3(vector<Tuple3>* A, vector<Tuple3>* A_sample
 
     for (int partialSends = 0; partialSends < numberOfLoops; partialSends++) {
 
-        partialArr.clear();
-        scattervPositions.clear();
         getNextPartialPivotsTuple3(A, 
-                            &partialArr,
-                            pivotsPositions, 
-                            &partialPivotsPositions,
-                            &scattervPositions,
-                            &displacement,
-                            worldSize);
+                                   &(helpVectors->partialArr),
+                                   &(helpVectors->pivotsPositions), 
+                                   &(helpVectors->partialPivotsPosition),
+                                   &(helpVectors->scattervPositions),
+                                   &(helpVectors->displacement),
+                                   worldSize);
 
-        MPI_Alltoall((void*)scattervPositions.data(), 1, MPI_INT, (void*)arrivingNumber.data(), 1, MPI_INT, MPI_COMM_WORLD);
+        MPI_Alltoall((void*)helpVectors->scattervPositions.data(), 1, MPI_INT, (void*)helpVectors->arrivingNumber.data(), 1, MPI_INT, MPI_COMM_WORLD);
 
 
-        sizeTmpBuff = accumulate(arrivingNumber.begin(), arrivingNumber.end(), 0);
+        sizeTmpBuff = accumulate(helpVectors->arrivingNumber.begin(), helpVectors->arrivingNumber.end(), 0);
 
-        arrivingDisplacement.data()[0] = 0;
-        for (int i = 1; i < arrivingDisplacement.size(); i++) {
-            arrivingDisplacement.data()[i] = arrivingDisplacement.data()[i-1] + arrivingNumber.data()[i-1];
+        helpVectors->arrivingDisplacement.data()[0] = 0;
+        for (int i = 1; i < helpVectors->arrivingDisplacement.size(); i++) {
+            helpVectors->arrivingDisplacement.data()[i] = helpVectors->arrivingDisplacement.data()[i-1] + helpVectors->arrivingNumber.data()[i-1];
         }
+        helpVectors->allArrivingNumbers.insert(helpVectors->allArrivingNumbers.end(), helpVectors->arrivingNumber.begin(), helpVectors->arrivingNumber.end());
 
-        tmp_buff.resize(sizeTmpBuff);
+        helpVectors->tmp_buff.resize(sizeTmpBuff);
 
-        MPI_Alltoallv(partialArr.data(), 
-                      scattervPositions.data(),
-                      displacement.data(),
+        MPI_Alltoallv(helpVectors->partialArr.data(), 
+                      helpVectors->scattervPositions.data(),
+                      helpVectors->displacement.data(),
                       MPI_Tuple3,
-                      tmp_buff.data(),
-                      arrivingNumber.data(),
-                      arrivingDisplacement.data(),
+                      helpVectors->tmp_buff.data(),
+                      helpVectors->arrivingNumber.data(),
+                      helpVectors->arrivingDisplacement.data(),
                       MPI_Tuple3,
                       MPI_COMM_WORLD);
 
-        A_sampleSorted->insert(A_sampleSorted->end(), tmp_buff.begin(), tmp_buff.end());
-        tmp_buff.clear();
+        A_sampleSorted->insert(A_sampleSorted->end(), helpVectors->tmp_buff.begin(), helpVectors->tmp_buff.end());
+        helpVectors->tmp_buff.clear();
     }
 
-
-	
+    helpVectors->allArrivingDisplacement.resize(helpVectors->allArrivingNumbers.size() + 1);
+    helpVectors->allArrivingDisplacement.data()[0] = 0;
+    for (int i = 1; i < helpVectors->allArrivingDisplacement.size(); i++) {
+        helpVectors->allArrivingDisplacement.data()[i] = helpVectors->allArrivingDisplacement.data()[i-1] + helpVectors->allArrivingNumbers.data()[i-1];
+    }
 }
 
 
-void sample_sort_MPI_tuple3(vector<Tuple3>** A, 
-                            vector<Tuple3>** A_help,
-                            vector<Tuple3>* sample,
-                            vector<Tuple3>* rootSampleRecv,
-                            vector<Tuple3>* broadcastSample,
-                            vector<int64>* pivotsPositions,
+
+
+void mergeSortedParts(vector<Tuple3>* A, 
+                      HelpingVectorsSampleSort3* helpVectors, 
+                      int rank) {
+                          
+    int blocksNumber = helpVectors->allArrivingDisplacement.size()-1;
+    int64 roundBlocksNumber = roundToPowerOf2(blocksNumber);
+    helpVectors->addPadding.resize(roundBlocksNumber - blocksNumber);
+    fill(helpVectors->addPadding.begin(), helpVectors->addPadding.end(), helpVectors->allArrivingDisplacement.data()[blocksNumber]);
+    helpVectors->allArrivingDisplacement.insert(helpVectors->allArrivingDisplacement.end(), helpVectors->addPadding.begin(), helpVectors->addPadding.end());
+    int blocksNumberWithPadding = helpVectors->allArrivingDisplacement.size()-1;
+
+    for (int mergeStep = 1; mergeStep < blocksNumberWithPadding; mergeStep *= 2)
+	{
+		int mergesInStep = (blocksNumberWithPadding / (2 * mergeStep));
+
+		for (int i = 0; i < mergesInStep; i++) {
+            int64 indexMergeStart = 2 * mergeStep * i;
+            int64 indexMergeMid = indexMergeStart + mergeStep;
+            int64 indexMergeEnd = indexMergeMid + mergeStep;
+
+
+
+			inplace_merge(A->begin() + helpVectors->allArrivingDisplacement.data()[indexMergeStart], 
+                          A->begin() + helpVectors->allArrivingDisplacement.data()[indexMergeMid], 
+                          A->begin() + helpVectors->allArrivingDisplacement.data()[indexMergeEnd], cmp_tuple3());
+		}
+	}
+}
+
+
+void sample_sort_MPI_tuple3(vector<Tuple3>* A, 
+                            vector<Tuple3>* A_help,
+                            HelpingVectorsSampleSort3* helpVectors,
                             int rank, 
                             int worldSize) {
 
-	(*A_help)->clear();
-    sample->clear();
-    broadcastSample->clear();
-    broadcastSample->resize(worldSize-1);
+	A_help->clear();
+    helpVectors->allArrivingNumbers.clear();
 
-    local_sort_openMP_tuple3(*A);
+    local_sort_openMP_tuple3(A);
 
     int p2 = worldSize * worldSize;
 
-    int64 step = ceil((double) (*A)->size() / (double) worldSize);
+    int64 step = ceil((double) A->size() / (double) worldSize);
     
     int sendNumber = worldSize;
     for (int i = 0; i < worldSize; i++) {
-        sample->push_back((*A)->data()[minInt64(i * step, (*A)->size()-1)]);
+        helpVectors->sample.data()[i] = A->data()[minInt64(i * step, A->size()-1)];   
     }
-    
-    if (rank == root) {
-        rootSampleRecv->resize(p2);
-    }
-    
-    MPI_Barrier(MPI_COMM_WORLD);
-    MPI_Gather((void*)sample->data(), sendNumber, MPI_Tuple3, (void*)rootSampleRecv->data(), sendNumber, MPI_Tuple3, root, MPI_COMM_WORLD);
-
-    if (rank == root) {
-        local_sort_openMP_tuple3(rootSampleRecv);
         
-        for (int i = 0; i < worldSize-1; i++) {
-            broadcastSample->data()[i] = rootSampleRecv->data()[(i+1) * worldSize];
-        }
+    MPI_Barrier(MPI_COMM_WORLD);
+    MPI_Allgather((void*)helpVectors->sample.data(), sendNumber, MPI_Tuple3, (void*)helpVectors->rootSampleRecv.data(), sendNumber, MPI_Tuple3, MPI_COMM_WORLD);
+
+    local_sort_openMP_tuple3(&(helpVectors->rootSampleRecv));
+
+    for (int i = 0; i < worldSize-1; i++) {
+        helpVectors->broadcastSample.data()[i] = helpVectors->rootSampleRecv.data()[(i+1) * worldSize];
     }
 
-    MPI_Bcast((void*)broadcastSample->data(), worldSize-1, MPI_Tuple3, root, MPI_COMM_WORLD);
+    findPivotPositionsTuple3(A, &(helpVectors->broadcastSample), &(helpVectors->pivotsPositions), rank);
+        
+	sendDataToProperPartitionTuple3(A, A_help, helpVectors, rank, worldSize);
 
-    findPivotPositionsTuple3(*A, broadcastSample, pivotsPositions, rank);
-    
-	sendDataToProperPartitionTuple3(*A, *A_help, pivotsPositions, rank, worldSize);
+    MPI_Barrier(MPI_COMM_WORLD);
 
-	local_sort_openMP_tuple3(*A_help);
-
-    vector<Tuple3>* A_tmp_pointer;
-    A_tmp_pointer = *A_help;
-	*A_help = *A;
-	*A = A_tmp_pointer;
+    mergeSortedParts(A_help, helpVectors, rank);
 }

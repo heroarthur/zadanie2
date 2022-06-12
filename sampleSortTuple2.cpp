@@ -145,12 +145,12 @@ void sendDataToProperPartitionTuple2(vector<Tuple2>* A,
     for (int partialSends = 0; partialSends < numberOfLoops; partialSends++) {
 
         getNextPartialPivotsTuple2(A, 
-                            &(helpVectors->partialArr),
-                            &(helpVectors->pivotsPositions), 
-                            &(helpVectors->partialPivotsPosition),
-                            &(helpVectors->scattervPositions),
-                            &(helpVectors->displacement),
-                            worldSize);
+                                   &(helpVectors->partialArr),
+                                   &(helpVectors->pivotsPositions), 
+                                   &(helpVectors->partialPivotsPosition),
+                                   &(helpVectors->scattervPositions),
+                                   &(helpVectors->displacement),
+                                   worldSize);
 
         MPI_Alltoall((void*)helpVectors->scattervPositions.data(), 1, MPI_INT, (void*)helpVectors->arrivingNumber.data(), 1, MPI_INT, MPI_COMM_WORLD);
 
@@ -186,13 +186,7 @@ void sendDataToProperPartitionTuple2(vector<Tuple2>* A,
     }
 }
 
-int64 roundToPowerOf2(int64 v) {
-    int64 power = 1;
-    while(power < v) {
-        power*=2;
-    }
-    return power;
-}
+
 
 
 void mergeSortedParts(vector<Tuple2>* A, 
@@ -214,8 +208,6 @@ void mergeSortedParts(vector<Tuple2>* A,
             int64 indexMergeStart = 2 * mergeStep * i;
             int64 indexMergeMid = indexMergeStart + mergeStep;
             int64 indexMergeEnd = indexMergeMid + mergeStep;
-
-
 
 			inplace_merge(A->begin() + helpVectors->allArrivingDisplacement.data()[indexMergeStart], 
                           A->begin() + helpVectors->allArrivingDisplacement.data()[indexMergeMid], 
