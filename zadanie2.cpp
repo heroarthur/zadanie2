@@ -94,7 +94,7 @@ int main(int argc, char** argv) {
 	}
 	
 	HelpingVectors helpVectors;
-	initializeHelpingVectors(&helpVectors, worldSize);
+	initializeHelpingVectorsSendingOperations(&helpVectors, worldSize);
 
 	tuple2_pointer = &tuple2_Arr;
 	tuple2_help_pointer = &tuple2_sortResult;

@@ -52,7 +52,7 @@ MPI_Datatype MPI_Tuple3;
 MPI_Datatype MPI_TwoInts64;
 
 
-typedef struct helpingVectors {
+typedef struct helpingVectorsSendingOperations {
     vector<TwoInts64> partialArr; 
     vector<int64> partialPivotsPosition;
     vector<int> scattervPositions;
@@ -60,7 +60,30 @@ typedef struct helpingVectors {
     vector<int> arrivingNumber;
     vector<int> arrivingDisplacement;
     vector<TwoInts64> tmp_buff; 
-} HelpingVectors;
+} HelpingVectorsSendingOperations;
+
+
+typedef struct helpingVectorsSampleSort2 {
+    vector<Tuple2> partialArr; 
+    vector<int64> partialPivotsPosition;
+    vector<int> scattervPositions;
+    vector<int> displacement;
+    vector<int> arrivingNumber;
+    vector<int> arrivingDisplacement;
+    vector<TwoInts64> tmp_buff; 
+} HelpingVectorsSampleSort2;
+
+
+typedef struct helpingVectorsSampleSort3 {
+    vector<Tuple2> partialArr; 
+    vector<int64> partialPivotsPosition;
+    vector<int> scattervPositions;
+    vector<int> displacement;
+    vector<int> arrivingNumber;
+    vector<int> arrivingDisplacement;
+    vector<TwoInts64> tmp_buff; 
+} HelpingVectorsSampleSort3;
+
 
 
 struct cmp_tuple3 {
@@ -338,7 +361,19 @@ void switchPointersInt64(vector<int64>** A1, vector<int64>** A2) {
 }
 
 
-void initializeHelpingVectors(HelpingVectors* vectors, int worldSize) {
+void initializeHelpingVectorsSendingOperations(HelpingVectors* vectors, int worldSize) {
+    vectors->partialArr.reserve(worldSize * wyslijRaz);
+    vectors->partialPivotsPosition.resize(worldSize);
+    vectors->scattervPositions.reserve(worldSize);
+    vectors->displacement.reserve(worldSize);
+    vectors->arrivingNumber.resize(worldSize);
+    vectors->arrivingDisplacement.resize(worldSize);
+    vectors->tmp_buff.reserve(worldSize * wyslijRaz);
+}
+
+
+
+void initializeHelpingVectorsSampleSort(HelpingVectors* vectors, int worldSize) {
     vectors->partialArr.reserve(worldSize * wyslijRaz);
     vectors->partialPivotsPosition.resize(worldSize);
     vectors->scattervPositions.reserve(worldSize);
