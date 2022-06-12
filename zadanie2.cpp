@@ -121,6 +121,9 @@ int main(int argc, char** argv) {
 						worldRank, 
 						worldSize);
 		switchPointersTuple2(&tuple2_pointer, &tuple2_help_pointer);
+
+		// if (worldRank == root)
+		// 	cout<<tuple2_pointer->size()<<endl;
 	}
 
 
@@ -131,6 +134,8 @@ int main(int argc, char** argv) {
 	// 				worldRank,
 	// 				worldSize);
 	
+	// print_MPI_vector(B_pointer, worldRank, worldSize);
+
 	// initialize_SA(&SA, tuple2_pointer);
 
 	// for (int i = 0; i < 50; i++) {
