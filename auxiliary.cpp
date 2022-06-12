@@ -175,7 +175,7 @@ void initialize_SA(vector<int64>* __restrict__ SA,
                    vector<Tuple2>* __restrict__ tuple2) {
     SA->resize(tuple2->size());
 
-    #pragma omp parallel for
+    // #pragma omp parallel for
     for (int i = 0; i < tuple2->size(); i++) {
         SA->data()[i] = tuple2->data()[i].i;
     }

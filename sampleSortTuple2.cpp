@@ -66,7 +66,7 @@ void findPivotPositionsTuple2(vector<Tuple2>* arr,
 
     pivotsPositions->resize(pivotsTuples->size());
 
-    #pragma omp parallel for
+    // #pragma omp parallel for
     for (int i = 0; i < pivotsTuples->size(); i++) {
         pivotsPositions->data()[i] = binarySearchTuple2(arr, pivotsTuples->data()[i], 0, arr->size());
     }
