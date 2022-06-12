@@ -121,29 +121,27 @@ int main(int argc, char** argv) {
 
 	MPI_Barrier(MPI_COMM_WORLD);
 
+	sample_sort_MPI_tuple2(tuple2_pointer,
+		tuple2_help_pointer,
+		&sample,
+		&rootSampleRecv,
+		&broadcastSample,
+		&pivotsPositions,
+		worldRank, 
+		worldSize);
+	switchPointersTuple2(&tuple2_pointer, &tuple2_help_pointer);
 
-	for (int i = 0; i < 25; i++) {
-		sample_sort_MPI_tuple2(tuple2_pointer,
-				tuple2_help_pointer,
-				&sample,
-				&rootSampleRecv,
-				&broadcastSample,
-				&pivotsPositions,
-				worldRank, 
-				worldSize);
-		switchPointersTuple2(&tuple2_pointer, &tuple2_help_pointer);
 
-		// print_MPI_tuple2(tuple2_pointer, worldRank, worldSize);
-		// cout<<"rank "<<worldRank<<" rozmiar "<<tuple2_pointer->size()<<endl;
+
+
+
+
+	for (int i = 0; i < 50; i++) {
+		assign_h_group_rank(tuple2_pointer, 
+							B_pointer, 
+							worldRank,
+							worldSize);
 	}
-
-
-
-	// assign_h_group_rank(tuple2_pointer, 
-	// 					B_pointer, 
-	// 					worldRank,
-	// 					worldSize);
-
 
 	// initialize_SA(&SA, tuple2_pointer);
 
