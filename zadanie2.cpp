@@ -144,7 +144,7 @@ int main(int argc, char** argv) {
 	initialize_SA(&SA, tuple2_pointer);
 
 
-	for (int i = 0; i < 1; i++) {
+	for (int i = 0; i < 0; i++) {
 		reorder_and_rebalance(&B_pointer, 
 		                      &B_help_pointer, 
 		                      &SA,
