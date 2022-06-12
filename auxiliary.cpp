@@ -189,8 +189,8 @@ inline int getNodeToSend(int64 id, int64 nodeSize) {
 
 
 
-void do_sending_operation(vector<int64>** B, 
-                          vector<int64>** B_help, 
+void do_sending_operation(vector<int64>* B, 
+                          vector<int64>* B_help, 
                           vector<int64>* SA,
                           vector<vector<TwoInts64>>* dataForPartitions,
                           int64 help_param, 
@@ -198,7 +198,7 @@ void do_sending_operation(vector<int64>** B,
                           int worldSize,
                           void (*prepareDataToSent)(vector<int64>*, vector<int64>*, int64, int64, int64, int64, vector<vector<TwoInts64>>*, int, int)) {
     int64 dataSize;
-    int64 nodeSize = (*B)->size();
+    int64 nodeSize = B->size();
 
     MPI_Allreduce(&nodeSize, &dataSize, 1, MPI_LONG_LONG_INT, MPI_SUM, MPI_COMM_WORLD);
 
@@ -206,26 +206,21 @@ void do_sending_operation(vector<int64>** B,
     int64 lastNodeSize = dataSize - (worldSize-1) * newNodeSize;
     
     if (rank < worldSize-1) {
-        (*B_help)->resize(newNodeSize);
+        B_help->resize(newNodeSize);
     }
     else {
-        (*B_help)->resize(lastNodeSize);
+        B_help->resize(lastNodeSize);
     }
-
 
     for (int i = 0; i < worldSize; i++) {
         dataForPartitions->data()[i].clear();
     }
 
-
-    prepareDataToSent(*B, SA, newNodeSize, nodeSize, dataSize, help_param, dataForPartitions, rank, worldSize);
-
+    prepareDataToSent(B, SA, newNodeSize, nodeSize, dataSize, help_param, dataForPartitions, rank, worldSize);
 
     vector<TwoInts64> partialArr; partialArr.reserve(worldSize * wyslijRaz);
     vector<int64> partialPivotsPosition; partialPivotsPosition.resize(worldSize); 
     fill(partialPivotsPosition.begin(), partialPivotsPosition.end(), 0);
-
-
 
     int64 localMaxPartialSend = 0;
     int64 tmpPartialSend = 0;
@@ -234,11 +229,9 @@ void do_sending_operation(vector<int64>** B,
         localMaxPartialSend = maxInt64(localMaxPartialSend, tmpPartialSend);
     }
 
-
     int64 globalMaxPartialSend;
     
     MPI_Allreduce(&localMaxPartialSend, &globalMaxPartialSend, 1, MPI_LONG_LONG_INT, MPI_MAX, MPI_COMM_WORLD);
-    // cout<<"ile sendow max "<<globalMaxPartialSend<<endl;
 
     vector<int> scattervPositions;
     vector<int> displacement;
@@ -280,17 +273,11 @@ void do_sending_operation(vector<int64>** B,
 
         // #pragma omp parallel for
         for (int i = 0; i < tmp_buff.size(); i++) {
-            (*B_help)->data()[tmp_buff.data()[i].i1 - offset] = tmp_buff.data()[i].i2;
+            B_help->data()[tmp_buff.data()[i].i1 - offset] = tmp_buff.data()[i].i2;
         }
 
         tmp_buff.clear();
     }
-
-    vector<int64>* B_tmp_pointer;
-    
-    B_tmp_pointer = *B_help;
-	*B_help = *B;
-	*B = B_tmp_pointer;
 }
 
 

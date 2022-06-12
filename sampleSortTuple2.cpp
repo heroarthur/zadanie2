@@ -31,7 +31,10 @@ using namespace std;
 
 
 
-int64 binarySearchTuple2(vector<Tuple2>* arr, Tuple2 tuple, int64 l, int64 r)
+int64 binarySearchTuple2(vector<Tuple2>* arr, 
+                         Tuple2 tuple, 
+                         int64 l, 
+                         int64 r)
 {
     if (tuple2Greater(tuple, arr->data()[arr->size()-1])) {
         return arr->size();
@@ -40,8 +43,6 @@ int64 binarySearchTuple2(vector<Tuple2>* arr, Tuple2 tuple, int64 l, int64 r)
     if (tuple2Smaller(tuple, arr->data()[0])) {
         return 0;
     }
-    // printf("tuple binary search %s   %s\n", arr->data()[arr->size()-1].B, tuple.B);
-
 
     if (r >= l) {
         int64 mid = l + (r - l) / 2;
@@ -58,34 +59,19 @@ int64 binarySearchTuple2(vector<Tuple2>* arr, Tuple2 tuple, int64 l, int64 r)
 }
 
 
-void findPivotPositionsTuple2(vector<Tuple2>* arr, vector<Tuple2>* pivotsTuples, vector<int64>* pivotsPositions, int rank) {
-    // if (rank == 0)
-        // cout<<"drukujemy wartosci"<<endl;
+void findPivotPositionsTuple2(vector<Tuple2>* arr, 
+                              vector<Tuple2>* pivotsTuples, 
+                              vector<int64>* pivotsPositions, 
+                              int rank) {
 
-    // cout<<"arr size "<<arr->size()<<endl;
     pivotsPositions->resize(pivotsTuples->size());
 
     #pragma omp parallel for
     for (int i = 0; i < pivotsTuples->size(); i++) {
-        if (rank == 0) {
-            // printf("%s\n", pivotsTuples->data()[i].B);
-        }
-
         pivotsPositions->data()[i] = binarySearchTuple2(arr, pivotsTuples->data()[i], 0, arr->size());
     }
-	// pivotsPositions->push_back(tuple2Greater(pivotsTuples->data()[pivotsTuples->size()-1], arr->data()[arr->size()-1]) ? 0 : arr->size());
 	pivotsPositions->push_back(arr->size());
-
-
-    // if (rank == 3) {
-    //     cout<<endl<<"PIVOTS POSITION"<<endl;
-    //     for (int i = 0; i < pivotsPositions->size(); i++) {
-    //         cout<<pivotsPositions->data()[i]<<" ";
-    //     }
-    //     cout<<endl<<endl;
-    // }
 }
-
 
 
 
@@ -96,6 +82,7 @@ void getNextPartialPivotsTuple2(vector<Tuple2>* arr,
 						  vector<int>* scattervPositions,
 						  vector<int>* displacement,
                           int worldSize) {
+
     int partialArraSize = 0;
     int nextSendSize;
 
@@ -108,11 +95,9 @@ void getNextPartialPivotsTuple2(vector<Tuple2>* arr,
     }
 
     partialArr->reserve(partialArraSize);
-    // cout<<"partialArraySendSize "<<partialArraSize<<endl;
     int displacementSum = 0;
 
     for (int i = 0; i < pivotsPosition->size(); i++) {
-        // cout<<"next send size "<<nextSendSize<<endl;
         nextSendSize = getNextSendSize(partialPivotsPosition->data()[i], pivotsPosition->data()[i], worldSize);
 		scattervPositions->push_back(nextSendSize);
         partialArr->insert(partialArr->end(), arr->begin() + partialPivotsPosition->data()[i], arr->begin() + partialPivotsPosition->data()[i] + nextSendSize);
@@ -124,8 +109,13 @@ void getNextPartialPivotsTuple2(vector<Tuple2>* arr,
 
 
 
+void sendDataToProperPartitionTuple2(vector<Tuple2>* A, 
+                                     vector<Tuple2>* A_sampleSorted, 
+                                     vector<int64>* pivotsPositions, 
+                                     vector<int64>* allArrivingDisplacement, 
+                                     int rank, 
+                                     int worldSize) {
 
-void sendDataToProperPartitionTuple2(vector<Tuple2>* A, vector<Tuple2>* A_sampleSorted, vector<int64>* pivotsPositions, vector<int64>* allArrivingDisplacement, int rank, int worldSize) {
     A_sampleSorted->clear();
     vector<int64> allArrivingNumbers;
 
@@ -159,8 +149,7 @@ void sendDataToProperPartitionTuple2(vector<Tuple2>* A, vector<Tuple2>* A_sample
 
 
     for (int partialSends = 0; partialSends < numberOfLoops; partialSends++) {
-        // partialArr.clear();
-        // scattervPositions.clear();
+
         getNextPartialPivotsTuple2(A, 
                             &partialArr,
                             pivotsPositions, 
@@ -181,13 +170,6 @@ void sendDataToProperPartitionTuple2(vector<Tuple2>* A, vector<Tuple2>* A_sample
         allArrivingNumbers.insert(allArrivingNumbers.end(), arrivingNumber.begin(), arrivingNumber.end());
 
         tmp_buff.resize(sizeTmpBuff);
-
-        // if (rank == 0) {
-        //     cout<<"wysylamy"<<partialArr.size()<<endl;
-        //     for (int i = 0; i < partialArr.size(); i++) {
-        //         printf("value %s\n", partialArr.data()[i].B);
-        //     }
-        // }
 
         MPI_Alltoallv(partialArr.data(), 
                       scattervPositions.data(),
@@ -219,7 +201,10 @@ int64 roundToPowerOf2(int64 v) {
 }
 
 
-void mergeSortedParts(vector<Tuple2>* A, vector<int64>* allArrivingDisplacement, int rank) {
+void mergeSortedParts(vector<Tuple2>* A, 
+                      vector<int64>* allArrivingDisplacement, 
+                      int rank) {
+                          
     int blocksNumber = allArrivingDisplacement->size()-1;
     int64 roundBlocksNumber = roundToPowerOf2(blocksNumber);
     vector<int64> addPadding; addPadding.resize(roundBlocksNumber - blocksNumber);
@@ -230,14 +215,12 @@ void mergeSortedParts(vector<Tuple2>* A, vector<int64>* allArrivingDisplacement,
     for (int mergeStep = 1; mergeStep < blocksNumberWithPadding; mergeStep *= 2)
 	{
 		int mergesInStep = (blocksNumberWithPadding / (2 * mergeStep));
-        // cout<<"number of merges "<<mergesInStep<<endl;
-		// #pragma omp parallel for
+
 		for (int i = 0; i < mergesInStep; i++) {
             int64 indexMergeStart = 2 * mergeStep * i;
             int64 indexMergeMid = indexMergeStart + mergeStep;
             int64 indexMergeEnd = indexMergeMid + mergeStep;
-            // if (rank == 0)
-            //     cout<<"indeksy "<<indexMergeStart<<" "<<indexMergeMid<<" "<<indexMergeEnd<<endl;
+
 			inplace_merge(A->begin() + allArrivingDisplacement->data()[indexMergeStart], 
                           A->begin() + allArrivingDisplacement->data()[indexMergeMid], 
                           A->begin() + allArrivingDisplacement->data()[indexMergeEnd], cmp_tuple2());

@@ -94,8 +94,8 @@ void shift_by_h(vector<int64>** B,
                 int rank, 
                 int worldSize) {
 
-    do_sending_operation(B, 
-                         B_new, 
+    do_sending_operation(*B, 
+                         *B_new, 
                          SA,
                          dataForPartitions,
                          h, 

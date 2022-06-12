@@ -61,8 +61,8 @@ void reorder_and_rebalance(vector<int64>** B,
                            int rank, 
                            int worldSize) {
 
-    do_sending_operation(B, 
-                         B_new, 
+    do_sending_operation(*B, 
+                         *B_new, 
                          SA,
                          dataForPartitions,
                          EMPTY_HELP_PARAM, 
