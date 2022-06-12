@@ -389,7 +389,7 @@ void initializeHelpingVectorsSendingOperations(HelpingVectorsSendingOperations* 
 void initializeHelpingVectorsSampleSort2(HelpingVectorsSampleSort2* vectors, int worldSize) {
     vectors->partialArr.reserve(worldSize * wyslijRaz);
     vectors->partialPivotsPosition.resize(worldSize);
-    vectors->scattervPositions.reserve(worldSize);
+    vectors->scattervPositions.resize(worldSize);
     vectors->displacement.reserve(worldSize);
     vectors->arrivingNumber.resize(worldSize);
     vectors->arrivingDisplacement.resize(worldSize);
@@ -397,7 +397,7 @@ void initializeHelpingVectorsSampleSort2(HelpingVectorsSampleSort2* vectors, int
     vectors->allArrivingDisplacement.reserve(worldSize * 2 * vectorMemoryAllocationFactor);
     vectors->addPadding.reserve(worldSize * vectorMemoryAllocationFactor);
     vectors->tmp_buff.reserve(worldSize * wyslijRaz);
-    vectors->sample.resize(worldSize);
+    vectors->sample.reserve(worldSize);
     vectors->rootSampleRecv.resize(worldSize * worldSize);
     vectors->broadcastSample.resize(worldSize-1);
     vectors->pivotsPositions.resize(worldSize-1);   

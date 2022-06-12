@@ -87,19 +87,17 @@ void getNextPartialPivotsTuple2(vector<Tuple2>* arr,
     int nextSendSize;
 
     partialArr->clear();
-    scattervPositions->clear();
     
     for (int i = 0; i < pivotsPosition->size(); i++) {
         nextSendSize = getNextSendSize(partialPivotsPosition->data()[i], pivotsPosition->data()[i], worldSize);
         partialArraSize += nextSendSize;
     }
 
-    partialArr->reserve(partialArraSize);
     int displacementSum = 0;
 
     for (int i = 0; i < pivotsPosition->size(); i++) {
         nextSendSize = getNextSendSize(partialPivotsPosition->data()[i], pivotsPosition->data()[i], worldSize);
-		scattervPositions->push_back(nextSendSize);
+		scattervPositions->data()[i] = nextSendSize;
         partialArr->insert(partialArr->end(), arr->begin() + partialPivotsPosition->data()[i], arr->begin() + partialPivotsPosition->data()[i] + nextSendSize);
         partialPivotsPosition->data()[i] += nextSendSize;
         displacement->data()[i] = displacementSum;
@@ -207,7 +205,7 @@ void mergeSortedParts(vector<Tuple2>* A,
     fill(helpVectors->addPadding.begin(), helpVectors->addPadding.end(), helpVectors->allArrivingDisplacement.data()[blocksNumber]);
     helpVectors->allArrivingDisplacement.insert(helpVectors->allArrivingDisplacement.end(), helpVectors->addPadding.begin(), helpVectors->addPadding.end());
     int blocksNumberWithPadding = helpVectors->allArrivingDisplacement.size()-1;
-	
+
     for (int mergeStep = 1; mergeStep < blocksNumberWithPadding; mergeStep *= 2)
 	{
 		int mergesInStep = (blocksNumberWithPadding / (2 * mergeStep));
@@ -216,6 +214,8 @@ void mergeSortedParts(vector<Tuple2>* A,
             int64 indexMergeStart = 2 * mergeStep * i;
             int64 indexMergeMid = indexMergeStart + mergeStep;
             int64 indexMergeEnd = indexMergeMid + mergeStep;
+
+
 
 			inplace_merge(A->begin() + helpVectors->allArrivingDisplacement.data()[indexMergeStart], 
                           A->begin() + helpVectors->allArrivingDisplacement.data()[indexMergeMid], 
@@ -233,9 +233,7 @@ void sample_sort_MPI_tuple2(vector<Tuple2>* A,
                             int worldSize) {
 
 	A_help->clear();
-    helpVectors->sample.clear();
-    helpVectors->broadcastSample.clear();
-    helpVectors->broadcastSample.resize(worldSize-1);
+    helpVectors->allArrivingNumbers.clear();
 
     local_sort_openMP_tuple2(A);
 
@@ -245,11 +243,9 @@ void sample_sort_MPI_tuple2(vector<Tuple2>* A,
     
     int sendNumber = worldSize;
     for (int i = 0; i < worldSize; i++) {
-        helpVectors->sample.push_back(A->data()[minInt64(i * step, A->size()-1)]);   
+        helpVectors->sample.data()[i] = A->data()[minInt64(i * step, A->size()-1)];   
     }
-    
-    helpVectors->rootSampleRecv.resize(p2);
-    
+        
     MPI_Barrier(MPI_COMM_WORLD);
     MPI_Allgather((void*)helpVectors->sample.data(), sendNumber, MPI_Tuple2, (void*)helpVectors->rootSampleRecv.data(), sendNumber, MPI_Tuple2, MPI_COMM_WORLD);
 

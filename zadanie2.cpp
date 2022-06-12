@@ -74,7 +74,7 @@ int main(int argc, char** argv) {
 	srand (worldRank);
     int p2 = worldSize * worldSize;
 
-	int64 singleNodeDataSize = 1000000;
+	int64 singleNodeDataSize = 100;
 	vector<Tuple2> *tuple2_pointer, *tuple2_help_pointer, *tmp_pointer;
 	vector<Tuple2> tuple2_Arr; tuple2_Arr.reserve(1.2 * singleNodeDataSize); tuple2_Arr.resize(singleNodeDataSize);
 	
@@ -114,12 +114,15 @@ int main(int argc, char** argv) {
 
 	MPI_Barrier(MPI_COMM_WORLD);
 
-	sample_sort_MPI_tuple2(tuple2_pointer,
-						   tuple2_help_pointer,
-						   &helpVectorsSampleSort2,
-						   worldRank, 
-						   worldSize);
-	switchPointersTuple2(&tuple2_pointer, &tuple2_help_pointer);
+	for (int i = 0; i < 100; i++) {
+		sample_sort_MPI_tuple2(tuple2_pointer,
+						tuple2_help_pointer,
+						&helpVectorsSampleSort2,
+						worldRank, 
+						worldSize);
+		switchPointersTuple2(&tuple2_pointer, &tuple2_help_pointer);
+	}
+
 
 
 
