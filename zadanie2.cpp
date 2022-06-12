@@ -23,22 +23,6 @@ using namespace std;
 
 
 
-
-// void sample_sort_MPI()
-
-// struct Tuple2 {
-//     char B[K];
-//     int64 i;
-// };
-
-// struct Tuple3 {
-//     int64 B;
-//     int64 B2;
-//     int64 i;
-// };
-
-
-
 int main(int argc, char** argv) {
 
 	MPI_Init(&argc, &argv);
@@ -70,8 +54,8 @@ int main(int argc, char** argv) {
     MPI_Type_commit(&MPI_TwoInts64);
 
 
-
 	srand (worldRank);
+
     int p2 = worldSize * worldSize;
 	int64 allDataSize = 1000000 * 4;
 	int64 singleNodeDataSize = allDataSize / worldSize;
@@ -114,17 +98,13 @@ int main(int argc, char** argv) {
 
 	MPI_Barrier(MPI_COMM_WORLD);
 
-	// for (int i = 0; i < 100; i++) {
-		sample_sort_MPI_tuple2(tuple2_pointer,
-						tuple2_help_pointer,
-						&helpVectorsSampleSort2,
-						worldRank, 
-						worldSize);
-		switchPointersTuple2(&tuple2_pointer, &tuple2_help_pointer);
 
-	// }
-
-
+	sample_sort_MPI_tuple2(tuple2_pointer,
+					tuple2_help_pointer,
+					&helpVectorsSampleSort2,
+					worldRank, 
+					worldSize);
+	switchPointersTuple2(&tuple2_pointer, &tuple2_help_pointer);
 
 
 	assign_h_group_rank(tuple2_pointer, 
@@ -135,12 +115,14 @@ int main(int argc, char** argv) {
 
 	initialize_SA(&SA, tuple2_pointer);
 
+
 	reorder_and_rebalance(&B_pointer, 
-							&B_help_pointer, 
-							&SA,
-							&helpVectorsSendingOperations,
-							worldRank, 
-							worldSize);
+						  &B_help_pointer, 
+						  &SA,
+						  &helpVectorsSendingOperations,
+						  worldRank, 
+						  worldSize);
+
 
 	shift_by_h(&B_pointer, 
 				&B_help_pointer, 
