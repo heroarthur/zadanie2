@@ -33,11 +33,8 @@ using namespace std;
 
 void local_sort_openMP_tuple3(vector<Tuple3>* A) {
     
-
-
-    // posortowac wszystkie czesci lokalnie
 	int blocksNumber = 0;
-	#pragma omp parallel
+	// #pragma omp parallel
 	{
 		blocksNumber = omp_get_num_threads();
 		int lastElemensSize = A->size() % blocksNumber;
@@ -52,7 +49,7 @@ void local_sort_openMP_tuple3(vector<Tuple3>* A) {
 	{
 		int mergesInStep = (blocksNumber / (2 * mergeStep));
 
-		#pragma omp parallel for
+		// #pragma omp parallel for
 		for (int i = 0; i < mergesInStep; i++) {
 			int64 halfMergeLen = (A->size() / blocksNumber) * mergeStep;
 			int64 mergeStart = i * 2 * halfMergeLen;
@@ -70,7 +67,7 @@ void local_sort_openMP_tuple3(vector<Tuple3>* A) {
 void local_sort_openMP_tuple2(vector<Tuple2>* A) {
 
 	int blocksNumber = 0;
-	#pragma omp parallel
+	// #pragma omp parallel
 	{
 		blocksNumber = omp_get_num_threads();
 		int lastElemensSize = A->size() % blocksNumber;

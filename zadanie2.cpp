@@ -74,27 +74,22 @@ int main(int argc, char** argv) {
 	srand (worldRank);
     int p2 = worldSize * worldSize;
 
-	int64 size = 1000000;
+	int64 singleNodeDataSize = 1000000;
 	vector<Tuple2> *tuple2_pointer, *tuple2_help_pointer, *tmp_pointer;
-	vector<Tuple2> tuple2_Arr; tuple2_Arr.resize(size);
+	vector<Tuple2> tuple2_Arr; tuple2_Arr.reserve(1.2 * singleNodeDataSize); tuple2_Arr.resize(singleNodeDataSize);
 	
-	vector<int64> B_1; B_1.reserve(1.2 * size);
-	vector<int64> B_2; B_2.reserve(1.2 * size);
+	vector<int64> B_1; B_1.reserve(1.2 * singleNodeDataSize);
+	vector<int64> B_2; B_2.reserve(1.2 * singleNodeDataSize);
 	vector<int64> *B_pointer, *B_help_pointer, *B_tmp_pointer;
 
-	vector<Tuple2> tuple2_sortResult; tuple2_sortResult.reserve(1.2 * size);
-	vector<Tuple2> sample; sample.resize(worldSize);
-	vector<Tuple2> rootSampleRecv;
-	vector<Tuple2> broadcastSample; broadcastSample.resize(worldSize - 1);
-	vector<int64> pivotsPositions; pivotsPositions.resize(worldSize - 1);
-
-	vector<vector<TwoInts64>> dataForPartitions; dataForPartitions.resize(worldSize);
-	for (int i = 0; i < worldSize; i++) {
-		dataForPartitions.data()[i].reserve(size / max(1, (worldSize-2)));
-	}
+	vector<Tuple2> tuple2_sortResult; tuple2_sortResult.reserve(1.2 * singleNodeDataSize);
 	
-	HelpingVectors helpVectors;
-	initializeHelpingVectorsSendingOperations(&helpVectors, worldSize);
+	HelpingVectorsSendingOperations helpVectorsSendingOperations;
+	HelpingVectorsSampleSort2 helpVectorsSampleSort2;
+
+	initializeHelpingVectorsSendingOperations(&helpVectorsSendingOperations, singleNodeDataSize, worldSize);
+	initializeHelpingVectorsSampleSort2(&helpVectorsSampleSort2, worldSize);
+
 
 	tuple2_pointer = &tuple2_Arr;
 	tuple2_help_pointer = &tuple2_sortResult;
@@ -106,15 +101,10 @@ int main(int argc, char** argv) {
 
 	bool allSingletones;
     
-	if (worldRank == root) {
-        rootSampleRecv.resize(p2);
-    }
 
-
-
-	for (int i = 0; i < size; i++) {
+	for (int i = 0; i < singleNodeDataSize; i++) {
 		fillCharArray(tuple2_Arr[i].B);
-		tuple2_Arr[i].i = i + worldRank * size;
+		tuple2_Arr[i].i = i + worldRank * singleNodeDataSize;
  	}
 
 	if (worldRank == root) {
@@ -125,45 +115,39 @@ int main(int argc, char** argv) {
 	MPI_Barrier(MPI_COMM_WORLD);
 
 	sample_sort_MPI_tuple2(tuple2_pointer,
-		tuple2_help_pointer,
-		&sample,
-		&rootSampleRecv,
-		&broadcastSample,
-		&pivotsPositions,
-		worldRank, 
-		worldSize);
+						   tuple2_help_pointer,
+						   &helpVectorsSampleSort2,
+						   worldRank, 
+						   worldSize);
 	switchPointersTuple2(&tuple2_pointer, &tuple2_help_pointer);
 
 
 
-	assign_h_group_rank(tuple2_pointer, 
-					B_pointer, 
-					worldRank,
-					worldSize);
+	// assign_h_group_rank(tuple2_pointer, 
+	// 				B_pointer, 
+	// 				worldRank,
+	// 				worldSize);
 	
-	initialize_SA(&SA, tuple2_pointer);
+	// initialize_SA(&SA, tuple2_pointer);
+
+	// for (int i = 0; i < 50; i++) {
+	// 	reorder_and_rebalance(&B_pointer, 
+	// 	                      &B_help_pointer, 
+	// 	                      &SA,
+	// 						  &helpVectorsSendingOperations,
+	// 	                      worldRank, 
+	// 	                      worldSize);
+
+	// 	shift_by_h(&B_pointer, 
+	// 			   &B_help_pointer, 
+	// 			   &SA,
+	// 			   &helpVectorsSendingOperations,
+	// 			   10,
+	// 			   worldRank, 
+	// 			   worldSize);
+	// }
 
 
-	for (int i = 0; i < 0; i++) {
-		reorder_and_rebalance(&B_pointer, 
-		                      &B_help_pointer, 
-		                      &SA,
-							  &dataForPartitions,
-							  &helpVectors,
-		                      worldRank, 
-		                      worldSize);
-
-		shift_by_h(&B_pointer, 
-				   &B_help_pointer, 
-				   &SA,
-				   &dataForPartitions,
-				   &helpVectors,
-				   10,
-				   worldRank, 
-				   worldSize);
-	}
-
-	// 
 
 	// reorder_and_rebalance(&B_pointer, 
     //                       &B_help_pointer, 

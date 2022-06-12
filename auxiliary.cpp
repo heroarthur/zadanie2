@@ -23,6 +23,7 @@
 #define int64 long long int
 #define charArrayLen 8
 #define EMPTY_HELP_PARAM 0
+#define vectorMemoryAllocationFactor 10000
  //(2147483647 / 10)
 
 using namespace std;
@@ -59,30 +60,38 @@ typedef struct helpingVectorsSendingOperations {
     vector<int> displacement;
     vector<int> arrivingNumber;
     vector<int> arrivingDisplacement;
-    vector<TwoInts64> tmp_buff; 
+    vector<TwoInts64> tmp_buff;
+    vector<vector<TwoInts64>> dataForPartitions; 
 } HelpingVectorsSendingOperations;
 
 
 typedef struct helpingVectorsSampleSort2 {
-    vector<Tuple2> partialArr; 
-    vector<int64> partialPivotsPosition;
     vector<int> scattervPositions;
     vector<int> displacement;
     vector<int> arrivingNumber;
     vector<int> arrivingDisplacement;
-    vector<TwoInts64> tmp_buff; 
+    vector<int64> partialPivotsPosition;
+    vector<int64> allArrivingNumbers;
+    vector<int64> allArrivingDisplacement;
+    vector<int64> addPadding;
+    vector<int64> pivotsPositions;
+    vector<Tuple2> partialArr; 
+    vector<Tuple2> tmp_buff;
+    vector<Tuple2> sample;
+    vector<Tuple2> rootSampleRecv;
+    vector<Tuple2> broadcastSample;
 } HelpingVectorsSampleSort2;
 
 
-typedef struct helpingVectorsSampleSort3 {
-    vector<Tuple2> partialArr; 
-    vector<int64> partialPivotsPosition;
-    vector<int> scattervPositions;
-    vector<int> displacement;
-    vector<int> arrivingNumber;
-    vector<int> arrivingDisplacement;
-    vector<TwoInts64> tmp_buff; 
-} HelpingVectorsSampleSort3;
+// typedef struct helpingVectorsSampleSort3 {
+//     vector<Tuple3> partialArr; 
+//     vector<int64> partialPivotsPosition;
+//     vector<int> scattervPositions;
+//     vector<int> displacement;
+//     vector<int> arrivingNumber;
+//     vector<int> arrivingDisplacement;
+//     vector<TwoInts64> tmp_buff; 
+// } HelpingVectorsSampleSort3;
 
 
 
@@ -227,8 +236,7 @@ inline int getNodeToSend(int64 id, int64 nodeSize) {
 void do_sending_operation(vector<int64>* B, 
                           vector<int64>* B_help, 
                           vector<int64>* SA,
-                          vector<vector<TwoInts64>>* dataForPartitions,
-                          HelpingVectors* helpVectors,
+                          HelpingVectorsSendingOperations* helpVectors,
                           int64 help_param, 
                           int rank, 
                           int worldSize,
@@ -249,17 +257,17 @@ void do_sending_operation(vector<int64>* B,
     }
 
     for (int i = 0; i < worldSize; i++) {
-        dataForPartitions->data()[i].clear();
+        helpVectors->dataForPartitions.data()[i].clear();
     }
 
-    prepareDataToSent(B, SA, newNodeSize, nodeSize, dataSize, help_param, dataForPartitions, rank, worldSize);
+    prepareDataToSent(B, SA, newNodeSize, nodeSize, dataSize, help_param, &(helpVectors->dataForPartitions), rank, worldSize);
 
     fill(helpVectors->partialPivotsPosition.begin(), helpVectors->partialPivotsPosition.end(), 0);
 
     int64 localMaxPartialSend = 0;
     int64 tmpPartialSend = 0;
     for (int i = 0; i < worldSize; i++) {
-        tmpPartialSend = ceil((double) dataForPartitions->data()[i].size() / (double) wyslijRaz);
+        tmpPartialSend = ceil((double) helpVectors->dataForPartitions.data()[i].size() / (double) wyslijRaz);
         localMaxPartialSend = maxInt64(localMaxPartialSend, tmpPartialSend);
     }
 
@@ -271,7 +279,7 @@ void do_sending_operation(vector<int64>* B,
     int sizeTmpBuff;
 
     for (int partialSends = 0; partialSends < globalMaxPartialSend; partialSends++) {
-        getNextPartialSend(dataForPartitions, 
+        getNextPartialSend(&(helpVectors->dataForPartitions), 
                            &(helpVectors->partialArr), 
                            &(helpVectors->partialPivotsPosition),
 						   &(helpVectors->scattervPositions),
@@ -361,7 +369,7 @@ void switchPointersInt64(vector<int64>** A1, vector<int64>** A2) {
 }
 
 
-void initializeHelpingVectorsSendingOperations(HelpingVectors* vectors, int worldSize) {
+void initializeHelpingVectorsSendingOperations(HelpingVectorsSendingOperations* vectors, int64 nodeDataSize, int worldSize) {
     vectors->partialArr.reserve(worldSize * wyslijRaz);
     vectors->partialPivotsPosition.resize(worldSize);
     vectors->scattervPositions.reserve(worldSize);
@@ -369,16 +377,29 @@ void initializeHelpingVectorsSendingOperations(HelpingVectors* vectors, int worl
     vectors->arrivingNumber.resize(worldSize);
     vectors->arrivingDisplacement.resize(worldSize);
     vectors->tmp_buff.reserve(worldSize * wyslijRaz);
+    vectors->dataForPartitions.resize(worldSize);
+
+    for (int i = 0; i < worldSize; i++) {
+		vectors->dataForPartitions.data()[i].reserve(nodeDataSize / max(1, (worldSize-2)));
+	}
 }
 
 
 
-void initializeHelpingVectorsSampleSort(HelpingVectors* vectors, int worldSize) {
+void initializeHelpingVectorsSampleSort2(HelpingVectorsSampleSort2* vectors, int worldSize) {
     vectors->partialArr.reserve(worldSize * wyslijRaz);
     vectors->partialPivotsPosition.resize(worldSize);
     vectors->scattervPositions.reserve(worldSize);
     vectors->displacement.reserve(worldSize);
     vectors->arrivingNumber.resize(worldSize);
     vectors->arrivingDisplacement.resize(worldSize);
+    vectors->allArrivingNumbers.reserve(worldSize * 2 * vectorMemoryAllocationFactor);
+    vectors->allArrivingDisplacement.reserve(worldSize * 2 * vectorMemoryAllocationFactor);
+    vectors->addPadding.reserve(worldSize * vectorMemoryAllocationFactor);
     vectors->tmp_buff.reserve(worldSize * wyslijRaz);
+    vectors->sample.resize(worldSize);
+    vectors->rootSampleRecv.resize(worldSize * worldSize);
+    vectors->broadcastSample.resize(worldSize-1);
+    vectors->pivotsPositions.resize(worldSize-1);   
 }
+
