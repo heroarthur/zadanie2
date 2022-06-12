@@ -134,27 +134,28 @@ int main(int argc, char** argv) {
 	// 				worldRank,
 	// 				worldSize);
 	
-	// print_MPI_vector(B_pointer, worldRank, worldSize);
 
-	// initialize_SA(&SA, tuple2_pointer);
+	initialize_SA(&SA, tuple2_pointer);
 
-	// for (int i = 0; i < 50; i++) {
-	// 	reorder_and_rebalance(&B_pointer, 
-	// 	                      &B_help_pointer, 
-	// 	                      &SA,
-	// 						  &helpVectorsSendingOperations,
-	// 	                      worldRank, 
-	// 	                      worldSize);
 
-	// 	shift_by_h(&B_pointer, 
-	// 			   &B_help_pointer, 
-	// 			   &SA,
-	// 			   &helpVectorsSendingOperations,
-	// 			   10,
-	// 			   worldRank, 
-	// 			   worldSize);
-	// }
+	for (int i = 0; i < 0; i++) {
+		reorder_and_rebalance(&B_pointer, 
+		                      &B_help_pointer, 
+		                      &SA,
+							  &dataForPartitions,
+							  &helpVectors,
+		                      worldRank, 
+		                      worldSize);
 
+		shift_by_h(&B_pointer, 
+				   &B_help_pointer, 
+				   &SA,
+				   &dataForPartitions,
+				   &helpVectors,
+				   10,
+				   worldRank, 
+				   worldSize);
+	}
 
 
 	// reorder_and_rebalance(&B_pointer, 
