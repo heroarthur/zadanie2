@@ -6,6 +6,7 @@
 #include <cstdio>
 #include <cstring>
 #include <vector>
+#include <cassert>
 
 #include <omp.h>
 #include <mpi.h>
@@ -21,7 +22,8 @@
 #define root 0
 #define wyslijRaz (2147483647 / 10)
 #define int64 long long int
-#define charArrayLen 8
+#define charArrayLen 1
+#define k charArrayLen
 #define EMPTY_HELP_PARAM 0
 #define vectorMemoryAllocationFactor 10000
  //(2147483647 / 10)
@@ -185,6 +187,26 @@ void initialize_SA(vector<int64>* __restrict__ SA,
 }
 
 
+void fillTuple3(vector<int64>* __restrict__ B, 
+                vector<int64>* __restrict__ B2, 
+                vector<int64>* __restrict__ SA, 
+                vector<Tuple3>* __restrict__ tuple3) {
+
+    // cout<<"B: "<<B->size()<<" B2: "<<B2->size()<<" SA: "<<SA->size()<<endl;
+    assert(B->size() == B2->size());
+    assert(B->size() == SA->size());
+
+    tuple3->resize(B->size());
+
+    // #pragma omp parallel for
+    for (int i = 0; i < tuple3->size(); i++) {
+        tuple3->data()[i].B = B->data()[i];
+        tuple3->data()[i].B2 = B2->data()[i];
+        tuple3->data()[i].i = SA->data()[i];
+    }
+}
+
+
 void getNextPartialSend(vector<vector<TwoInts64>>* dataForPartitions, 
                         vector<TwoInts64>* partialArr, 
                         vector<int64>* partialPivotsPosition,
@@ -236,8 +258,10 @@ inline int getNodeToSend(int64 id, int64 nodeSize) {
 void do_sending_operation(vector<int64>* B, 
                           vector<int64>* B_help, 
                           vector<int64>* SA,
+                          vector<int64>* SA_second_pointer,
                           HelpingVectorsSendingOperations* helpVectors,
-                          int64 help_param, 
+                          int64 help_param,
+                          bool update_SA,
                           int rank, 
                           int worldSize,
                           void (*prepareDataToSent)(vector<int64>*, vector<int64>*, int64, int64, int64, int64, vector<vector<TwoInts64>>*, int, int)) {
@@ -251,9 +275,17 @@ void do_sending_operation(vector<int64>* B,
     
     if (rank < worldSize-1) {
         B_help->resize(newNodeSize);
+            
+        if (update_SA) {
+            SA_second_pointer->resize(newNodeSize);
+        }
     }
     else {
         B_help->resize(lastNodeSize);
+
+        if (update_SA) {
+            SA_second_pointer->resize(newNodeSize);
+        }
     }
 
     for (int i = 0; i < worldSize; i++) {
@@ -297,7 +329,6 @@ void do_sending_operation(vector<int64>* B,
 
         helpVectors->tmp_buff.resize(sizeTmpBuff);
 
-        double start = MPI_Wtime();
         MPI_Alltoallv(helpVectors->partialArr.data(), 
                 helpVectors->scattervPositions.data(),
                 helpVectors->displacement.data(),
@@ -307,15 +338,18 @@ void do_sending_operation(vector<int64>* B,
                 helpVectors->arrivingDisplacement.data(),
                 MPI_TwoInts64,
                 MPI_COMM_WORLD);
-        double koniec = MPI_Wtime();
-
-	    cout<<"czas "<<(koniec - start) * worldSize<<endl;
 
         int64 offset = rank * newNodeSize;
 
-        // #pragma omp parallel for
+        int64 index;
+        // #pragma omp parallel for private(index)
         for (int i = 0; i < helpVectors->tmp_buff.size(); i++) {
-            B_help->data()[helpVectors->tmp_buff.data()[i].i1 - offset] = helpVectors->tmp_buff.data()[i].i2;
+            index = helpVectors->tmp_buff.data()[i].i1 - offset;
+            B_help->data()[index] = helpVectors->tmp_buff.data()[i].i2;
+
+            if (update_SA) {
+                SA_second_pointer->data()[index] = index;
+            }
         }
 
         helpVectors->tmp_buff.clear();
@@ -345,7 +379,7 @@ void print_MPI_tuple2(vector<Tuple2>* v, int rank, int worldSize) {
     for (int r = 0; r < worldSize; r++) {
         if (r == rank) {
 		    for (int i = 0; i < v->size(); i++) {
-		    	printf("%s\n", v->data()[i].B);
+		    	printf("%s %lli\n", v->data()[i].B, v->data()[i].i);
 		    }
 	    }
         MPI_Barrier(MPI_COMM_WORLD);
@@ -356,6 +390,22 @@ void print_MPI_tuple2(vector<Tuple2>* v, int rank, int worldSize) {
     MPI_Barrier(MPI_COMM_WORLD);
 }
 
+
+void print_MPI_tuple3(vector<Tuple3>* v, int rank, int worldSize) { 
+    MPI_Barrier(MPI_COMM_WORLD);
+    for (int r = 0; r < worldSize; r++) {
+        if (r == rank) {
+		    for (int i = 0; i < v->size(); i++) {
+		    	printf("%lli %lli %lli\n", v->data()[i].B, v->data()[i].B2, v->data()[i].i);
+		    }
+	    }
+        MPI_Barrier(MPI_COMM_WORLD);
+    }
+    MPI_Barrier(MPI_COMM_WORLD);
+    if (rank == 0)
+        cout<<endl<<endl;
+    MPI_Barrier(MPI_COMM_WORLD);
+}
 
 int64 roundToPowerOf2(int64 v) {
     int64 power = 1;

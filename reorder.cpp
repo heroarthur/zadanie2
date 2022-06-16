@@ -54,23 +54,25 @@ void prepareDataForReorderSent(vector<int64>* B,
 }
 
 
-void reorder_and_rebalance(vector<int64>** B, 
-                           vector<int64>** B_new, 
+void reorder_and_rebalance(vector<int64>* B, 
+                           vector<int64>* B_new, 
                            vector<int64>* SA,
+                           vector<int64>* SA_second_pointer,
                            HelpingVectorsSendingOperations* helpVectors,
                            int rank, 
                            int worldSize) {
 
-    do_sending_operation(*B, 
-                         *B_new, 
+    do_sending_operation(B, 
+                         B_new, 
                          SA,
+                         SA_second_pointer,
                          helpVectors,
-                         EMPTY_HELP_PARAM, 
+                         EMPTY_HELP_PARAM,
+                         true, 
                          rank, 
                          worldSize,
                          &prepareDataForReorderSent);
     
-    switchPointersInt64(B, B_new);
 }
 
 

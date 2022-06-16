@@ -89,6 +89,7 @@ void prepareDataForShiftSent(vector<int64>* B,
 void shift_by_h(vector<int64>** B, 
                 vector<int64>** B_new, 
                 vector<int64>* SA,
+                vector<int64>* SA_second_pointer,
                 HelpingVectorsSendingOperations* helpVectors,
                 int64 h,
                 int rank, 
@@ -97,11 +98,12 @@ void shift_by_h(vector<int64>** B,
     do_sending_operation(*B, 
                          *B_new, 
                          SA,
+                         SA_second_pointer,
                          helpVectors,
                          h, 
+                         false,
                          rank, 
                          worldSize,
                          &prepareDataForShiftSent);
 
-    switchPointersInt64(B, B_new);
 }
