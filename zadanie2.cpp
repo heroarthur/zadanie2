@@ -7,17 +7,7 @@
 #include <omp.h>
 #include <mpi.h>
 
-#include "sampleSortTuple2.cpp"
-#include "sampleSortTuple3.cpp"
-#include "rebucketing.cpp"
-#include "reorder.cpp"
-#include "shift.cpp"
-#include "rebalance.cpp"
-
-#include "generateTestData.cpp"
-
-#define int64 long long int
-#define root 0
+#include "SA.cpp"
 
 using namespace std;
 
@@ -58,27 +48,27 @@ int main(int argc, char** argv) {
 	srand (worldRank);
 
     int p2 = worldSize * worldSize;
-	int64 allDataSize = 100000;
+	int64 allDataSize = 100;
 	int64 singleNodeDataSize = allDataSize / worldSize;
 	
 	vector<int64> B_1; //B_1.reserve(1.2 * singleNodeDataSize);
 	vector<int64> B_2; //B_2.reserve(1.2 * singleNodeDataSize);
-	vector<int64> B_ISA; //B_ISA.reserve(1.2 * singleNodeDataSize);
-	vector<int64> *B_pointer, *B_second_pointer, *B_ISA_pointer;
+	// vector<int64> *B_pointer, *B_second_pointer, *B_ISA_pointer;
+	vector<int64> *B_ISA_pointer, *SA_pointer;
 
 
-	vector<Tuple2> *tuple2_pointer, *tuple2_second_pointer;
+	// vector<Tuple2> *tuple2_pointer, *tuple2_second_pointer;
 	vector<Tuple2> tuple2_Arr; tuple2_Arr.resize(singleNodeDataSize); //tuple2_Arr.reserve(1.2 * singleNodeDataSize);
 	vector<Tuple2> tuple2_second; //tuple2_second.reserve(1.2 * singleNodeDataSize);
-	tuple2_pointer = &tuple2_Arr;
-	tuple2_second_pointer = &tuple2_second;
+	// tuple2_pointer = &tuple2_Arr;
+	// tuple2_second_pointer = &tuple2_second;
 
 
-	vector<Tuple3> *tuple3_pointer, *tuple3_second_pointer;
+	// vector<Tuple3> *tuple3_pointer, *tuple3_second_pointer;
 	vector<Tuple3> tuple3; //tuple3.reserve(1.2 * singleNodeDataSize);
 	vector<Tuple3> tuple3_second; //tuple3_second.reserve(1.2 * singleNodeDataSize);
-	tuple3_pointer = &tuple3;
-	tuple3_second_pointer = &tuple3_second;
+	// tuple3_pointer = &tuple3;
+	// tuple3_second_pointer = &tuple3_second;
 
 	HelpingVectorsSendingOperations helpVectorsSendingOperations;
 	HelpingVectorsSampleSort2 helpVectorsSampleSort2;
@@ -89,115 +79,48 @@ int main(int argc, char** argv) {
 	initializeHelpingVectorsSampleSort3(&helpVectorsSampleSort3, worldSize);
 
 
-	B_pointer = &B_1;
-	B_second_pointer = &B_2;
-	B_ISA_pointer = &B_ISA;
+	// B_pointer = &B_1;
+	// B_second_pointer = &B_2;
+	// B_ISA_pointer = &B_ISA;
 
 	vector<int64> SA, SA_second;
-	vector<int64> *SA_pointer, *SA_second_pointer;
-	SA_pointer = &SA;
-	SA_second_pointer = &SA_second;
+	// vector<int64> *SA_pointer, *SA_second_pointer;
+	// SA_pointer = &SA;
+	// SA_second_pointer = &SA_second;
 
-	vector<int64>* ISA;
+	// vector<int64> *ISA;
 
 	bool allSingletones;
 
-	for (int i = 0; i < singleNodeDataSize; i++) {
-		fillCharArray(tuple2_Arr[i].B);
-		tuple2_Arr[i].i = i + worldRank * singleNodeDataSize;
- 	}
-
-	if (worldRank == root) {
-		tuple2_Arr[0].B[0] = '$';
-	}
-
-	
-
-	MPI_Barrier(MPI_COMM_WORLD);
-
-
-	sample_sort_MPI_tuple2(tuple2_pointer,
-					tuple2_second_pointer,
-					&helpVectorsSampleSort2,
-					worldRank, 
-					worldSize);
-	switchPointersTuple2(&tuple2_pointer, &tuple2_second_pointer);
-
-
-	rebucket_assign_h_group_rank(tuple2_pointer, 
-					B_pointer, 
-					worldRank,
-					worldSize);
-
-
-	
-
-	initialize_SA(SA_pointer, tuple2_pointer);
-
-	tuple2_pointer->clear();
-	tuple2_pointer->shrink_to_fit();
-	tuple2_second_pointer->clear();
-	tuple2_second_pointer->shrink_to_fit();
-
-
-	bool done = false;
-	for (int64 h = k; true; h*=2) {
-
-
-		reorder_and_rebalance(B_pointer, 
-							  B_second_pointer, 
-							  SA_pointer,
-							  SA_second_pointer,
-							  &helpVectorsSendingOperations,
-							  worldRank, 
-							  worldSize);
-		switchPointersInt64(&B_pointer, &B_second_pointer);
-
-		if (done) {
-			ISA = B_pointer;
-
-			break;
+	for (int i = 0; i < 100; i++) {
+		for (int i = 0; i < singleNodeDataSize; i++) {
+			fillCharArray(tuple2_Arr[i].B);
+			tuple2_Arr[i].i = i + worldRank * singleNodeDataSize;
 		}
 
-		shift_by_h(&B_pointer, 
-				   &B_second_pointer, 
-				   SA_pointer,
-				   NULL,
-				   &helpVectorsSendingOperations,
-				   h,
-				   worldRank, 
-				   worldSize);
+		if (worldRank == root) {
+			tuple2_Arr[0].B[0] = '$';
+		}
 
-		switchPointersInt64(&SA_pointer, &SA_second_pointer);
-
-		rebalanceArray(SA_pointer, 
-                       SA_second_pointer,
-                       &helpVectorsSendingOperations,
-                       worldRank, 
-                       worldSize);
-		switchPointersInt64(&SA_pointer, &SA_second_pointer);
-	
-		fillTuple3(B_pointer, 
-				   B_second_pointer, 
-				   SA_pointer, 
-				   tuple3_pointer);
-
-		sample_sort_MPI_tuple3(tuple3_pointer, 
-                               tuple3_second_pointer,
-                               &helpVectorsSampleSort3,
-                               worldRank, 
-                               worldSize);
-		switchPointersTuple3(&tuple3_pointer, &tuple3_second_pointer);
-
-		rebucket_assign_2h_group_rank(tuple3_pointer, 
-									  B_pointer,
-									  SA_pointer,
-									  &done,
-									  worldRank,
-									  worldSize);
+		
+		SA_algorithm(&B_1,
+					&B_2,
+					&SA,
+					&SA_second,
+					&tuple2_Arr, 
+					&tuple2_second, 
+					&tuple3, 
+					&tuple3_second,
+					&helpVectorsSendingOperations,
+					&helpVectorsSampleSort2,
+					&helpVectorsSampleSort3,
+					&B_ISA_pointer, 
+					worldRank,
+					worldSize);
+		
+		// print_MPI_vector(&SA, worldRank, worldSize);
 	}
 
-	MPI_Barrier(MPI_COMM_WORLD);
 
 
 
