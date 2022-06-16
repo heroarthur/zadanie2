@@ -79,7 +79,7 @@ void rebucket_assign_2h_group_rank(vector<Tuple3>* __restrict__ tuple,
         B->data()[0] = tuple3Equal(lastTuple, tuple->data()[0]) ? indexOffset-1 : indexOffset;
         SA->data()[0] = tuple->data()[0].i;
         for (int64 i = 1; i < size; i++) {
-            cout<<"B ("<<tuple->data()[i-1].B<<","<<tuple->data()[i-1].B2<<") B2 ("<<tuple->data()[i].B<<", "<<tuple->data()[i].B2<<")"<<endl;
+            // cout<<"B ("<<tuple->data()[i-1].B<<","<<tuple->data()[i-1].B2<<") B2 ("<<tuple->data()[i].B<<", "<<tuple->data()[i].B2<<")"<<endl;
 
             if (tuple3Equal(tuple->data()[i-1], tuple->data()[i])) {
                     *allSingletones = false;
@@ -103,7 +103,7 @@ void rebucket_assign_2h_group_rank(vector<Tuple3>* __restrict__ tuple,
         }
         else 
         {
-            cout<<"czy wszystkie singletone "<<*allSingletones<<endl;
+            // cout<<"czy wszystkie singletone "<<*allSingletones<<endl;
         }
     }
 

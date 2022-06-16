@@ -348,7 +348,7 @@ void do_sending_operation(vector<int64>* B,
             B_help->data()[index] = helpVectors->tmp_buff.data()[i].i2;
 
             if (update_SA) {
-                SA_second_pointer->data()[index] = index;
+                SA_second_pointer->data()[index] = offset + index;
             }
         }
 
@@ -368,9 +368,10 @@ void print_MPI_vector(vector<int64>* v, int rank, int worldSize) {
         MPI_Barrier(MPI_COMM_WORLD);
     }
     MPI_Barrier(MPI_COMM_WORLD);
-    if (rank == 0)
-        cout<<endl<<endl;
-    MPI_Barrier(MPI_COMM_WORLD);
+
+    if (rank == worldSize-1) {
+        cout<<endl;
+    }
 }
 
 
@@ -378,6 +379,7 @@ void print_MPI_tuple2(vector<Tuple2>* v, int rank, int worldSize) {
     MPI_Barrier(MPI_COMM_WORLD);
     for (int r = 0; r < worldSize; r++) {
         if (r == rank) {
+            cout<<"size "<<v->size()<<endl;
 		    for (int i = 0; i < v->size(); i++) {
 		    	printf("%s %lli\n", v->data()[i].B, v->data()[i].i);
 		    }
@@ -385,7 +387,7 @@ void print_MPI_tuple2(vector<Tuple2>* v, int rank, int worldSize) {
         MPI_Barrier(MPI_COMM_WORLD);
     }
     MPI_Barrier(MPI_COMM_WORLD);
-    if (rank == 0)
+    if (rank == worldSize-1)
         cout<<endl<<endl;
     MPI_Barrier(MPI_COMM_WORLD);
 }
@@ -402,7 +404,7 @@ void print_MPI_tuple3(vector<Tuple3>* v, int rank, int worldSize) {
         MPI_Barrier(MPI_COMM_WORLD);
     }
     MPI_Barrier(MPI_COMM_WORLD);
-    if (rank == 0)
+    if (rank == worldSize-1)
         cout<<endl<<endl;
     MPI_Barrier(MPI_COMM_WORLD);
 }
@@ -416,12 +418,7 @@ int64 roundToPowerOf2(int64 v) {
 }
 
 
-void switchPointersTuple2(vector<Tuple2>** A1, vector<Tuple2>** A2) {
-    vector<Tuple2> *A_tmp_pointer;
-    A_tmp_pointer = *A2;
-	*A2 = *A1;
-	*A1 = A_tmp_pointer;
-}
+
 
 
 void switchPointersInt64(vector<int64>** A1, vector<int64>** A2) {
@@ -429,8 +426,22 @@ void switchPointersInt64(vector<int64>** A1, vector<int64>** A2) {
     A_tmp_pointer = *A2;
 	*A2 = *A1;
 	*A1 = A_tmp_pointer;
+    MPI_Barrier(MPI_COMM_WORLD);
 }
 
+void switchPointersTuple2(vector<Tuple2>** A1, vector<Tuple2>** A2) {
+    vector<Tuple2> *A_tmp_pointer;
+    A_tmp_pointer = *A2;
+	*A2 = *A1;
+	*A1 = A_tmp_pointer;
+}
+
+void switchPointersTuple3(vector<Tuple3>** A1, vector<Tuple3>** A2) {
+    vector<Tuple3> *A_tmp_pointer;
+    A_tmp_pointer = *A2;
+	*A2 = *A1;
+	*A1 = A_tmp_pointer;
+}
 
 void initializeHelpingVectorsSendingOperations(HelpingVectorsSendingOperations* vectors, int64 nodeDataSize, int worldSize) {
     vectors->partialArr.reserve(worldSize * wyslijRaz);
