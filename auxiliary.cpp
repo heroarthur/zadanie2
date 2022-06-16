@@ -444,17 +444,17 @@ void switchPointersTuple3(vector<Tuple3>** A1, vector<Tuple3>** A2) {
 }
 
 void initializeHelpingVectorsSendingOperations(HelpingVectorsSendingOperations* vectors, int64 nodeDataSize, int worldSize) {
-    vectors->partialArr.reserve(worldSize * wyslijRaz);
+    // vectors->partialArr.reserve(worldSize * wyslijRaz);
     vectors->partialPivotsPosition.resize(worldSize);
-    vectors->scattervPositions.reserve(worldSize);
-    vectors->displacement.reserve(worldSize);
+    // vectors->scattervPositions.reserve(worldSize);
+    // vectors->displacement.reserve(worldSize);
     vectors->arrivingNumber.resize(worldSize);
     vectors->arrivingDisplacement.resize(worldSize);
-    vectors->tmp_buff.reserve(worldSize * wyslijRaz);
+    // vectors->tmp_buff.reserve(worldSize * wyslijRaz);
     vectors->dataForPartitions.resize(worldSize);
 
     for (int i = 0; i < worldSize; i++) {
-		vectors->dataForPartitions.data()[i].reserve(nodeDataSize / max(1, (worldSize-2)));
+		// vectors->dataForPartitions.data()[i].reserve(nodeDataSize / max(1, (worldSize-2)));
 	}
 }
 
@@ -464,32 +464,32 @@ void initializeHelpingVectorsSampleSort2(HelpingVectorsSampleSort2* vectors, int
     vectors->pivotsPositions.resize(worldSize-1);   
     vectors->partialPivotsPosition.resize(worldSize);
     vectors->scattervPositions.resize(worldSize);
-    vectors->displacement.reserve(worldSize);
+    // vectors->displacement.reserve(worldSize);
     vectors->arrivingNumber.resize(worldSize);
     vectors->arrivingDisplacement.resize(worldSize);
-    vectors->allArrivingNumbers.reserve(worldSize * 2 * vectorMemoryAllocationFactor);
-    vectors->allArrivingDisplacement.reserve(worldSize * 2 * vectorMemoryAllocationFactor);
-    vectors->addPadding.reserve(worldSize * vectorMemoryAllocationFactor);
-    vectors->tmp_buff.reserve(worldSize * wyslijRaz);
-    vectors->sample.reserve(worldSize);
+    // vectors->allArrivingNumbers.reserve(worldSize * 2 * vectorMemoryAllocationFactor);
+    // vectors->allArrivingDisplacement.reserve(worldSize * 2 * vectorMemoryAllocationFactor);
+    // vectors->addPadding.reserve(worldSize * vectorMemoryAllocationFactor);
+    // vectors->tmp_buff.reserve(worldSize * wyslijRaz);
+    vectors->sample.resize(worldSize);
     vectors->rootSampleRecv.resize(worldSize * worldSize);
     vectors->broadcastSample.resize(worldSize-1);
 }
 
 
 void initializeHelpingVectorsSampleSort3(HelpingVectorsSampleSort3* vectors, int worldSize) {
-    vectors->partialArr.reserve(worldSize * wyslijRaz);
+    // vectors->partialArr.reserve(worldSize * wyslijRaz);
     vectors->pivotsPositions.resize(worldSize-1);   
     vectors->partialPivotsPosition.resize(worldSize);
     vectors->scattervPositions.resize(worldSize);
-    vectors->displacement.reserve(worldSize);
+    // vectors->displacement.reserve(worldSize);
     vectors->arrivingNumber.resize(worldSize);
     vectors->arrivingDisplacement.resize(worldSize);
-    vectors->allArrivingNumbers.reserve(worldSize * 2 * vectorMemoryAllocationFactor);
-    vectors->allArrivingDisplacement.reserve(worldSize * 2 * vectorMemoryAllocationFactor);
-    vectors->addPadding.reserve(worldSize * vectorMemoryAllocationFactor);
-    vectors->tmp_buff.reserve(worldSize * wyslijRaz);
-    vectors->sample.reserve(worldSize);
+    // vectors->allArrivingNumbers.reserve(worldSize * 2 * vectorMemoryAllocationFactor);
+    // vectors->allArrivingDisplacement.reserve(worldSize * 2 * vectorMemoryAllocationFactor);
+    // vectors->addPadding.reserve(worldSize * vectorMemoryAllocationFactor);
+    // vectors->tmp_buff.reserve(worldSize * wyslijRaz);
+    vectors->sample.resize(worldSize);
     vectors->rootSampleRecv.resize(worldSize * worldSize);
     vectors->broadcastSample.resize(worldSize-1);
 }

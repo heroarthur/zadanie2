@@ -58,25 +58,25 @@ int main(int argc, char** argv) {
 	srand (worldRank);
 
     int p2 = worldSize * worldSize;
-	int64 allDataSize = 12;
-	int64 singleNodeDataSize = 3;//allDataSize / worldSize;
+	int64 allDataSize = 1000000;
+	int64 singleNodeDataSize = allDataSize / worldSize;
 	
-	vector<int64> B_1; B_1.reserve(1.2 * singleNodeDataSize);
-	vector<int64> B_2; B_2.reserve(1.2 * singleNodeDataSize);
-	vector<int64> B_ISA; B_ISA.reserve(1.2 * singleNodeDataSize);
+	vector<int64> B_1; //B_1.reserve(1.2 * singleNodeDataSize);
+	vector<int64> B_2; //B_2.reserve(1.2 * singleNodeDataSize);
+	vector<int64> B_ISA; //B_ISA.reserve(1.2 * singleNodeDataSize);
 	vector<int64> *B_pointer, *B_second_pointer, *B_ISA_pointer;
 
 
 	vector<Tuple2> *tuple2_pointer, *tuple2_second_pointer;
 	vector<Tuple2> tuple2_Arr; tuple2_Arr.reserve(1.2 * singleNodeDataSize); tuple2_Arr.resize(singleNodeDataSize);
-	vector<Tuple2> tuple2_second; tuple2_second.reserve(1.2 * singleNodeDataSize);
+	vector<Tuple2> tuple2_second; //tuple2_second.reserve(1.2 * singleNodeDataSize);
 	tuple2_pointer = &tuple2_Arr;
 	tuple2_second_pointer = &tuple2_second;
 
 
 	vector<Tuple3> *tuple3_pointer, *tuple3_second_pointer;
-	vector<Tuple3> tuple3; tuple3.reserve(1.2 * singleNodeDataSize);
-	vector<Tuple3> tuple3_second; tuple3_second.reserve(1.2 * singleNodeDataSize);
+	vector<Tuple3> tuple3; //tuple3.reserve(1.2 * singleNodeDataSize);
+	vector<Tuple3> tuple3_second; //tuple3_second.reserve(1.2 * singleNodeDataSize);
 	tuple3_pointer = &tuple3;
 	tuple3_second_pointer = &tuple3_second;
 
@@ -102,75 +102,16 @@ int main(int argc, char** argv) {
 
 	bool allSingletones;
 
-	if (worldRank == 0) {
-		tuple2_Arr[0].B[0] = 'm';
-		tuple2_Arr[1].B[0] = 'i';
-		tuple2_Arr[2].B[0] = 's';
+	for (int i = 0; i < singleNodeDataSize; i++) {
+		fillCharArray(tuple2_Arr[i].B);
+		tuple2_Arr[i].i = i + worldRank * singleNodeDataSize;
+ 	}
 
-
-		tuple2_Arr[0].B[1] = '\0';
-		tuple2_Arr[1].B[1] = '\0';
-		tuple2_Arr[2].B[1] = '\0';
-
-
-		tuple2_Arr[0].i = 0;
-		tuple2_Arr[1].i = 1;
-		tuple2_Arr[2].i = 2;
-
-
-		// nodeDataSize = 6;
-	}
-    
-	if (worldRank == 1) {
-		tuple2_Arr[0].B[0] = 's';
-		tuple2_Arr[1].B[0] = 'i';
-		tuple2_Arr[2].B[0] = 's';
-
-		tuple2_Arr[0].B[1] = '\0';
-		tuple2_Arr[1].B[1] = '\0';
-		tuple2_Arr[2].B[1] = '\0';
-
-
-		tuple2_Arr[0].i = 3;
-		tuple2_Arr[1].i = 4;
-		tuple2_Arr[2].i = 5;
-		// nodeDataSize = 6;
+	if (worldRank == root) {
+		tuple2_Arr[0].B[0] = '$';
 	}
 
-	if (worldRank == 2) {
-
-		tuple2_Arr[0].B[0] = 's';
-		tuple2_Arr[1].B[0] = 'i';
-		tuple2_Arr[2].B[0] = 'p';
-
-
-		tuple2_Arr[0].B[1] = '\0';
-		tuple2_Arr[1].B[1] = '\0';
-		tuple2_Arr[2].B[1] = '\0';
-
-
-		tuple2_Arr[0].i = 6;
-		tuple2_Arr[1].i = 7;
-		tuple2_Arr[2].i = 8;
-
-	}
-
-
-	if (worldRank == 3) {
-
-		tuple2_Arr[0].B[0] = 'p';
-		tuple2_Arr[1].B[0] = 'i';
-		tuple2_Arr[2].B[0] = '$';
-
-		tuple2_Arr[0].B[1] = '\0';
-		tuple2_Arr[1].B[1] = '\0';
-		tuple2_Arr[2].B[1] = '\0';
-
-		tuple2_Arr[0].i = 9;
-		tuple2_Arr[1].i = 10;
-		tuple2_Arr[2].i = 11;
-	}
-
+	
 
 
 
@@ -232,7 +173,7 @@ int main(int argc, char** argv) {
 
 		if (done) {
 			ISA = B_pointer;
-			print_MPI_vector(SA_pointer, worldRank, worldSize);
+			// print_MPI_vector(SA_pointer, worldRank, worldSize);
 
 			break;
 		}
