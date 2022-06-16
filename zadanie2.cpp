@@ -68,7 +68,7 @@ int main(int argc, char** argv) {
 
 
 	vector<Tuple2> *tuple2_pointer, *tuple2_second_pointer;
-	vector<Tuple2> tuple2_Arr; tuple2_Arr.reserve(1.2 * singleNodeDataSize); tuple2_Arr.resize(singleNodeDataSize);
+	vector<Tuple2> tuple2_Arr; tuple2_Arr.resize(singleNodeDataSize); //tuple2_Arr.reserve(1.2 * singleNodeDataSize);
 	vector<Tuple2> tuple2_second; //tuple2_second.reserve(1.2 * singleNodeDataSize);
 	tuple2_pointer = &tuple2_Arr;
 	tuple2_second_pointer = &tuple2_second;
@@ -149,6 +149,10 @@ int main(int argc, char** argv) {
 
 	initialize_SA(SA_pointer, tuple2_pointer);
 
+	tuple2_pointer->clear();
+	tuple2_pointer->shrink_to_fit();
+	tuple2_second_pointer->clear();
+	tuple2_second_pointer->shrink_to_fit();
 	// print_MPI_vector(SA_pointer, worldRank, worldSize);
 
 
