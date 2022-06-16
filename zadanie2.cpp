@@ -59,7 +59,7 @@ int main(int argc, char** argv) {
 
     int p2 = worldSize * worldSize;
 	int64 allDataSize = 12;
-	int64 singleNodeDataSize = 6;//allDataSize / worldSize;
+	int64 singleNodeDataSize = 3;//allDataSize / worldSize;
 	
 	vector<int64> B_1; B_1.reserve(1.2 * singleNodeDataSize);
 	vector<int64> B_2; B_2.reserve(1.2 * singleNodeDataSize);
@@ -106,23 +106,17 @@ int main(int argc, char** argv) {
 		tuple2_Arr[0].B[0] = 'm';
 		tuple2_Arr[1].B[0] = 'i';
 		tuple2_Arr[2].B[0] = 's';
-		tuple2_Arr[3].B[0] = 's';
-		tuple2_Arr[4].B[0] = 'i';
-		tuple2_Arr[5].B[0] = 's';
+
 
 		tuple2_Arr[0].B[1] = '\0';
 		tuple2_Arr[1].B[1] = '\0';
 		tuple2_Arr[2].B[1] = '\0';
-		tuple2_Arr[3].B[1] = '\0';
-		tuple2_Arr[4].B[1] = '\0';
-		tuple2_Arr[5].B[1] = '\0';
+
 
 		tuple2_Arr[0].i = 0;
 		tuple2_Arr[1].i = 1;
 		tuple2_Arr[2].i = 2;
-		tuple2_Arr[3].i = 3;
-		tuple2_Arr[4].i = 4;
-		tuple2_Arr[5].i = 5;
+
 
 		// nodeDataSize = 6;
 	}
@@ -130,32 +124,52 @@ int main(int argc, char** argv) {
 	if (worldRank == 1) {
 		tuple2_Arr[0].B[0] = 's';
 		tuple2_Arr[1].B[0] = 'i';
-		tuple2_Arr[2].B[0] = 'p';
-		tuple2_Arr[3].B[0] = 'p';
-		tuple2_Arr[4].B[0] = 'i';
-		tuple2_Arr[5].B[0] = '$';
+		tuple2_Arr[2].B[0] = 's';
 
 		tuple2_Arr[0].B[1] = '\0';
 		tuple2_Arr[1].B[1] = '\0';
 		tuple2_Arr[2].B[1] = '\0';
-		tuple2_Arr[3].B[1] = '\0';
-		tuple2_Arr[4].B[1] = '\0';
-		tuple2_Arr[5].B[1] = '\0';
+
+
+		tuple2_Arr[0].i = 3;
+		tuple2_Arr[1].i = 4;
+		tuple2_Arr[2].i = 5;
+		// nodeDataSize = 6;
+	}
+
+	if (worldRank == 2) {
+
+		tuple2_Arr[0].B[0] = 's';
+		tuple2_Arr[1].B[0] = 'i';
+		tuple2_Arr[2].B[0] = 'p';
+
+
+		tuple2_Arr[0].B[1] = '\0';
+		tuple2_Arr[1].B[1] = '\0';
+		tuple2_Arr[2].B[1] = '\0';
+
 
 		tuple2_Arr[0].i = 6;
 		tuple2_Arr[1].i = 7;
 		tuple2_Arr[2].i = 8;
-		tuple2_Arr[3].i = 9;
-		tuple2_Arr[4].i = 10;
-		tuple2_Arr[5].i = 11;
 
-		// nodeDataSize = 6;
 	}
 
 
+	if (worldRank == 3) {
 
+		tuple2_Arr[0].B[0] = 'p';
+		tuple2_Arr[1].B[0] = 'i';
+		tuple2_Arr[2].B[0] = '$';
 
+		tuple2_Arr[0].B[1] = '\0';
+		tuple2_Arr[1].B[1] = '\0';
+		tuple2_Arr[2].B[1] = '\0';
 
+		tuple2_Arr[0].i = 9;
+		tuple2_Arr[1].i = 10;
+		tuple2_Arr[2].i = 11;
+	}
 
 
 
