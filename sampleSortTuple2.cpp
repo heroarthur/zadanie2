@@ -12,10 +12,7 @@
 #include <omp.h>
 #include <mpi.h>
 
-#ifndef   sortsOpenMP
-#define   sortsOpenMP
-    #include "sortsOpenMP.cpp"
-#endif
+
 
 #ifndef   auxiliary
 #define   auxiliary

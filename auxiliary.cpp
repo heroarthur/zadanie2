@@ -11,10 +11,7 @@
 #include <omp.h>
 #include <mpi.h>
 
-#ifndef   sortsOpenMP
-#define   sortsOpenMP
-    #include "sortsOpenMP.cpp"
-#endif
+
 
 
 #include <bits/stdc++.h>
@@ -29,6 +26,8 @@
  //(2147483647 / 10)
 #define int64 long long int
 #define root 0
+#define K 13
+#define ENTER cout<<endl<<endl
 
 using namespace std;
 
@@ -359,6 +358,13 @@ void do_sending_operation(vector<int64>* B,
 }
 
 
+void print_vector(vector<int64>* v) { 
+    for (int i = 0; i < v->size(); i++) {
+        printf("%lld ", v->data()[i]);
+    }
+    cout<<endl;
+}
+
 void print_MPI_vector(vector<int64>* v, int rank, int worldSize) { 
     MPI_Barrier(MPI_COMM_WORLD);
     for (int r = 0; r < worldSize; r++) {
@@ -494,4 +500,74 @@ void initializeHelpingVectorsSampleSort3(HelpingVectorsSampleSort3* vectors, int
     vectors->sample.resize(worldSize);
     vectors->rootSampleRecv.resize(worldSize * worldSize);
     vectors->broadcastSample.resize(worldSize-1);
+}
+
+
+
+
+
+
+void local_sort_openMP_tuple3(vector<Tuple3>* A) {
+    
+	int blocksNumber = 0;
+	// #pragma omp parallel
+	{
+		blocksNumber = omp_get_num_threads();
+		int lastElemensSize = A->size() % blocksNumber;
+		int blockId = omp_get_thread_num();
+		int blockStart = get_block_start(blockId, blocksNumber, A->size());
+		int blockEnd = get_block_start(blockId+1, blocksNumber, A->size()) + (blockId == blocksNumber-1 ? lastElemensSize : 0);
+		std::sort(A->begin() + blockStart, A->begin() + blockEnd, cmp_tuple3());
+	}
+
+	int merges = blocksNumber / 2;
+	for (int mergeStep = 1; mergeStep < blocksNumber; mergeStep *= 2 )
+	{
+		int mergesInStep = (blocksNumber / (2 * mergeStep));
+
+		// #pragma omp parallel for
+		for (int i = 0; i < mergesInStep; i++) {
+			int64 halfMergeLen = (A->size() / blocksNumber) * mergeStep;
+			int64 mergeStart = i * 2 * halfMergeLen;
+			int64 mergeMid = mergeStart + halfMergeLen;
+			int64 mergeEnd = i == mergesInStep-1 ? A->size() : mergeStart + 2 * halfMergeLen;
+			mergeEnd = minInt64(mergeEnd, A->size());
+			inplace_merge(A->begin() + mergeStart, A->begin() + mergeMid, A->begin() + mergeEnd, cmp_tuple3());
+		}
+	}
+}
+
+
+
+
+void local_sort_openMP_tuple2(vector<Tuple2>* A) {
+
+	int blocksNumber = 0;
+	// #pragma omp parallel
+	{
+		blocksNumber = omp_get_num_threads();
+		int lastElemensSize = A->size() % blocksNumber;
+		int blockId = omp_get_thread_num();
+		int blockStart = get_block_start(blockId, blocksNumber, A->size());
+		int blockEnd = get_block_start(blockId+1, blocksNumber, A->size()) + (blockId == blocksNumber-1 ? lastElemensSize : 0);
+		std::sort(A->begin() + blockStart, A->begin() + blockEnd, cmp_tuple2());
+	}
+	// std::sort(A->begin(), A->end(), cmp_tuple2());
+
+	int merges = blocksNumber / 2;
+	for (int mergeStep = 1; mergeStep < blocksNumber; mergeStep *= 2 )
+	{
+		int mergesInStep = (blocksNumber / (2 * mergeStep));
+
+		// todo dodaj private i zobacz czy szybciej
+		// #pragma omp parallel for
+		for (int i = 0; i < mergesInStep; i++) {
+			int64 halfMergeLen = (A->size() / blocksNumber) * mergeStep;
+			int64 mergeStart = i * 2 * halfMergeLen;
+			int64 mergeMid = mergeStart + halfMergeLen;
+			int64 mergeEnd = i == mergesInStep-1 ? A->size() : mergeStart + 2 * halfMergeLen;
+			mergeEnd = minInt64(mergeEnd, A->size());
+			inplace_merge(A->begin() + mergeStart, A->begin() + mergeMid, A->begin() + mergeEnd, cmp_tuple2());
+		}
+	}
 }

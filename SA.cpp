@@ -16,6 +16,10 @@
 
 #include "generateTestData.cpp"
 
+#ifndef   auxiliary
+#define   auxiliary
+    #include "auxiliary.cpp"
+#endif
 
 
 using namespace std;

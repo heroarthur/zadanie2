@@ -10,17 +10,13 @@
 #include <omp.h>
 #include <mpi.h>
 
-#ifndef   sortsOpenMP
-#define   sortsOpenMP
-    #include "sortsOpenMP.cpp"
-#endif
 
 #ifndef   auxiliary
 #define   auxiliary
     #include "auxiliary.cpp"
 #endif
 
-#include<bits/stdc++.h>
+#include <bits/stdc++.h>
 
 #define root 0
 
