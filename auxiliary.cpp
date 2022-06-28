@@ -19,14 +19,14 @@
 #define root 0
 #define wyslijRaz (2147483647 / 10)
 #define int64 long long int
-#define charArrayLen 24
+#define charArrayLen 13
 #define k charArrayLen
 #define EMPTY_HELP_PARAM 0
 #define vectorMemoryAllocationFactor 10000
  //(2147483647 / 10)
 #define int64 long long int
 #define root 0
-#define K 13
+#define K charArrayLen
 #define ENTER cout<<endl<<endl
 
 using namespace std;
@@ -271,7 +271,7 @@ void do_sending_operation(vector<int64>* B,
 
     MPI_Allreduce(&nodeSize, &dataSize, 1, MPI_LONG_LONG_INT, MPI_SUM, MPI_COMM_WORLD);
 
-    int64 newNodeSize = dataSize / worldSize;
+    int64 newNodeSize = ceil(dataSize / (double) worldSize);
     int64 lastNodeSize = dataSize - (worldSize-1) * newNodeSize;
     
     if (rank < worldSize-1) {
@@ -285,7 +285,7 @@ void do_sending_operation(vector<int64>* B,
         B_help->resize(lastNodeSize);
 
         if (update_SA) {
-            SA_second_pointer->resize(newNodeSize);
+            SA_second_pointer->resize(lastNodeSize);
         }
     }
 
@@ -451,7 +451,7 @@ void switchPointersTuple3(vector<Tuple3>** A1, vector<Tuple3>** A2) {
 	*A1 = A_tmp_pointer;
 }
 
-void initializeHelpingVectorsSendingOperations(HelpingVectorsSendingOperations* vectors, int64 nodeDataSize, int worldSize) {
+void initializeHelpingVectorsSendingOperations(HelpingVectorsSendingOperations* vectors, int worldSize) {
     // vectors->partialArr.reserve(worldSize * wyslijRaz);
     vectors->partialPivotsPosition.resize(worldSize);
     // vectors->scattervPositions.reserve(worldSize);
@@ -460,10 +460,6 @@ void initializeHelpingVectorsSendingOperations(HelpingVectorsSendingOperations* 
     vectors->arrivingDisplacement.resize(worldSize);
     // vectors->tmp_buff.reserve(worldSize * wyslijRaz);
     vectors->dataForPartitions.resize(worldSize);
-
-    for (int i = 0; i < worldSize; i++) {
-		// vectors->dataForPartitions.data()[i].reserve(nodeDataSize / max(1, (worldSize-2)));
-	}
 }
 
 

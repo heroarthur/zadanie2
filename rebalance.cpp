@@ -63,13 +63,14 @@ void rebalanceArray(vector<int64>* A,
 
     MPI_Allreduce(&nodeSize, &dataSize, 1, MPI_LONG_LONG_INT, MPI_SUM, MPI_COMM_WORLD);
 
-    int64 newNodeSize = dataSize / worldSize;
+    int64 newNodeSize = ceil(dataSize / (double) worldSize);
     int64 lastNodeSize = dataSize - (worldSize-1) * newNodeSize;
     
     if (rank < worldSize-1) {
         A_help->resize(newNodeSize);
     }
     else {
+        // cout<<"last node sa size "<<lastNodeSize<<endl;
         A_help->resize(lastNodeSize);
     }
 

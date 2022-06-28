@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <stdlib.h>
 #include <time.h>
+#include <fstream> 
 
 #ifndef   auxiliary
 #define   auxiliary
@@ -19,42 +20,50 @@ int main(int argc, char** argv) {
 
 	srand(1);
 
-	int64 allDataSize = 100;
-	int64 singleNodeDataSize = allDataSize;
+    // Read from the text file
+    string fileName(argv[1]);
+    ifstream MyReadFile(fileName);
+    string genomeArray;
+    getline(MyReadFile, genomeArray);
+    MyReadFile.close();
+
+    vector<char> inputGenome;
+    inputGenome.insert(inputGenome.begin(), genomeArray.c_str(), genomeArray.c_str() + genomeArray.size());
+    inputGenome.push_back('$');
+
+    int64 dataSize = inputGenome.size();
 	
 	vector<int64> B_1;
 	vector<int64> B_2;
 
-	vector<Tuple2> tuple2_Arr; tuple2_Arr.resize(singleNodeDataSize); 
+	vector<Tuple2> tuple2_Arr; tuple2_Arr.resize(dataSize); 
 	vector<Tuple2> tuple2_second; 
 
 	vector<Tuple3> tuple3; 
 	vector<Tuple3> tuple3_second; 
 
-
-
-
-
 	vector<int64> SA, SA_second;
 
 	bool allSingletones;
 
-    for (int i = 0; i < singleNodeDataSize; i++) {
-        fillCharArray(tuple2_Arr[i].B);
+    for (int i = 0; i < dataSize; i++) {
+        memset(tuple2_Arr[i].B, 0, K);
+        copy(inputGenome.begin() + i, inputGenome.begin() + i + minInt64(K, dataSize), tuple2_Arr[i].B);
         tuple2_Arr[i].i = i;
     }
-    tuple2_Arr[singleNodeDataSize-1].B[charArrayLen-1] = '$';
+
+
+
     
     std::sort(tuple2_Arr.begin(), tuple2_Arr.end(), cmp_tuple2());
 
-
-    B_1.resize(singleNodeDataSize);
+    B_1.resize(dataSize);
     B_1.data()[0] = 0;
 
-    B_2.resize(singleNodeDataSize);
+    B_2.resize(dataSize);
     tuple3.resize(B_1.size());
 
-    for (int64 i = 1; i < singleNodeDataSize; i++) {
+    for (int64 i = 1; i < dataSize; i++) {
         if (tuple2Equal(tuple2_Arr.data()[i-1], tuple2_Arr.data()[i])) {
                 B_1.data()[i] = B_1.data()[i-1];
             }
@@ -78,7 +87,7 @@ int main(int argc, char** argv) {
             break;
         }
 
-        for (int i = 0; i + h < singleNodeDataSize; i++) {
+        for (int i = 0; i + h < dataSize; i++) {
             B_2[i] = B_1[i+h];
         }
 
@@ -93,7 +102,7 @@ int main(int argc, char** argv) {
         done = true;
 		B_1.data()[0] = 0;
         SA.data()[0] = tuple3.data()[0].i;
-        for (int64 i = 1; i < singleNodeDataSize; i++) {
+        for (int64 i = 1; i < dataSize; i++) {
             if (tuple3Equal(tuple3.data()[i-1], tuple3.data()[i])) {
                     done = false;
                     B_1.data()[i] = B_1.data()[i-1];
