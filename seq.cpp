@@ -48,7 +48,7 @@ int main(int argc, char** argv) {
 
     for (int i = 0; i < dataSize; i++) {
         memset(tuple2_Arr[i].B, 0, K);
-        copy(inputGenome.begin() + i, inputGenome.begin() + i + minInt64(K, dataSize), tuple2_Arr[i].B);
+        copy(inputGenome.begin() + i, inputGenome.begin() + i + minInt64(k, dataSize), tuple2_Arr[i].B);
         tuple2_Arr[i].i = i;
     }
 
@@ -72,22 +72,38 @@ int main(int argc, char** argv) {
         }
     }
 
+    SA.resize(tuple2_Arr.size());
+    SA_second.resize(tuple2_Arr.size());
+
+    for (int i = 0; i < tuple2_Arr.size(); i++) {
+        SA.data()[i] = tuple2_Arr.data()[i].i;
+    }
+
+
     bool done = false;
 	for (int64 h = k; true; h*=2) {
 
-        SA.resize(tuple2_Arr.size());
-        for (int i = 0; i < tuple2_Arr.size(); i++) {
-            SA.data()[i] = tuple2_Arr.data()[i].i;
+
+        for (int i = 0; i < dataSize; i++) {
+            B_2[SA[i]] = B_1[i];
+            SA_second[SA[i]] = SA[i];
         }
-
-
-        std::fill(B_2.begin(), B_2.end(), -1);
+        for (int i = 0; i < dataSize; i++) {
+            B_1[i] = B_2[i];
+            // SA[i] = SA_second[i];
+        }
 
         if (done) {
             break;
         }
 
-        for (int i = 0; i + h < dataSize; i++) {
+        for (int i = 0; i < dataSize; i++) {
+            SA[i] = SA_second[i];
+        }
+
+        std::fill(B_2.begin(), B_2.end(), 0);
+
+        for (int64 i = 0; i + h < dataSize; i++) {
             B_2[i] = B_1[i+h];
         }
 
@@ -102,6 +118,7 @@ int main(int argc, char** argv) {
         done = true;
 		B_1.data()[0] = 0;
         SA.data()[0] = tuple3.data()[0].i;
+
         for (int64 i = 1; i < dataSize; i++) {
             if (tuple3Equal(tuple3.data()[i-1], tuple3.data()[i])) {
                     done = false;

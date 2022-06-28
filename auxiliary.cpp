@@ -19,7 +19,7 @@
 #define root 0
 #define wyslijRaz (2147483647 / 10)
 #define int64 long long int
-#define charArrayLen 13
+#define charArrayLen 1
 #define k charArrayLen
 #define EMPTY_HELP_PARAM 0
 #define vectorMemoryAllocationFactor 10000
@@ -359,9 +359,10 @@ void do_sending_operation(vector<int64>* B,
 
 
 void print_vector(vector<int64>* v) { 
-    for (int i = 0; i < v->size(); i++) {
+    for (int i = 0; i < v->size()-1; i++) {
         printf("%lld ", v->data()[i]);
     }
+    printf("%lld", v->data()[v->size()-1]);
     cout<<endl;
 }
 
