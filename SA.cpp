@@ -42,6 +42,7 @@ void SA_algorithm(vector<int64> *B_pointer,
                   int worldSize)
     {
 	
+	// print_MPI_tuple2(tuple2_pointer, worldRank, worldSize);
 
     MPI_Barrier(MPI_COMM_WORLD);
 	sample_sort_MPI_tuple2(tuple2_pointer,
@@ -51,7 +52,9 @@ void SA_algorithm(vector<int64> *B_pointer,
 					worldSize);
 	switchPointersTuple2(&tuple2_pointer, &tuple2_second_pointer);
 
+	// print_MPI_tuple2(tuple2_pointer, worldRank, worldSize);
 
+	// print_MPI_tuple2(tuple2_pointer, worldRank, worldSize);
 
 	rebucket_assign_h_group_rank(tuple2_pointer, 
 					B_pointer, 
@@ -59,25 +62,15 @@ void SA_algorithm(vector<int64> *B_pointer,
 					worldSize);
 	initialize_SA(SA_pointer, tuple2_pointer);
 
-	// for (int i = 0; i < tuple2_pointer->size(); i++) {
-	// 	cout<<tuple2_pointer->data()[i].B<<" "<<endl;
-	// }
-	// if (worldRank == 0) {
-	// 	cout<<endl<<endl;
-	// }
-
-	// print_MPI_tuple2(tuple2_pointer, worldRank, worldSize);
-	// print_MPI_vector(B_pointer, worldRank, worldSize);
-
 	bool done = false;
 	for (int64 h = k; true; h*=2) {
 
-		// print_MPI_vector(B_pointer, worldRank, worldSize);
+
 		// print_MPI_vector(SA_pointer, worldRank, worldSize);
 
 		// if (worldRank == 0) {
-		// 	cout<<endl;
-		// } 
+		// 	cout<<h<<endl;
+		// }
 
 		MPI_Barrier(MPI_COMM_WORLD);
 
@@ -91,12 +84,13 @@ void SA_algorithm(vector<int64> *B_pointer,
 							  worldSize);
 		switchPointersInt64(&B_pointer, &B_second_pointer);
 
-		// print_MPI_vector(B_pointer, worldRank, worldSize);
-
 		if (done) {
 			*B_ISA_pointer = B_pointer;
 			break;
 		}
+
+		// print_MPI_vector(SA_second_pointer, worldRank, worldSize);
+
 
 		shift_by_h(&B_pointer, 
 				   &B_second_pointer, 
@@ -109,7 +103,8 @@ void SA_algorithm(vector<int64> *B_pointer,
 
 		switchPointersInt64(&SA_pointer, &SA_second_pointer);
 
-		// print_MPI_vector(B_second_pointer, worldRank, worldSize);
+		// print_MPI_vector(SA_pointer, worldRank, worldSize);
+
 
 		rebalanceArray(SA_pointer, 
                        SA_second_pointer,
@@ -117,22 +112,11 @@ void SA_algorithm(vector<int64> *B_pointer,
                        worldRank, 
                        worldSize);
 		switchPointersInt64(&SA_pointer, &SA_second_pointer);
-	
-		
-		// cout<<"po rebalance"<<endl;
-		// print_MPI_vector(SA_pointer, worldRank, worldSize);
 		
 		fillTuple3(B_pointer, 
 				   B_second_pointer, 
 				   SA_pointer, 
 				   tuple3_pointer);
-
-
-		// print_MPI_vector(B_pointer, worldRank, worldSize);
-		// print_MPI_vector(B_second_pointer, worldRank, worldSize);
-
-
-
 
 
 		sample_sort_MPI_tuple3(tuple3_pointer, 
@@ -143,18 +127,13 @@ void SA_algorithm(vector<int64> *B_pointer,
 		switchPointersTuple3(&tuple3_pointer, &tuple3_second_pointer);
 
 
-		// cout<<"size tuple 3 "<<tuple3_pointer->size()<<endl;
-		// print_MPI_vector(SA_pointer, worldRank, worldSize);
-
 		rebucket_assign_2h_group_rank(tuple3_pointer, 
 									  B_pointer,
 									  SA_pointer,
 									  &done,
 									  worldRank,
 									  worldSize);
-
-
-		// break;
+									
 	}
 
 	MPI_Barrier(MPI_COMM_WORLD);

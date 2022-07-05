@@ -123,14 +123,15 @@ int main(int argc, char** argv) {
 	Tuple2 lastTuple2;
 
 	for (int i = n; i < n+1; i++) {
-		vector<char> addedLastElemsVector; addedLastElemsVector.resize(100);
+		vector<char> addedLastElemsVector; addedLastElemsVector.resize(1);
 		fill(addedLastElemsVector.begin(), addedLastElemsVector.end(), '@');
 
 		DataSource dataSource((char*) genome_in.c_str());
 
 		totalGenomeSize = dataSource.getTotalGenomeSize(i);
 		nodeGenomeSize = dataSource.getNodeGenomeSize(i);
-		// nodeGenomeSize = worldRank == worldSize-1 ? nodeGenomeSize : nodeGenomeSize+;
+		// // nodeGenomeSize = worldRank == worldSize-1 ? nodeGenomeSize : nodeGenomeSize+;
+		// cout<<"genom size "<<nodeGenomeSize<<endl;
 		nodeGenomeOffset = dataSource.getNodeGenomeOffset(i);
 		nodeCharArray.resize(nodeGenomeSize);
 		nodeCharArray.insert(nodeCharArray.end(), addedLastElemsVector.begin(), addedLastElemsVector.end());
@@ -146,7 +147,7 @@ int main(int argc, char** argv) {
 			nodeCharArray.data()[nodeGenomeSize-1] = '$';
 		}
 
-		// // cout<<nodeCharArray.data()<<endl;
+		// cout<<nodeCharArray.data()<<endl;
 
 		addEdgeParts(&nodeCharArray, worldRank, worldSize);
 		// cout<<nodeCharArray.data()<<endl;

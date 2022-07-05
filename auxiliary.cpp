@@ -17,7 +17,7 @@
 #include <bits/stdc++.h>
 
 #define root 0
-#define wyslijRaz (2147483647 / 10)
+#define wyslijRaz 10
 #define int64 long long int
 #define charArrayLen 1
 #define k charArrayLen
@@ -237,6 +237,10 @@ void getNextPartialSend(vector<vector<TwoInts64>>* dataForPartitions,
         nextDispl = displacement->data()[i-1] + scattervPositions->data()[i-1];
         displacement->push_back(nextDispl);
     }
+
+    for (int node = 0; node < worldSize; node++) {
+        partialPivotsPosition->data()[node] = minInt64(partialPivotsPosition->data()[node] + wyslijRaz, dataForPartitions->data()[node].size());
+    }
 }
 
 bool doNextPartialSend(vector<int64>* pivotsPosition, 
@@ -311,7 +315,10 @@ void do_sending_operation(vector<int64>* B,
 
     int sizeTmpBuff;
 
+
+
     for (int partialSends = 0; partialSends < globalMaxPartialSend; partialSends++) {
+
         getNextPartialSend(&(helpVectors->dataForPartitions), 
                            &(helpVectors->partialArr), 
                            &(helpVectors->partialPivotsPosition),
@@ -528,7 +535,7 @@ void initializeHelpingVectorsSampleSort3(HelpingVectorsSampleSort3* vectors, int
 void local_sort_openMP_tuple3(vector<Tuple3>* A) {
     
 	int blocksNumber = 0;
-	// #pragma omp parallel
+	#pragma omp parallel
 	{
 		blocksNumber = omp_get_num_threads();
 		int lastElemensSize = A->size() % blocksNumber;
@@ -543,7 +550,7 @@ void local_sort_openMP_tuple3(vector<Tuple3>* A) {
 	{
 		int mergesInStep = (blocksNumber / (2 * mergeStep));
 
-		// #pragma omp parallel for
+		#pragma omp parallel for
 		for (int i = 0; i < mergesInStep; i++) {
 			int64 halfMergeLen = (A->size() / blocksNumber) * mergeStep;
 			int64 mergeStart = i * 2 * halfMergeLen;
@@ -561,7 +568,7 @@ void local_sort_openMP_tuple3(vector<Tuple3>* A) {
 void local_sort_openMP_tuple2(vector<Tuple2>* A) {
 
 	int blocksNumber = 0;
-	// #pragma omp parallel
+	#pragma omp parallel
 	{
 		blocksNumber = omp_get_num_threads();
 		int lastElemensSize = A->size() % blocksNumber;
@@ -578,7 +585,7 @@ void local_sort_openMP_tuple2(vector<Tuple2>* A) {
 		int mergesInStep = (blocksNumber / (2 * mergeStep));
 
 		// todo dodaj private i zobacz czy szybciej
-		// #pragma omp parallel for
+		#pragma omp parallel for
 		for (int i = 0; i < mergesInStep; i++) {
 			int64 halfMergeLen = (A->size() / blocksNumber) * mergeStep;
 			int64 mergeStart = i * 2 * halfMergeLen;
