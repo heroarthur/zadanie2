@@ -19,7 +19,7 @@
 #define root 0
 #define wyslijRaz 100
 #define int64 long long int
-#define charArrayLen 13
+#define charArrayLen 1
 #define k charArrayLen
 #define EMPTY_HELP_PARAM 0
 #define vectorMemoryAllocationFactor 10000

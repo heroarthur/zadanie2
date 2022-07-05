@@ -1,3 +1,15 @@
 -wieksza ilosc przysylanych naraz danych
 -odpowiednia wielkosc k
 -__restrict__
+-OpenMP gdzie tylko sie da
+
+
+
+domyslnie dla k = 1 i wyslijNaraz = 100
+real    0m41,397s
+user    3m26,382s
+sys     0m20,548s
+
+real    0m42,814s
+user    3m30,415s
+sys     0m21,013s
