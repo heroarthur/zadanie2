@@ -25,7 +25,7 @@ using namespace std;
 
 
 // int MPI_Send(const void *buf, int count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm)
-void addEdgeParts(vector<char>* __restrict__ nodeCharArray, 
+void addEdgeParts(vector<char>* nodeCharArray, 
                   int rank, 
                   int worldSize) {
     

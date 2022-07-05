@@ -177,8 +177,8 @@ int getNextSendSize(int64 currentPartialPosition, int64 endPosition, int worldSi
 }
 
 
-void initialize_SA(vector<int64>* __restrict__ SA, 
-                   vector<Tuple2>* __restrict__ tuple2) {
+void initialize_SA(vector<int64>* SA, 
+                   vector<Tuple2>* tuple2) {
     SA->resize(tuple2->size());
 
     // #pragma omp parallel for
@@ -188,10 +188,10 @@ void initialize_SA(vector<int64>* __restrict__ SA,
 }
 
 
-void fillTuple3(vector<int64>* __restrict__ B, 
-                vector<int64>* __restrict__ B2, 
-                vector<int64>* __restrict__ SA, 
-                vector<Tuple3>* __restrict__ tuple3) {
+void fillTuple3(vector<int64>* B, 
+                vector<int64>* B2, 
+                vector<int64>* SA, 
+                vector<Tuple3>* tuple3) {
 
     // cout<<"B: "<<B->size()<<" B2: "<<B2->size()<<" SA: "<<SA->size()<<endl;
     assert(B->size() == B2->size());

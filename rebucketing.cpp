@@ -25,9 +25,9 @@ using namespace std;
 
 
 
-void rebucket_assign_2h_group_rank(vector<Tuple3>* __restrict__ tuple, 
-                                   vector<int64>* __restrict__ B,
-                                   vector<int64>* __restrict__ SA, 
+void rebucket_assign_2h_group_rank(vector<Tuple3>* tuple, 
+                                   vector<int64>* B,
+                                   vector<int64>* SA, 
                                    bool* allSingletones,
                                    int rank,
                                    int worldSize) {
@@ -134,8 +134,8 @@ void rebucket_assign_2h_group_rank(vector<Tuple3>* __restrict__ tuple,
 
 
 
-void rebucket_assign_h_group_rank(vector<Tuple2>* __restrict__ tuple, 
-                                  vector<int64>* __restrict__ B, 
+void rebucket_assign_h_group_rank(vector<Tuple2>* tuple, 
+                                  vector<int64>* B, 
                                   int rank,
                                   int worldSize) {
 
