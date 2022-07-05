@@ -113,7 +113,7 @@ struct cmp_tuple3 {
 
 struct cmp_tuple2 {
     bool operator ()(Tuple2 const& a, Tuple2 const& b) const {
-        return strcmp(a.B, b.B) < 0;
+        return strcmp(a.B, b.B) < 0 || (strcmp(a.B, b.B) == 0 && a.i < b.i);
     }
 };
 
@@ -366,14 +366,35 @@ void print_vector(vector<int64>* v) {
     cout<<endl;
 }
 
-void print_MPI_vector(vector<int64>* v, int rank, int worldSize) { 
+void print_MPI_vector_char(vector<char>* v, int rank, int worldSize) { 
     MPI_Barrier(MPI_COMM_WORLD);
     for (int r = 0; r < worldSize; r++) {
         if (r == rank) {
+            cout<<v->data();
+	    }
+        MPI_Barrier(MPI_COMM_WORLD);
+    }
+    MPI_Barrier(MPI_COMM_WORLD);
+
+    if (rank == worldSize-1) {
+        cout<<endl;
+    }
+}
+
+void print_MPI_vector(vector<int64>* v, int rank, int worldSize) { 
+    MPI_Barrier(MPI_COMM_WORLD);
+    for (int r = 0; r < worldSize; r++) {
+        if (r == rank && r != worldSize-1) {
 		    for (int i = 0; i < v->size(); i++) {
 		    	printf("%lld ", v->data()[i]);
 		    }
 	    }
+        else if (r == rank && r == worldSize-1) {
+		    for (int i = 0; i < v->size()-1; i++) {
+		    	printf("%lld ", v->data()[i]);
+		    }
+		    printf("%lld", v->data()[v->size()-1]); 
+        }
         MPI_Barrier(MPI_COMM_WORLD);
     }
     MPI_Barrier(MPI_COMM_WORLD);

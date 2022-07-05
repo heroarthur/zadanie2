@@ -55,6 +55,7 @@ void rebucket_assign_2h_group_rank(vector<Tuple3>* __restrict__ tuple,
             SA->resize(size);
             B->data()[0] = 0;
             SA->data()[0] = tuple->data()[0].i;
+            lastTuple.i = 0;
 
             for (int64 i = 1; i < size; i++) {
                 // cout<<"B("<<tuple->data()[i-1].B<<", "<<tuple->data()[i-1].B2<<") B("<<tuple->data()[i].B<<", "<<tuple->data()[i].B2<<endl;
@@ -65,6 +66,7 @@ void rebucket_assign_2h_group_rank(vector<Tuple3>* __restrict__ tuple,
                     }
                 else {
                     B->data()[i] = i;
+                    lastTuple.i = i;
                 }
                 SA->data()[i] = tuple->data()[i].i;
             }
@@ -72,7 +74,9 @@ void rebucket_assign_2h_group_rank(vector<Tuple3>* __restrict__ tuple,
 
         *allSingletones = localAllSingletones;
         indexOffset = lastPossibleIndex + 1;
-        lastTuple = size > 0 ? tuple->data()[lastPossibleIndex] : lastTuple;
+        // lastTuple = size > 0 ? tuple->data()[lastPossibleIndex] : lastTuple;
+        lastTuple.B = size > 0 ? tuple->data()[lastPossibleIndex].B : lastTuple.B;
+        lastTuple.B2 = size > 0 ? tuple->data()[lastPossibleIndex].B2 : lastTuple.B2;
         
         if (worldSize > 1) {
             MPI_Send(allSingletones, 1, MPI_C_BOOL, 1, root, MPI_COMM_WORLD);
@@ -92,7 +96,7 @@ void rebucket_assign_2h_group_rank(vector<Tuple3>* __restrict__ tuple,
         SA->resize(size);
         if (size > 0) {
             if (indexOffset > 0) {
-                B->data()[0] = tuple3Equal(lastTuple, tuple->data()[0]) ? indexOffset-1 : indexOffset;
+                B->data()[0] = tuple3Equal(lastTuple, tuple->data()[0]) ? lastTuple.i : indexOffset;
                 SA->data()[0] = tuple->data()[0].i;
             }
             for (int64 i = (indexOffset == 0 ? 0 : 1); i < size; i++) {
@@ -104,13 +108,15 @@ void rebucket_assign_2h_group_rank(vector<Tuple3>* __restrict__ tuple,
                     }
                 else {
                     B->data()[i] = i + indexOffset;
+                    lastTuple.i = i + indexOffset;
                 }
                 SA->data()[i] = tuple->data()[i].i;
             }
 
             indexOffset += lastPossibleIndex + 1;
-            lastTuple = size > 0 ? tuple->data()[lastPossibleIndex] : lastTuple;
-        }
+            lastTuple.B = size > 0 ? tuple->data()[lastPossibleIndex].B : lastTuple.B;
+            lastTuple.B2 = size > 0 ? tuple->data()[lastPossibleIndex].B2 : lastTuple.B2;
+}
 
         if (rank < worldSize-1) {
             MPI_Send(allSingletones, 1, MPI_C_BOOL, rank+1, rank, MPI_COMM_WORLD);
@@ -135,24 +141,35 @@ void rebucket_assign_h_group_rank(vector<Tuple2>* __restrict__ tuple,
 
     int64 indexOffset;
     Tuple2 lastTuple;
+    lastTuple.B[0] = '*';
+    lastTuple.i = -1;
 
     if (rank == 0) {
         int64 size = tuple->size();
         int64 lastPossibleIndex = size-1;
-        B->resize(size);
-        B->data()[0] = 0;
 
-        for (int64 i = 1; i < size; i++) {
-            if (tuple2Equal(tuple->data()[i-1], tuple->data()[i])) {
-                    B->data()[i] = B->data()[i-1];
+        if (size > 0) {
+            B->resize(size);
+            B->data()[0] = 0;
+            lastTuple.i = 0;
+
+            for (int64 i = 1; i < size; i++) {
+                if (tuple2Equal(tuple->data()[i-1], tuple->data()[i])) {
+                        B->data()[i] = B->data()[i-1];
                 }
-            else {
-                B->data()[i] = i;
+                else {
+                    B->data()[i] = i;
+                    lastTuple.i = i;
+                }
             }
         }
 
         indexOffset = lastPossibleIndex + 1;
-        lastTuple = tuple->data()[lastPossibleIndex];
+        // lastTuple = size > 0 ? tuple->data()[lastPossibleIndex] : lastTuple;
+        if (size > 0) {
+            strncpy(lastTuple.B, tuple->data()[lastPossibleIndex].B, K);
+            // lastTuple.i = tuple->data()[lastPossibleIndex].i;
+        }
 
         if (worldSize > 1) {
             MPI_Send(&indexOffset, 1, MPI_LONG_LONG_INT, 1, root, MPI_COMM_WORLD);
@@ -165,20 +182,31 @@ void rebucket_assign_h_group_rank(vector<Tuple2>* __restrict__ tuple,
 
         int64 size = tuple->size();
         int64 lastPossibleIndex = size-1;
-        B->resize(size);
-        B->data()[0] = tuple2Equal(lastTuple, tuple->data()[0]) ? indexOffset-1 : indexOffset;
 
-        for (int64 i = 1; i < size; i++) {
-            if (tuple2Equal(tuple->data()[i-1], tuple->data()[i])) {
-                    B->data()[i] = B->data()[i-1];
+        if (size > 0) {
+            B->resize(size);
+            B->data()[0] = tuple2Equal(lastTuple, tuple->data()[0]) ? lastTuple.i : indexOffset;
+
+            for (int64 i = 1; i < size; i++) {
+                if (tuple2Equal(tuple->data()[i-1], tuple->data()[i])) {
+                        B->data()[i] = B->data()[i-1];
                 }
-            else {
-                B->data()[i] = i + indexOffset;
+                else {
+                    // cout<<"sa rozne "<<tuple->data()[i-1].B<<" "<<tuple->data()[i].B<<endl;
+                    B->data()[i] = i + indexOffset;
+                    lastTuple.i = i + indexOffset;
+                }
             }
+
         }
 
         indexOffset += lastPossibleIndex + 1;
-        lastTuple = tuple->data()[lastPossibleIndex];
+        // lastTuple = size > 0 ? tuple->data()[lastPossibleIndex] : lastTuple;
+
+        if (size > 0) {
+            strncpy(lastTuple.B, tuple->data()[lastPossibleIndex].B, K);
+            // lastTuple.i = tuple->data()[lastPossibleIndex].i;
+        }
 
         if (rank < worldSize-1) {
             MPI_Send(&indexOffset, 1, MPI_LONG_LONG_INT, rank+1, rank, MPI_COMM_WORLD);
