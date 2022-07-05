@@ -17,9 +17,9 @@
 #include <bits/stdc++.h>
 
 #define root 0
-#define wyslijRaz 10
+#define wyslijRaz 100
 #define int64 long long int
-#define charArrayLen 1
+#define charArrayLen 13
 #define k charArrayLen
 #define EMPTY_HELP_PARAM 0
 #define vectorMemoryAllocationFactor 10000

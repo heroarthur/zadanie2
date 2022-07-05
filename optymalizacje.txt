@@ -1,0 +1,3 @@
+-wieksza ilosc przysylanych naraz danych
+-odpowiednia wielkosc k
+-__restrict__
