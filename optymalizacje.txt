@@ -6,59 +6,10 @@
 -int zamiast unsigned int
 
 
+
+
+
+
 domyslnie dla k = 1 i wyslijNaraz = 100, bez restrict
 42, 43, 44, 45
 
-real    0m45,991s
-user    3m42,414s
-sys     0m21,116s
-karol@lenovo:~/OSK/zadanie2_mpi/src$ time ./szybkosc_test.sh 
-test 0
-
-real    0m43,958s
-user    3m36,416s
-sys     0m21,747s
-karol@lenovo:~/OSK/zadanie2_mpi/src$ time ./szybkosc_test.sh 
-test 0
-
-real    0m45,007s
-user    3m37,488s
-sys     0m19,942s
-karol@lenovo:~/OSK/zadanie2_mpi/src$ time ./szybkosc_test.sh 
-test 0
-
-real    0m41,748s
-user    3m28,587s
-sys     0m21,557s
-karol@lenovo:~/OSK/zadanie2_mpi/src$ time ./szybkosc_test.sh 
-test 0
-
-real    0m41,970s
-user    3m29,946s
-sys     0m22,278s
-
-
-
-
-
-real    0m42,805s
-user    3m33,194s
-sys     0m21,995s
-karol@lenovo:~/OSK/zadanie2_mpi/src$ time ./szybkosc_test.sh 
-test 0
-
-real    0m41,365s
-user    3m28,753s
-sys     0m22,359s
-karol@lenovo:~/OSK/zadanie2_mpi/src$ time ./szybkosc_test.sh 
-test 0
-
-real    0m41,199s
-user    3m27,908s
-sys     0m22,273s
-karol@lenovo:~/OSK/zadanie2_mpi/src$ time ./szybkosc_test.sh 
-test 0
-
-real    0m41,605s
-user    3m29,581s
-sys     0m22,365s
