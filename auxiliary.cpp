@@ -574,10 +574,10 @@ void local_sort_openMP_tuple2(vector<Tuple2>* A) {
 	// int blocksNumber = THREADS_NUM;
 	#pragma omp parallel num_threads(THREADS_NUM)
 	{
-		int lastElemensSize = A->size() % BLOCKS_NUMBER;
+		int64 lastElemensSize = A->size() % BLOCKS_NUMBER;
 		int blockId = omp_get_thread_num();
-		int blockStart = get_block_start(blockId, BLOCKS_NUMBER, A->size());
-		int blockEnd = get_block_start(blockId+1, BLOCKS_NUMBER, A->size()) + (blockId == BLOCKS_NUMBER-1 ? lastElemensSize : 0);
+		int64 blockStart = get_block_start(blockId, BLOCKS_NUMBER, A->size());
+		int64 blockEnd = get_block_start(blockId+1, BLOCKS_NUMBER, A->size()) + (blockId == BLOCKS_NUMBER-1 ? lastElemensSize : 0);
 		std::sort(A->begin() + blockStart, A->begin() + blockEnd, cmp_tuple2());
 	}
 	// std::sort(A->begin(), A->end(), cmp_tuple2());
