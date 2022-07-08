@@ -29,6 +29,8 @@
 #define K charArrayLen
 #define ENTER cout<<endl<<endl
 
+#define THREADS_NUM 8
+
 using namespace std;
 
 
@@ -538,7 +540,8 @@ void local_sort_openMP_tuple3(vector<Tuple3>* A) {
 	#pragma omp parallel
 	{
 		blocksNumber = omp_get_num_threads();
-		int lastElemensSize = A->size() % blocksNumber;
+		cout<<blocksNumber<<" liczba threads"<<endl;
+        int lastElemensSize = A->size() % blocksNumber;
 		int blockId = omp_get_thread_num();
 		int blockStart = get_block_start(blockId, blocksNumber, A->size());
 		int blockEnd = get_block_start(blockId+1, blocksNumber, A->size()) + (blockId == blocksNumber-1 ? lastElemensSize : 0);
@@ -567,10 +570,12 @@ void local_sort_openMP_tuple3(vector<Tuple3>* A) {
 
 void local_sort_openMP_tuple2(vector<Tuple2>* A) {
 
-	int blocksNumber = 0;
-	#pragma omp parallel
+	int blocksNumber;
+    // const int blocksNumber = numberOfThreads;
+    // const int64 A_size = A->size();
+	#pragma omp parallel private(blocksNumber) num_threads(THREADS_NUM)
 	{
-		blocksNumber = omp_get_num_threads();
+		blocksNumber = THREADS_NUM;
 		int lastElemensSize = A->size() % blocksNumber;
 		int blockId = omp_get_thread_num();
 		int blockStart = get_block_start(blockId, blocksNumber, A->size());
