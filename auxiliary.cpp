@@ -119,7 +119,7 @@ struct cmp_tuple2 {
     }
 };
 
-int get_block_start(int blockId, int blocksNumber, int dataSize) {
+int64 get_block_start(int64 blockId, int64 blocksNumber, int64 dataSize) {
 	return (dataSize / blocksNumber) * blockId;
 }
 
@@ -540,7 +540,7 @@ void local_sort_openMP_tuple3(vector<Tuple3>* A) {
 	#pragma omp parallel
 	{
 		blocksNumber = omp_get_num_threads();
-		cout<<blocksNumber<<" liczba threads"<<endl;
+		// cout<<blocksNumber<<" liczba threads"<<endl;
         int lastElemensSize = A->size() % blocksNumber;
 		int blockId = omp_get_thread_num();
 		int blockStart = get_block_start(blockId, blocksNumber, A->size());
@@ -571,11 +571,9 @@ void local_sort_openMP_tuple3(vector<Tuple3>* A) {
 void local_sort_openMP_tuple2(vector<Tuple2>* A) {
 
 	int blocksNumber;
-    // const int blocksNumber = numberOfThreads;
-    // const int64 A_size = A->size();
-	#pragma omp parallel private(blocksNumber) num_threads(THREADS_NUM)
+	#pragma omp parallel private(blocksNumber)
 	{
-		blocksNumber = THREADS_NUM;
+		blocksNumber = omp_get_num_threads();
 		int lastElemensSize = A->size() % blocksNumber;
 		int blockId = omp_get_thread_num();
 		int blockStart = get_block_start(blockId, blocksNumber, A->size());
