@@ -35,18 +35,23 @@ void prepareDataForReorderSent(vector<int64>* B,
                                vector<vector<TwoInts64>>* dataForPartitions,
                                int rank,
                                int worldSize) {
-    
-    #pragma omp parallel for
-    for (int thread = 0; thread < worldSize; thread++) {
+    int thread;
+    TwoInts64 data;
+    // #pragma omp parallel for private(data)
+    // for (int thread = 0; thread < worldSize; thread++) {
+        #pragma omp parallel for private(thread, data)
         for (int i = 0; i < nodeSize; i++) {
-            if (thread == getNodeToSend(SA->data()[i], newNodeSize)) {
-                TwoInts64 data;
-                data.i1 = SA->data()[i];
-                data.i2 = B->data()[i];
+            thread = getNodeToSend(SA->data()[i], newNodeSize);
+            // if (thread == getNodeToSend(SA->data()[i], newNodeSize)) {
+            data.i1 = SA->data()[i];
+            data.i2 = B->data()[i];
+            #pragma omp critical 
+            {
                 dataForPartitions->data()[thread].push_back(data);
             }
+            // }
         }
-    }
+    // }
 }
 
 
