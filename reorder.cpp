@@ -36,26 +36,7 @@ void prepareDataForReorderSent(vector<int64>* B,
                                int rank,
                                int worldSize) {
 
-    // #pragma omp parallel for private(data)
-    // for (int thread = 0; thread < worldSize; thread++) {
-        // #pragma omp parallel for private(thread, data)
-        // for (int i = 0; i < nodeSize; i++) {
-        //     thread = getNodeToSend(SA->data()[i], newNodeSize);
-        //     // if (thread == getNodeToSend(SA->data()[i], newNodeSize)) {
-        //     data.i1 = SA->data()[i];
-        //     data.i2 = B->data()[i];
-        //     #pragma omp critical 
-        //     {
-        //         dataForPartitions->data()[thread].push_back(data);
-        //     }
-        //     // }
-        // }
-        int64 normalThreadSize = ceil(nodeSize / (double) THREADS_NUM);
-        // int64 lastThreadSize = maxInt64(nodeSize - (THREADS_NUM-1) * normalThreadSize, 0);
-
-        // cout<<lastThreadSize<<endl;
-    
-        // cout<<"normal thread size "<<normalThreadSize<<" node size "<<nodeSize<<endl;
+        const int64 normalThreadSize = ceil(nodeSize / (double) THREADS_NUM);
 
         #pragma omp parallel num_threads(THREADS_NUM)
         {
@@ -66,12 +47,9 @@ void prepareDataForReorderSent(vector<int64>* B,
             TwoInts64 data;
             
             thread_num = omp_get_thread_num();
-            // cout<<"thread num "<<thread_num<<endl;
-            // threadSize = thread_num == THREADS_NUM-1 ? lastThreadSize : minInt64(normalThreadSize, maxInt64(0, nodeSize - (thread_num-1) * normalThreadSize));
             threadSize = minInt64(normalThreadSize, maxInt64(0, nodeSize - thread_num * normalThreadSize));
 
             offset = thread_num * normalThreadSize;
-            // cout<<threadSize<<endl;
             vector<vector<TwoInts64>> localDataForPartitions;
             localDataForPartitions.resize(worldSize);
 
@@ -81,7 +59,7 @@ void prepareDataForReorderSent(vector<int64>* B,
                 data.i2 = B->data()[i];
                 localDataForPartitions.data()[nodeToSend].push_back(data);
             }
-            // cout<<"lokalny "<<localDataForPartitions.data()[0].size()<<endl;
+
             #pragma omp critical
             {
                 for (int i = 0; i < worldSize; i++) {
@@ -91,37 +69,6 @@ void prepareDataForReorderSent(vector<int64>* B,
                 }
             }
         }
-
-
-            // #pragma omp for private(threadSize, localDataForPartitions) num_threads(THREADS_NUM)
-            // for (int i = 0; i < THREADS_NUM; i++) {
-            //     localDataForPartitions.resize(worldSize);
-
-            //     int thread_num = omp_get_thread_num();
-            //     nodeToSend = getNodeToSend(SA->data()[i], newNodeSize);
-            //     data.i1 = SA->data()[i];
-            //     data.i2 = B->data()[i];
-            //     localDataForPartitions.data()[nodeToSend].push_back(data);
-            // }
-
-            // #pragma omp critical
-            // {
-            //     for (int i = 0; i < worldSize; i++) {
-            //         dataForPartitions->data()[i].insert(dataForPartitions->data()[i].end(), localDataForPartitions.data()[i].begin(), localDataForPartitions.data()[i].end());
-            //     }
-            // }
-
-        // #pragma omp parallel
-        // {
-        //     int tmpValue = 0;
-        //     #pragma omp for nowait
-        //     for (int i = 0; i < inputArray.size(); i++) {
-        //     tmpValue += inputArray[i];
-        //     }
-        //     #pragma omp atomic
-        //     totalValue += tmpValue;
-        // }
-    // }
 }
 
 
