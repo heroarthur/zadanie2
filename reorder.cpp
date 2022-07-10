@@ -68,12 +68,10 @@ void prepareDataForReorderSent(vector<int64>* B,
             int vector_offset;
             for (int i = 0; i < THREADS_NUM; i++) {
                 index = (index + i) % THREADS_NUM;
-                // cout<<"index "<<index<<endl;
                 // #pragma omp barrier
                 // #pragma omp critical
                 vector_offset = index * normalVectorUpdateNumber;
                 updateVectorsNumber = minInt64(normalVectorUpdateNumber, maxInt64(0, worldSize - index * normalVectorUpdateNumber));
-                // cout<<"liczba wektorow do aktualizacji "<<updateVectorsNumber<<endl;
                 for (int v_index = vector_offset; v_index < vector_offset+updateVectorsNumber; v_index++)
                 {
                     dataForPartitions->data()[v_index].insert(dataForPartitions->data()[v_index].end(), 

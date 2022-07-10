@@ -84,22 +84,15 @@ int main(int argc, char** argv) {
 	
 	vector<int64> B_1; //B_1.reserve(1.2 * singleNodeDataSize);
 	vector<int64> B_2; //B_2.reserve(1.2 * singleNodeDataSize);
-	// vector<int64> *B_pointer, *B_second_pointer, *B_ISA_pointer;
 	vector<int64> *B_ISA_pointer, *SA_pointer;
 
-
-	// vector<Tuple2> *tuple2_pointer, *tuple2_second_pointer;
 	vector<Tuple2> tuple2_Arr; //tuple2_Arr.resize(singleNodeDataSize); //tuple2_Arr.reserve(1.2 * singleNodeDataSize);
 	vector<Tuple2> tuple2_second; //tuple2_second.reserve(1.2 * singleNodeDataSize);
-	// tuple2_pointer = &tuple2_Arr;
-	// tuple2_second_pointer = &tuple2_second;
 
 
-	// vector<Tuple3> *tuple3_pointer, *tuple3_second_pointer;
 	vector<Tuple3> tuple3; //tuple3.reserve(1.2 * singleNodeDataSize);
 	vector<Tuple3> tuple3_second; //tuple3_second.reserve(1.2 * singleNodeDataSize);
-	// tuple3_pointer = &tuple3;
-	// tuple3_second_pointer = &tuple3_second;
+
 
 	HelpingVectorsSendingOperations helpVectorsSendingOperations;
 	HelpingVectorsSampleSort2 helpVectorsSampleSort2;
@@ -110,16 +103,7 @@ int main(int argc, char** argv) {
 	initializeHelpingVectorsSampleSort3(&helpVectorsSampleSort3, worldSize);
 
 
-	// B_pointer = &B_1;
-	// B_second_pointer = &B_2;
-	// B_ISA_pointer = &B_ISA;
-
 	vector<int64> SA, SA_second;
-	// vector<int64> *SA_pointer, *SA_second_pointer;
-	// SA_pointer = &SA;
-	// SA_second_pointer = &SA_second;
-
-	// vector<int64> *ISA;
 
 	bool allSingletones;
 	string inputFile;
@@ -133,8 +117,7 @@ int main(int argc, char** argv) {
 
 		totalGenomeSize = dataSource.getTotalGenomeSize(i);
 		nodeGenomeSize = dataSource.getNodeGenomeSize(i);
-		// // nodeGenomeSize = worldRank == worldSize-1 ? nodeGenomeSize : nodeGenomeSize+;
-		// cout<<"genom size "<<nodeGenomeSize<<endl;
+
 		nodeGenomeOffset = dataSource.getNodeGenomeOffset(i);
 		nodeCharArray.resize(nodeGenomeSize);
 		nodeCharArray.insert(nodeCharArray.end(), addedLastElemsVector.begin(), addedLastElemsVector.end());
@@ -150,20 +133,13 @@ int main(int argc, char** argv) {
 			nodeCharArray.data()[nodeGenomeSize-1] = '$';
 		}
 
-		// cout<<nodeCharArray.data()<<endl;
-
 		addEdgeParts(&nodeCharArray, worldRank, worldSize);
-		// cout<<nodeCharArray.data()<<endl;
 
 		tuple2_Arr.resize(nodeGenomeSize);
 		for (int i = 0; i < nodeGenomeSize; i++) {
 			memset(tuple2_Arr.data()[i].B, 0, K);
 			copy(nodeCharArray.begin() + i, nodeCharArray.begin() + minInt64(i + K, nodeCharArray.size()), tuple2_Arr.data()[i].B);
 			tuple2_Arr.data()[i].i = i + nodeGenomeOffset;
-		}
-		
-		for (int i = 0; i < nodeGenomeSize; i++) {
-			// cout<<tuple2_Arr.data()[i].B<<endl;
 		}
 
 		SA_algorithm(&B_1,

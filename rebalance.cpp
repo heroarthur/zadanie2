@@ -61,16 +61,11 @@ void rebalanceArray(vector<int64>* A,
     int64 dataSize;
     int64 nodeSize = A->size();
 
-    // print_MPI_vector(A, rank, worldSize);
-    // cout<<"A size "<<A->size()<<endl;
-
     MPI_Allreduce(&nodeSize, &dataSize, 1, MPI_LONG_LONG_INT, MPI_SUM, MPI_COMM_WORLD);
 
     int64 newNodeSize = ceil(dataSize / (double) worldSize);
     int64 lastNodeSize = maxInt64(dataSize - (worldSize-1) * newNodeSize, 0);
 
-    // cout<<"lastNodeSize "<<lastNodeSize<<" "<<newNodeSize<<" A size "<<A->size()<<endl;
-    
     if (rank < worldSize-1) {
         A_help->resize(newNodeSize);
     }
@@ -81,7 +76,6 @@ void rebalanceArray(vector<int64>* A,
         else {
             A_help->resize(0);
         }
-        // cout<<"last len "<<A_help->size()<<endl;
     }
 
     for (int i = 0; i < worldSize; i++) {
@@ -103,9 +97,6 @@ void rebalanceArray(vector<int64>* A,
     
     MPI_Allreduce(&localMaxPartialSend, &globalMaxPartialSend, 1, MPI_LONG_LONG_INT, MPI_MAX, MPI_COMM_WORLD);
 
-    // cout<<"global max "<<globalMaxPartialSend<<endl;
-
-    // print_MPI_2ints(&helpVectors->dataForPartitions[0], rank, worldSize);
     int sizeTmpBuff;
 
     for (int partialSends = 0; partialSends < globalMaxPartialSend; partialSends++) {
@@ -143,7 +134,6 @@ void rebalanceArray(vector<int64>* A,
         #pragma omp parallel for
         for (int i = 0; i < helpVectors->tmp_buff.size(); i++) {
             A_help->data()[helpVectors->tmp_buff.data()[i].i1 - offset] = helpVectors->tmp_buff.data()[i].i2;
-            // cout<<"data "<<A_help->data()[helpVectors->tmp_buff.data()[i].i1 - offset]<<endl;
         }
 
         helpVectors->tmp_buff.clear();

@@ -24,7 +24,6 @@
 using namespace std;
 
 
-// int MPI_Send(const void *buf, int count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm)
 void addEdgeParts(vector<char>* nodeCharArray, 
                   int rank, 
                   int worldSize) {
@@ -47,9 +46,7 @@ void addEdgeParts(vector<char>* nodeCharArray,
         receivedEdgePart.resize(K-1);
         MPI_Recv(receivedEdgePart.data(), K-1, MPI_CHAR, rank+1, rank+1, MPI_COMM_WORLD, &status); 
         MPI_Get_count(&status, MPI_CHAR, &receivedSize);
-        // cout<<"received size "<<receivedSize<<" "<<nodeCharArray->size()<<" "<<receivedEdgePart.data()<<endl;
         nodeCharArray->insert(nodeCharArray->end()-1, receivedEdgePart.begin(), receivedEdgePart.end());
-        // cout<<"zwiekszony "<<nodeCharArray->data()<<endl;
         sendEdgePart.resize(minInt64(K-1, nodeCharArray->size()));
         copy(nodeCharArray->begin(), nodeCharArray->begin() + sendEdgePart.size(), sendEdgePart.data());
 

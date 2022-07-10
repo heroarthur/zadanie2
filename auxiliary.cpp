@@ -190,7 +190,6 @@ bool doNextPartialRound(vector<int64>* pivotsPosition,
 int getNextSendSize(int64 currentPartialPosition, int64 endPosition, int worldSize) {
     int partialSendSize = wyslijRaz; //2147483647 / worldSize;
     int64 partialSendSizeInt64 = partialSendSize;
-    // cout<<"end position "<<endPosition<<endl;
     int64 diff = (endPosition - currentPartialPosition); 
     if (diff < partialSendSizeInt64) {
         return (int) diff;
@@ -215,7 +214,6 @@ void fillTuple3(vector<int64>* B,
                 vector<int64>* SA, 
                 vector<Tuple3>* tuple3) {
 
-    // cout<<"B: "<<B->size()<<" B2: "<<B2->size()<<" SA: "<<SA->size()<<endl;
     assert(B->size() == B2->size());
     assert(B->size() == SA->size());
 
@@ -246,14 +244,12 @@ void getNextPartialSend(vector<vector<TwoInts64>>* dataForPartitions,
     
     for(int node = 0; node < worldSize; node++) {
         pivot = 0;
-        // cout<<"data for partition "<<dataForPartitions->data()[node].size()<<" "<<partialPivotsPosition->data()[node] + wyslijRaz<<" teraz "<<minInt64(partialPivotsPosition->data()[node] + wyslijRaz, dataForPartitions->data()[node].size())<<" juz "<<partialPivotsPosition->data()[node]<<endl;
+
         for(int i = partialPivotsPosition->data()[node]; i < minInt64(partialPivotsPosition->data()[node] + wyslijRaz, dataForPartitions->data()[node].size()); i++) {
             partialArr->push_back(dataForPartitions->data()[node].data()[i]);
             pivot++;
-            // cout<<"tora "<<partialArr->size()<<endl;
-            // cout<<"zabij mnie "<<endl;
         }
-        // cout<<"pivot size "<<pivot<<endl;
+
         scattervPositions->push_back(pivot);
     }
     displacement->push_back(0);
@@ -265,10 +261,7 @@ void getNextPartialSend(vector<vector<TwoInts64>>* dataForPartitions,
 
     for (int node = 0; node < worldSize; node++) {
         partialPivotsPosition->data()[node] = minInt64(partialPivotsPosition->data()[node] + wyslijRaz, dataForPartitions->data()[node].size());
-        // cout<<"partial pivots position "<<partialPivotsPosition->data()[node]<<endl;
     }
-
-    // print_MPI_2ints(partialArr, rank, worldSize);
 }
 
 bool doNextPartialSend(vector<int64>* pivotsPosition, 

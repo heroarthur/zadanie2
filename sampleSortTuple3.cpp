@@ -241,8 +241,6 @@ void sample_sort_MPI_tuple3(vector<Tuple3>* A,
     int64 step = ceil((double) A->size() / (double) worldSize);
 
     int sendNumber = (int) minInt64(worldSize, (int64) A->size()); //worldSize;
-    // int sampleSize = minInt64(worldSize, A->size());
-
 
     int totalSampleSize;
     MPI_Allreduce(&sendNumber, &totalSampleSize, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
@@ -260,26 +258,16 @@ void sample_sort_MPI_tuple3(vector<Tuple3>* A,
         displacement.data()[i] = displacement.data()[i-1] + sendSizeFromProcess.data()[i-1];
     }
 
-    // if (rank > -1) {
-    //     print_vector_int(&sendSizeFromProcess);
-    //     print_vector_int(&displacement);
-    // }
-
     helpVectors->sample.clear();
 
     for (int i = 0; i < min(worldSize, sendNumber); i++) {
         helpVectors->sample.push_back(A->data()[minInt64(i * step, A->size()-1)]);   
     }
         
-
     MPI_Barrier(MPI_COMM_WORLD); //todo usunac bariere jesli mozna
 
     helpVectors->rootSampleRecv.resize(totalSampleSize);
 
-    // print_MPI_tuple3(&helpVectors->sample, rank, worldSize);
-
-
-    
     MPI_Allgatherv(helpVectors->sample.data(),
                    sendNumber, 
                    MPI_Tuple3, 
@@ -289,46 +277,14 @@ void sample_sort_MPI_tuple3(vector<Tuple3>* A,
                    MPI_Tuple3, 
                    MPI_COMM_WORLD);
 
-// int MPI_Allgatherv(const void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf,
-//                    const int recvcounts[], const int displs[], MPI_Datatype recvtype,
-//                    MPI_Comm comm)
-
-    // print_MPI_tuple3(&helpVectors->rootSampleRecv, rank, worldSize);
-
-
-    // print_MPI_tuple3(&helpVectors->rootSampleRecv, rank, worldSize);
-
     local_sort_openMP_tuple3(&(helpVectors->rootSampleRecv));
-
-    // print_MPI_tuple3(&helpVectors->rootSampleRecv, rank, worldSize);
 
     int stepBroadcastSample = max((int) ceil((double) totalSampleSize / (double) worldSize), 1);
     for (int i = 0; i < worldSize-1; i++) {
         helpVectors->broadcastSample.data()[i] = helpVectors->rootSampleRecv.data()[min((i+1) * stepBroadcastSample, ((int) helpVectors->rootSampleRecv.size())-1)];
     }
-
-    // if (root == 0) {
-    // }
-
-    // print_MPI_tuple3(&helpVectors->broadcastSample, rank, worldSize);
-    
     
     findPivotPositionsTuple3(A, &(helpVectors->broadcastSample), &(helpVectors->pivotsPositions), rank);
-
-
-    // if (rank == 3) {
-    //     for (int i = 0; i < A->size(); i++) {
-    //         cout<<"("<<A->data()[i].B<<","<<A->data()[i].B2<<") ";
-    //     }
-    //     cout<<endl;
-        
-    //     for (int i = 0; i < helpVectors->broadcastSample.size(); i++) {
-    //         cout<<"("<<helpVectors->broadcastSample.data()[i].B<<","<<helpVectors->broadcastSample.data()[i].B2<<") ";
-    //     }
-    //     cout<<endl;
-        
-    //     print_vector(&(helpVectors->pivotsPositions));
-    // }
         
 	sendDataToProperPartitionTuple3(A, A_help, helpVectors, rank, worldSize);
 
