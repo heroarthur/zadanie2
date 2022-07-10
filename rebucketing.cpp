@@ -38,6 +38,8 @@ void rebucket_assign_2h_group_rank(vector<Tuple3>* tuple,
     lastTuple.B = -1;
     lastTuple.B2 = -1;
     lastTuple.i = -1;
+    
+    cout<<"tuple size "<<tuple->size()<<endl;
 
     // cout<<"tuple size "<<tuple->size()<<endl;
 
@@ -85,6 +87,9 @@ void rebucket_assign_2h_group_rank(vector<Tuple3>* tuple,
         }
     }
     else {
+        // cout<<"rank "<<rank<<endl;
+
+
         MPI_Recv(allSingletones, 1, MPI_C_BOOL,        rank-1, rank-1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
         MPI_Recv(&indexOffset, 1,         MPI_LONG_LONG_INT, rank-1, rank-1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
         MPI_Recv(&lastTuple, 1,           MPI_Tuple3,        rank-1, rank-1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
@@ -94,6 +99,9 @@ void rebucket_assign_2h_group_rank(vector<Tuple3>* tuple,
 
         B->resize(size);
         SA->resize(size);
+
+        cout<<"size rank "<<size<<" "<<rank<<endl;
+
         if (size > 0) {
             if (indexOffset > 0) {
                 B->data()[0] = tuple3Equal(lastTuple, tuple->data()[0]) ? lastTuple.i : indexOffset;
@@ -116,7 +124,9 @@ void rebucket_assign_2h_group_rank(vector<Tuple3>* tuple,
             indexOffset += lastPossibleIndex + 1;
             lastTuple.B = size > 0 ? tuple->data()[lastPossibleIndex].B : lastTuple.B;
             lastTuple.B2 = size > 0 ? tuple->data()[lastPossibleIndex].B2 : lastTuple.B2;
-}
+
+            cout<<"spitfire rank "<<SA->data()[0]<<" "<<rank<<endl;
+        }
 
         if (rank < worldSize-1) {
             MPI_Send(allSingletones, 1, MPI_C_BOOL, rank+1, rank, MPI_COMM_WORLD);

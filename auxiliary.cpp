@@ -58,6 +58,7 @@ MPI_Datatype MPI_Tuple3;
 
 MPI_Datatype MPI_TwoInts64;
 
+const Tuple3 smallestTuple = {0, 0, 0};
 
 typedef struct helpingVectorsSendingOperations {
     vector<TwoInts64> partialArr; 
@@ -157,6 +158,24 @@ int64 maxInt64(int64 a, int64 b) {
 }
 
 
+void print_MPI_2ints(vector<twoInts64>* v, int rank, int worldSize) { 
+    MPI_Barrier(MPI_COMM_WORLD);
+    for (int r = 0; r < worldSize; r++) {
+        if (r == rank) {
+            cout<<"size "<<v->size()<<endl;
+		    for (int i = 0; i < v->size(); i++) {
+		    	printf("%lli %lli\n", v->data()[i].i1, v->data()[i].i2);
+		    }
+	    }
+        MPI_Barrier(MPI_COMM_WORLD);
+    }
+    MPI_Barrier(MPI_COMM_WORLD);
+    if (rank == worldSize-1)
+        cout<<endl<<endl;
+    MPI_Barrier(MPI_COMM_WORLD);
+}
+
+
 bool doNextPartialRound(vector<int64>* pivotsPosition, 
                         vector<int64>* partialPivotsPosition) {
 	for (int i = 0; i < pivotsPosition->size(); i++) {
@@ -216,6 +235,7 @@ void getNextPartialSend(vector<vector<TwoInts64>>* dataForPartitions,
                         vector<int64>* partialPivotsPosition,
 						vector<int>* scattervPositions,
 						vector<int>* displacement,
+                        int rank,
                         int worldSize) {
 
     partialArr->clear();
@@ -226,10 +246,12 @@ void getNextPartialSend(vector<vector<TwoInts64>>* dataForPartitions,
     
     for(int node = 0; node < worldSize; node++) {
         pivot = 0;
-        // cout<<"data for partition "<<dataForPartitions->data()[node].size()<<endl;
+        // cout<<"data for partition "<<dataForPartitions->data()[node].size()<<" "<<partialPivotsPosition->data()[node] + wyslijRaz<<" teraz "<<minInt64(partialPivotsPosition->data()[node] + wyslijRaz, dataForPartitions->data()[node].size())<<" juz "<<partialPivotsPosition->data()[node]<<endl;
         for(int i = partialPivotsPosition->data()[node]; i < minInt64(partialPivotsPosition->data()[node] + wyslijRaz, dataForPartitions->data()[node].size()); i++) {
             partialArr->push_back(dataForPartitions->data()[node].data()[i]);
             pivot++;
+            // cout<<"tora "<<partialArr->size()<<endl;
+            // cout<<"zabij mnie "<<endl;
         }
         // cout<<"pivot size "<<pivot<<endl;
         scattervPositions->push_back(pivot);
@@ -243,7 +265,10 @@ void getNextPartialSend(vector<vector<TwoInts64>>* dataForPartitions,
 
     for (int node = 0; node < worldSize; node++) {
         partialPivotsPosition->data()[node] = minInt64(partialPivotsPosition->data()[node] + wyslijRaz, dataForPartitions->data()[node].size());
+        // cout<<"partial pivots position "<<partialPivotsPosition->data()[node]<<endl;
     }
+
+    // print_MPI_2ints(partialArr, rank, worldSize);
 }
 
 bool doNextPartialSend(vector<int64>* pivotsPosition, 
@@ -327,6 +352,7 @@ void do_sending_operation(vector<int64>* B,
                            &(helpVectors->partialPivotsPosition),
 						   &(helpVectors->scattervPositions),
 						   &(helpVectors->displacement),
+                           rank,
                            worldSize);
 
         MPI_Alltoall((void*)helpVectors->scattervPositions.data(), 1, MPI_INT, (void*)helpVectors->arrivingNumber.data(), 1, MPI_INT, MPI_COMM_WORLD);
@@ -376,6 +402,14 @@ void print_vector(vector<int64>* v) {
     cout<<endl;
 }
 
+void print_vector_int(vector<int>* v) { 
+    for (int i = 0; i < v->size()-1; i++) {
+        printf("%d ", v->data()[i]);
+    }
+    printf("%d", v->data()[v->size()-1]);
+    cout<<endl;
+}
+
 void print_MPI_vector_char(vector<char>* v, int rank, int worldSize) { 
     MPI_Barrier(MPI_COMM_WORLD);
     for (int r = 0; r < worldSize; r++) {
@@ -400,10 +434,12 @@ void print_MPI_vector(vector<int64>* v, int rank, int worldSize) {
 		    }
 	    }
         else if (r == rank && r == worldSize-1) {
-		    for (int i = 0; i < v->size()-1; i++) {
+		    for (int i = 0; i + 1 < v->size(); i++) {
 		    	printf("%lld ", v->data()[i]);
 		    }
-		    printf("%lld", v->data()[v->size()-1]); 
+            if (v->size() >= 1) {
+		        printf("%lld", v->data()[v->size()-1]); 
+            }
         }
         MPI_Barrier(MPI_COMM_WORLD);
     }
@@ -448,6 +484,8 @@ void print_MPI_tuple3(vector<Tuple3>* v, int rank, int worldSize) {
         cout<<endl<<endl;
     MPI_Barrier(MPI_COMM_WORLD);
 }
+
+
 
 int64 roundToPowerOf2(int64 v) {
     int64 power = 1;

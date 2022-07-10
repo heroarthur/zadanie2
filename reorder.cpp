@@ -37,6 +37,7 @@ void prepareDataForReorderSent(vector<int64>* B,
                                int worldSize) {
 
         const int64 normalThreadSize = ceil(nodeSize / (double) THREADS_NUM);
+        const int normalVectorUpdateNumber = ceil(worldSize / (double) THREADS_NUM);
 
         #pragma omp parallel num_threads(THREADS_NUM)
         {
@@ -60,13 +61,27 @@ void prepareDataForReorderSent(vector<int64>* B,
                 localDataForPartitions.data()[nodeToSend].push_back(data);
             }
 
-            #pragma omp critical
-            {
-                for (int i = 0; i < worldSize; i++) {
-                    dataForPartitions->data()[i].insert(dataForPartitions->data()[i].end(), 
-                                                        localDataForPartitions.data()[i].begin(), 
-                                                        localDataForPartitions.data()[i].end());
+            //  #pragma omp barrier
+
+            int index = thread_num;
+            int updateVectorsNumber;
+            int vector_offset;
+            for (int i = 0; i < THREADS_NUM; i++) {
+                index = (index + i) % THREADS_NUM;
+                // cout<<"index "<<index<<endl;
+                // #pragma omp barrier
+                // #pragma omp critical
+                vector_offset = index * normalVectorUpdateNumber;
+                updateVectorsNumber = minInt64(normalVectorUpdateNumber, maxInt64(0, worldSize - index * normalVectorUpdateNumber));
+                // cout<<"liczba wektorow do aktualizacji "<<updateVectorsNumber<<endl;
+                for (int v_index = vector_offset; v_index < vector_offset+updateVectorsNumber; v_index++)
+                {
+                    dataForPartitions->data()[v_index].insert(dataForPartitions->data()[v_index].end(), 
+                                                            localDataForPartitions.data()[v_index].begin(), 
+                                                            localDataForPartitions.data()[v_index].end());
                 }
+
+                #pragma omp barrier
             }
         }
 }

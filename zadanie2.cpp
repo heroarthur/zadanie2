@@ -181,7 +181,7 @@ int main(int argc, char** argv) {
 					 worldRank,
 					 worldSize);
 		
-		print_MPI_vector(&SA, worldRank, worldSize);
+		// print_MPI_vector(&SA, worldRank, worldSize);
 	}
 
 
