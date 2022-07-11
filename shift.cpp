@@ -44,7 +44,7 @@ void prepareDataForShiftSent(vector<int64>* B,
     TwoInts64 data;
     int64 offset = rank * newNodeSize;
     
-    // #pragma omp parallel for
+    #pragma omp parallel for
     for (int i = 0; i < B->size(); i++) {
         curr_i = offset + i;
         target_i = curr_i - h;
@@ -52,22 +52,27 @@ void prepareDataForShiftSent(vector<int64>* B,
         currNode = min((int) (curr_i / newNodeSize), lastNodeIndex);
         targetNode = min((int) (target_i / newNodeSize), lastNodeIndex);
 
-        if (target_i >= 0) {
-            data.i1 = target_i;
-            data.i2 = B->data()[i];
-            #pragma omp critical
-            {
-                dataForPartitions->data()[targetNode].push_back(data);
+        
+        #pragma omp critical
+        {
+            if (target_i >= 0) {
+                data.i1 = target_i;
+                data.i2 = B->data()[i];
+                // #pragma omp critical
+                {
+                    dataForPartitions->data()[targetNode].push_back(data);
+                }
+            }
+            else if (curr_i + h > data_size_minus_one) {
+                data.i1 = curr_i;
+                data.i2 = 0;
+                // #pragma omp critical
+                {
+                    dataForPartitions->data()[currNode].push_back(data);
+                }
             }
         }
-        if (curr_i + h > data_size_minus_one) {
-            data.i1 = curr_i;
-            data.i2 = 0;
-            #pragma omp critical
-            {
-                dataForPartitions->data()[currNode].push_back(data);
-            }
-        }
+
 
         // #pragma omp barrier
     }

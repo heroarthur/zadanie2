@@ -23,6 +23,15 @@ int main(int argc, char** argv) {
 
 	MPI_Init(&argc, &argv);
 
+	// int a = 0;
+	// int chunk = 100;
+	// #pragma omp parallel firstprivate(a)
+	// for (int i = 0; i < 100000; i+=chunk) {
+	// 	for (int j = i; j < min(i + chunk, 100000); j++) {
+	// 		a++;
+	// 	}
+	// }
+
 
 	int worldRank;
 	MPI_Comm_rank(MPI_COMM_WORLD, &worldRank);

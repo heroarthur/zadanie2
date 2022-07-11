@@ -156,8 +156,8 @@ void rebalanceArray(vector<int64>* A,
 
         int64 offset = rank * newNodeSize;
 
-        #pragma omp parallel for
-        for (int i = 0; i < helpVectors->tmp_buff.size(); i++) {
+        #pragma omp parallel for firstprivate(offset)
+        for (int i = 0; i < helpVectors->tmp_buff.size(); i ++) {
             A_help->data()[helpVectors->tmp_buff.data()[i].i1 - offset] = helpVectors->tmp_buff.data()[i].i2;
         }
 
