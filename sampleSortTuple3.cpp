@@ -32,9 +32,6 @@ int64 binarySearchTuple3(vector<Tuple3>* arr,
                          int64 l, 
                          int64 r)
 {
-    // cout<<"l i r "<<l<<" "<<r<<" size "<<arr->size()-1<<endl;
-    // if (arr.)
-
     if (tuple3Greater(tuple, arr->data()[arr->size()-1])) {
         return arr->size();
     }
@@ -241,6 +238,8 @@ void sample_sort_MPI_tuple3(vector<Tuple3>* A,
     int64 step = ceil((double) A->size() / (double) worldSize);
 
     int sendNumber = (int) minInt64(worldSize, (int64) A->size()); //worldSize;
+    // int sampleSize = minInt64(worldSize, A->size());
+
 
     int totalSampleSize;
     MPI_Allreduce(&sendNumber, &totalSampleSize, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);

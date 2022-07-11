@@ -70,9 +70,7 @@ int main(int argc, char** argv) {
         else {
             B_1.data()[i] = i;
         }
-        // cout<<tuple2_Arr.data()[i].B<<" ";
     }
-    // cout<<endl;
 
     SA.resize(tuple2_Arr.size());
     SA_second.resize(tuple2_Arr.size());
@@ -85,10 +83,6 @@ int main(int argc, char** argv) {
 
     bool done = false;
 	for (int64 h = k; true; h*=2) {
-
-		// print_vector(&B_1);
-		// print_vector(&SA);
-        // cout<<endl;
 
         for (int i = 0; i < dataSize; i++) {
             B_2[SA[i]] = B_1[i];
@@ -124,11 +118,6 @@ int main(int argc, char** argv) {
         done = true;
 		B_1.data()[0] = 0;
         SA.data()[0] = tuple3.data()[0].i;
-
-        // for (int i = 0; i < dataSize; i++) {
-        //     cout<<"("<<tuple3.data()[i].B<<" "<<tuple3.data()[i].i<<<<") ";
-        // }
-        // cout<<endl<<endl;
 
         for (int64 i = 1; i < dataSize; i++) {
             if (tuple3Equal(tuple3.data()[i-1], tuple3.data()[i])) {

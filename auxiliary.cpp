@@ -297,22 +297,32 @@ void do_sending_operation(vector<int64>* B,
     MPI_Allreduce(&nodeSize, &dataSize, 1, MPI_LONG_LONG_INT, MPI_SUM, MPI_COMM_WORLD);
 
     int64 newNodeSize = ceil(dataSize / (double) worldSize);
-    int64 lastNodeSize = dataSize - (worldSize-1) * newNodeSize;
-    
-    if (rank < worldSize-1) {
-        B_help->resize(newNodeSize);
-            
-        if (update_SA) {
-            SA_second_pointer->resize(newNodeSize);
-        }
-    }
-    else {
-        B_help->resize(lastNodeSize);
+    // int64 lastNodeSize = dataSize - (worldSize-1) * newNodeSize;
+    int64 thisNodeNewSize = minInt64(newNodeSize, maxInt64(0, dataSize - rank * newNodeSize));
 
-        if (update_SA) {
-            SA_second_pointer->resize(lastNodeSize);
-        }
+    // if (rank == 0) {
+    //     cout<<"manifold love "<<newNodeSize<<" "<<lastNodeSize<<endl;
+    // }
+
+    B_help->resize(thisNodeNewSize);
+    if (update_SA) {
+        SA_second_pointer->resize(thisNodeNewSize);
     }
+    
+    // if (rank < worldSize-1) {
+    //     B_help->resize(newNodeSize);
+            
+    //     if (update_SA) {
+    //         SA_second_pointer->resize(newNodeSize);
+    //     }
+    // }
+    // else {
+    //     // B_help->resize(lastNodeSize);
+
+    //     // if (update_SA) {
+    //     //     SA_second_pointer->resize(lastNodeSize);
+    //     // }
+    // }
 
     for (int i = 0; i < worldSize; i++) {
         helpVectors->dataForPartitions.data()[i].clear();

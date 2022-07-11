@@ -15,7 +15,6 @@ uint64_t DataSource::getTotalGenomeSize(int i) {
 
     std::string filename = getGenomeFilename(i);
 
-    // std::cout<<filename.c_str()<<std::endl;
     assert(MPI_File_open(MPI_COMM_WORLD, filename.c_str(), MPI_MODE_RDONLY, MPI_INFO_NULL, &fh) == 0);
     assert(MPI_File_get_size(fh, &filesize) == 0);
     assert(MPI_File_close(&fh) == 0);

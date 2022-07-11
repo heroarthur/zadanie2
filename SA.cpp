@@ -112,7 +112,6 @@ void SA_algorithm(vector<int64> *B_pointer,
 									  &done,
 									  worldRank,
 									  worldSize);
-		print_MPI_vector(SA_pointer, worldRank, worldSize);
 	}
 
 	MPI_Barrier(MPI_COMM_WORLD);
