@@ -17,7 +17,7 @@
 #include <bits/stdc++.h>
 
 #define root 0
-#define wyslijRaz 1000000
+#define wyslijRaz 100000
 #define int64 long long int
 #define charArrayLen 13
 #define k charArrayLen
@@ -29,7 +29,7 @@
 #define K charArrayLen
 #define ENTER cout<<endl<<endl
 
-#define THREADS_NUM 8
+#define THREADS_NUM 32
 #define BLOCKS_NUMBER THREADS_NUM
 
 using namespace std;

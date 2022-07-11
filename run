@@ -1,5 +1,5 @@
 #!/bin/bash
-mpirun -n 1 ./zadanie2 16 0 genomy/genom queries out
+mpirun -n 4 ./zadanie2 17 0 genomy/genom queries out
 # /opt/scalasca/bin/scalasca mpirun -n 4 ./zadanie2 1 0 genomy/genom queries out
 # mpirun -n 4 ./zadanie2 genomy/missisippi
 # valgrind --tool=callgrind mpirun -n 10 ./zadanie2
