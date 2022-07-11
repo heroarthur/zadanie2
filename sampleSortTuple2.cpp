@@ -28,10 +28,10 @@ using namespace std;
 
 
 
-int64 binarySearchTuple2(vector<Tuple2>* arr, 
-                         Tuple2 tuple, 
-                         int64 l, 
-                         int64 r)
+const int64 binarySearchTuple2(const vector<Tuple2>* arr, 
+                               Tuple2 tuple, 
+                               int64 l, 
+                               int64 r)
 {
     if (tuple2Greater(tuple, arr->data()[arr->size()-1])) {
         return arr->size();
@@ -56,14 +56,13 @@ int64 binarySearchTuple2(vector<Tuple2>* arr,
 }
 
 
-void findPivotPositionsTuple2(vector<Tuple2>* arr, 
-                              vector<Tuple2>* pivotsTuples, 
-                              vector<int64>* pivotsPositions, 
+void findPivotPositionsTuple2(const vector<Tuple2>* __restrict__ arr, 
+                              vector<Tuple2>* __restrict__ pivotsTuples, 
+                              vector<int64>* __restrict__ pivotsPositions, 
                               int rank) {
 
     pivotsPositions->resize(pivotsTuples->size());
 
-    // #pragma omp parallel for
     for (int i = 0; i < pivotsTuples->size(); i++) {
         pivotsPositions->data()[i] = binarySearchTuple2(arr, pivotsTuples->data()[i], 0, arr->size());
     }

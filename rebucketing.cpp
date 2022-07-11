@@ -55,7 +55,6 @@ void rebucket_assign_2h_group_rank(vector<Tuple3>* tuple,
                 if (tuple3Equal(tuple->data()[i-1], tuple->data()[i])) {
                         localAllSingletones = false;
                         B->data()[i] = B->data()[i-1];
-                        // break;
                     }
                 else {
                     B->data()[i] = i;
@@ -99,7 +98,6 @@ void rebucket_assign_2h_group_rank(vector<Tuple3>* tuple,
                 if (tuple3Equal(tuple->data()[i-1], tuple->data()[i])) {
                         *allSingletones = false;
                         B->data()[i] = B->data()[i-1];
-                        // break;
                     }
                 else {
                     B->data()[i] = i + indexOffset;

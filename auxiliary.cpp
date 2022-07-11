@@ -202,7 +202,7 @@ void initialize_SA(vector<int64>* SA,
                    vector<Tuple2>* tuple2) {
     SA->resize(tuple2->size());
 
-    // #pragma omp parallel for
+    #pragma omp parallel for
     for (int i = 0; i < tuple2->size(); i++) {
         SA->data()[i] = tuple2->data()[i].i;
     }
@@ -219,7 +219,7 @@ void fillTuple3(vector<int64>* B,
 
     tuple3->resize(B->size());
 
-    // #pragma omp parallel for
+    #pragma omp parallel for
     for (int i = 0; i < tuple3->size(); i++) {
         tuple3->data()[i].B = B->data()[i];
         tuple3->data()[i].B2 = B2->data()[i];
@@ -297,32 +297,12 @@ void do_sending_operation(vector<int64>* B,
     MPI_Allreduce(&nodeSize, &dataSize, 1, MPI_LONG_LONG_INT, MPI_SUM, MPI_COMM_WORLD);
 
     int64 newNodeSize = ceil(dataSize / (double) worldSize);
-    // int64 lastNodeSize = dataSize - (worldSize-1) * newNodeSize;
     int64 thisNodeNewSize = minInt64(newNodeSize, maxInt64(0, dataSize - rank * newNodeSize));
-
-    // if (rank == 0) {
-    //     cout<<"manifold love "<<newNodeSize<<" "<<lastNodeSize<<endl;
-    // }
 
     B_help->resize(thisNodeNewSize);
     if (update_SA) {
         SA_second_pointer->resize(thisNodeNewSize);
     }
-    
-    // if (rank < worldSize-1) {
-    //     B_help->resize(newNodeSize);
-            
-    //     if (update_SA) {
-    //         SA_second_pointer->resize(newNodeSize);
-    //     }
-    // }
-    // else {
-    //     // B_help->resize(lastNodeSize);
-
-    //     // if (update_SA) {
-    //     //     SA_second_pointer->resize(lastNodeSize);
-    //     // }
-    // }
 
     for (int i = 0; i < worldSize; i++) {
         helpVectors->dataForPartitions.data()[i].clear();
@@ -382,7 +362,7 @@ void do_sending_operation(vector<int64>* B,
         int64 offset = rank * newNodeSize;
 
         int64 index;
-        // #pragma omp parallel for private(index)
+        #pragma omp parallel for private(index)
         for (int i = 0; i < helpVectors->tmp_buff.size(); i++) {
             index = helpVectors->tmp_buff.data()[i].i1 - offset;
             B_help->data()[index] = helpVectors->tmp_buff.data()[i].i2;
@@ -525,13 +505,9 @@ void switchPointersTuple3(vector<Tuple3>** A1, vector<Tuple3>** A2) {
 }
 
 void initializeHelpingVectorsSendingOperations(HelpingVectorsSendingOperations* vectors, int worldSize) {
-    // vectors->partialArr.reserve(worldSize * wyslijRaz);
     vectors->partialPivotsPosition.resize(worldSize);
-    // vectors->scattervPositions.reserve(worldSize);
-    // vectors->displacement.reserve(worldSize);
     vectors->arrivingNumber.resize(worldSize);
     vectors->arrivingDisplacement.resize(worldSize);
-    // vectors->tmp_buff.reserve(worldSize * wyslijRaz);
     vectors->dataForPartitions.resize(worldSize);
 }
 
@@ -541,13 +517,8 @@ void initializeHelpingVectorsSampleSort2(HelpingVectorsSampleSort2* vectors, int
     vectors->pivotsPositions.resize(worldSize-1);   
     vectors->partialPivotsPosition.resize(worldSize);
     vectors->scattervPositions.resize(worldSize);
-    // vectors->displacement.reserve(worldSize);
     vectors->arrivingNumber.resize(worldSize);
     vectors->arrivingDisplacement.resize(worldSize);
-    // vectors->allArrivingNumbers.reserve(worldSize * 2 * vectorMemoryAllocationFactor);
-    // vectors->allArrivingDisplacement.reserve(worldSize * 2 * vectorMemoryAllocationFactor);
-    // vectors->addPadding.reserve(worldSize * vectorMemoryAllocationFactor);
-    // vectors->tmp_buff.reserve(worldSize * wyslijRaz);
     vectors->sample.resize(worldSize);
     vectors->rootSampleRecv.resize(worldSize * worldSize);
     vectors->broadcastSample.resize(worldSize-1);
@@ -555,17 +526,11 @@ void initializeHelpingVectorsSampleSort2(HelpingVectorsSampleSort2* vectors, int
 
 
 void initializeHelpingVectorsSampleSort3(HelpingVectorsSampleSort3* vectors, int worldSize) {
-    // vectors->partialArr.reserve(worldSize * wyslijRaz);
     vectors->pivotsPositions.resize(worldSize-1);   
     vectors->partialPivotsPosition.resize(worldSize);
     vectors->scattervPositions.resize(worldSize);
-    // vectors->displacement.reserve(worldSize);
     vectors->arrivingNumber.resize(worldSize);
     vectors->arrivingDisplacement.resize(worldSize);
-    // vectors->allArrivingNumbers.reserve(worldSize * 2 * vectorMemoryAllocationFactor);
-    // vectors->allArrivingDisplacement.reserve(worldSize * 2 * vectorMemoryAllocationFactor);
-    // vectors->addPadding.reserve(worldSize * vectorMemoryAllocationFactor);
-    // vectors->tmp_buff.reserve(worldSize * wyslijRaz);
     vectors->sample.resize(worldSize);
     vectors->rootSampleRecv.resize(worldSize * worldSize);
     vectors->broadcastSample.resize(worldSize-1);

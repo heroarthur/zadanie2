@@ -63,7 +63,6 @@ void findPivotPositionsTuple3(vector<Tuple3>* arr,
 
     pivotsPositions->resize(pivotsTuples->size());
 
-    // #pragma omp parallel for
     for (int i = 0; i < pivotsTuples->size(); i++) {
         if (arr->size()) {
             pivotsPositions->data()[i] = binarySearchTuple3(arr, pivotsTuples->data()[i], 0, arr->size());
@@ -238,8 +237,6 @@ void sample_sort_MPI_tuple3(vector<Tuple3>* A,
     int64 step = ceil((double) A->size() / (double) worldSize);
 
     int sendNumber = (int) minInt64(worldSize, (int64) A->size()); //worldSize;
-    // int sampleSize = minInt64(worldSize, A->size());
-
 
     int totalSampleSize;
     MPI_Allreduce(&sendNumber, &totalSampleSize, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
@@ -263,8 +260,6 @@ void sample_sort_MPI_tuple3(vector<Tuple3>* A,
         helpVectors->sample.push_back(A->data()[minInt64(i * step, A->size()-1)]);   
     }
         
-    MPI_Barrier(MPI_COMM_WORLD); //todo usunac bariere jesli mozna
-
     helpVectors->rootSampleRecv.resize(totalSampleSize);
 
     MPI_Allgatherv(helpVectors->sample.data(),

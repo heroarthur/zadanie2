@@ -14,8 +14,6 @@
 
 using namespace std;
 
-
-
 int main(int argc, char** argv) {
 
 	srand(1);
@@ -51,9 +49,6 @@ int main(int argc, char** argv) {
         copy(inputGenome.begin() + i, inputGenome.begin() + i + minInt64(k, dataSize), tuple2_Arr[i].B);
         tuple2_Arr[i].i = i;
     }
-
-
-
     
     std::sort(tuple2_Arr.begin(), tuple2_Arr.end(), cmp_tuple2());
 
@@ -80,7 +75,6 @@ int main(int argc, char** argv) {
         SA.data()[i] = tuple2_Arr.data()[i].i;
     }
 
-
     bool done = false;
 	for (int64 h = k; true; h*=2) {
 
@@ -90,7 +84,6 @@ int main(int argc, char** argv) {
         }
         for (int i = 0; i < dataSize; i++) {
             B_1[i] = B_2[i];
-            // SA[i] = SA_second[i];
         }
 
         if (done) {
@@ -135,5 +128,3 @@ int main(int argc, char** argv) {
 
 	return 0;
 }
-
-

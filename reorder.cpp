@@ -10,7 +10,6 @@
 #include <omp.h>
 #include <mpi.h>
 
-
 #ifndef   auxiliary
 #define   auxiliary
     #include "auxiliary.cpp"
@@ -20,11 +19,7 @@
 
 #define root 0
 
-
 using namespace std;
-
-
-
 
 void prepareDataForReorderSent(vector<int64>* B, 
                                vector<int64>* SA, 
@@ -39,20 +34,24 @@ void prepareDataForReorderSent(vector<int64>* B,
         const int64 normalThreadSize = ceil(nodeSize / (double) THREADS_NUM);
         const int normalVectorUpdateNumber = ceil(worldSize / (double) THREADS_NUM);
 
-        #pragma omp parallel num_threads(THREADS_NUM)
-        {
-            int thread_num;
-            int64 threadSize;
-            int nodeToSend;
-            int64 offset;
-            TwoInts64 data;
-            
+        int thread_num;
+        int64 threadSize;
+        int nodeToSend;
+        int64 offset;
+        TwoInts64 data;
+        vector<vector<TwoInts64>> localDataForPartitions;
+
+        int index;
+        int updateVectorsNumber;
+        int vector_offset;
+
+        #pragma omp parallel private(thread_num, threadSize, nodeToSend, offset, data, localDataForPartitions, index, updateVectorsNumber, vector_offset) num_threads(THREADS_NUM)
+        {            
             thread_num = omp_get_thread_num();
             threadSize = minInt64(normalThreadSize, maxInt64(0, nodeSize - thread_num * normalThreadSize));
 
-            offset = thread_num * normalThreadSize;
-            vector<vector<TwoInts64>> localDataForPartitions;
             localDataForPartitions.resize(worldSize);
+            offset = thread_num * normalThreadSize;
 
             for (int64 i = offset; i < offset + threadSize; i++) {
                 nodeToSend = getNodeToSend(SA->data()[i], newNodeSize);
@@ -61,15 +60,11 @@ void prepareDataForReorderSent(vector<int64>* B,
                 localDataForPartitions.data()[nodeToSend].push_back(data);
             }
 
-            //  #pragma omp barrier
+            index = thread_num;
 
-            int index = thread_num;
-            int updateVectorsNumber;
-            int vector_offset;
             for (int i = 0; i < THREADS_NUM; i++) {
                 index = (index + i) % THREADS_NUM;
-                // #pragma omp barrier
-                // #pragma omp critical
+
                 vector_offset = index * normalVectorUpdateNumber;
                 updateVectorsNumber = minInt64(normalVectorUpdateNumber, maxInt64(0, worldSize - index * normalVectorUpdateNumber));
                 for (int v_index = vector_offset; v_index < vector_offset+updateVectorsNumber; v_index++)
@@ -83,7 +78,6 @@ void prepareDataForReorderSent(vector<int64>* B,
             }
         }
 }
-
 
 void reorder_and_rebalance(vector<int64>* B, 
                            vector<int64>* B_new, 
@@ -103,7 +97,6 @@ void reorder_and_rebalance(vector<int64>* B,
                          rank, 
                          worldSize,
                          &prepareDataForReorderSent);
-    
 }
 
 

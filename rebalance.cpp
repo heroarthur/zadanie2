@@ -64,22 +64,9 @@ void rebalanceArray(vector<int64>* A,
     MPI_Allreduce(&nodeSize, &dataSize, 1, MPI_LONG_LONG_INT, MPI_SUM, MPI_COMM_WORLD);
 
     int64 newNodeSize = ceil(dataSize / (double) worldSize);
-    // int64 lastNodeSize = maxInt64(dataSize - (worldSize-1) * newNodeSize, 0);
     int64 thisNodeNewSize = minInt64(newNodeSize, maxInt64(0, dataSize - rank * newNodeSize));
 
     A_help->resize(thisNodeNewSize);
-
-    // if (rank < worldSize-1) {
-    //     A_help->resize(newNodeSize);
-    // }
-    // else {
-    //     if (lastNodeSize > 0) {
-    //         A_help->resize(lastNodeSize);
-    //     }
-    //     else {
-    //         A_help->resize(0);
-    //     }
-    // }
 
     for (int i = 0; i < worldSize; i++) {
         helpVectors->dataForPartitions.data()[i].clear();

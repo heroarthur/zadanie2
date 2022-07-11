@@ -24,18 +24,6 @@
 
 using namespace std;
 
-// usunieta
-// typedef struct shift {
-//     int64 i;
-//     int64 B_i_h;
-// } Shift_data;
-
-
-
-
-
-
-
 
 void prepareDataForShiftSent(vector<int64>* B, 
                              vector<int64>* None1, 
@@ -55,6 +43,7 @@ void prepareDataForShiftSent(vector<int64>* B,
     int data_size_minus_one = dataSize-1;
     TwoInts64 data;
     int64 offset = rank * newNodeSize;
+    
     // #pragma omp parallel for
     for (int i = 0; i < B->size(); i++) {
         curr_i = offset + i;
@@ -66,7 +55,7 @@ void prepareDataForShiftSent(vector<int64>* B,
         if (target_i >= 0) {
             data.i1 = target_i;
             data.i2 = B->data()[i];
-            // #pragma omp critical
+            #pragma omp critical
             {
                 dataForPartitions->data()[targetNode].push_back(data);
             }
@@ -74,11 +63,13 @@ void prepareDataForShiftSent(vector<int64>* B,
         if (curr_i + h > data_size_minus_one) {
             data.i1 = curr_i;
             data.i2 = 0;
-            // #pragma omp critical
+            #pragma omp critical
             {
                 dataForPartitions->data()[currNode].push_back(data);
             }
         }
+
+        // #pragma omp barrier
     }
 }
 

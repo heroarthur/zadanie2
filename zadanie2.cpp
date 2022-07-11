@@ -13,13 +13,7 @@
 #include "data_source.h"
 #include "addEdgeParts.cpp"
 
-// #include "cubew_cube.h"
-
-
 using namespace std;
-
-
-
 
 int main(int argc, char** argv) {
 
@@ -78,21 +72,17 @@ int main(int argc, char** argv) {
     MPI_Type_create_struct(2, blockcountArrData, offsetsArrData, dataTypeArrData, &MPI_TwoInts64);
     MPI_Type_commit(&MPI_TwoInts64);
 
-
 	srand (worldRank);
 
-	
-	vector<int64> B_1; //B_1.reserve(1.2 * singleNodeDataSize);
-	vector<int64> B_2; //B_2.reserve(1.2 * singleNodeDataSize);
+	vector<int64> B_1; 
+	vector<int64> B_2; 
 	vector<int64> *B_ISA_pointer, *SA_pointer;
 
-	vector<Tuple2> tuple2_Arr; //tuple2_Arr.resize(singleNodeDataSize); //tuple2_Arr.reserve(1.2 * singleNodeDataSize);
-	vector<Tuple2> tuple2_second; //tuple2_second.reserve(1.2 * singleNodeDataSize);
+	vector<Tuple2> tuple2_Arr; 
+	vector<Tuple2> tuple2_second; 
 
-
-	vector<Tuple3> tuple3; //tuple3.reserve(1.2 * singleNodeDataSize);
-	vector<Tuple3> tuple3_second; //tuple3_second.reserve(1.2 * singleNodeDataSize);
-
+	vector<Tuple3> tuple3;
+	vector<Tuple3> tuple3_second; 
 
 	HelpingVectorsSendingOperations helpVectorsSendingOperations;
 	HelpingVectorsSampleSort2 helpVectorsSampleSort2;
@@ -101,7 +91,6 @@ int main(int argc, char** argv) {
 	initializeHelpingVectorsSendingOperations(&helpVectorsSendingOperations, worldSize);
 	initializeHelpingVectorsSampleSort2(&helpVectorsSampleSort2, worldSize);
 	initializeHelpingVectorsSampleSort3(&helpVectorsSampleSort3, worldSize);
-
 
 	vector<int64> SA, SA_second;
 
