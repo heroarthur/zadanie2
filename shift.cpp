@@ -19,8 +19,6 @@
 
 #include<bits/stdc++.h>
 
-#define root 0
-
 
 using namespace std;
 

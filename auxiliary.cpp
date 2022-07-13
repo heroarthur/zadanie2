@@ -29,7 +29,7 @@
 #define K charArrayLen
 #define ENTER cout<<endl<<endl
 
-#define THREADS_NUM 32
+#define THREADS_NUM 8
 #define BLOCKS_NUMBER THREADS_NUM
 
 using namespace std;
@@ -588,7 +588,6 @@ void local_sort_openMP_tuple2(vector<Tuple2>* A) {
 	{
 		int mergesInStep = (BLOCKS_NUMBER / (2 * mergeStep));
 
-		// todo dodaj private i zobacz czy szybciej
 		#pragma omp parallel for
 		for (int i = 0; i < mergesInStep; i++) {
 			int64 halfMergeLen = (A->size() / BLOCKS_NUMBER) * mergeStep;

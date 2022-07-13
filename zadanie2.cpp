@@ -12,6 +12,7 @@
 #include "SA.cpp"
 #include "data_source.h"
 #include "addEdgeParts.cpp"
+#include "binarySearch.cpp"
 
 using namespace std;
 
