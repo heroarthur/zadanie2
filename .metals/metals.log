@@ -5,3 +5,4 @@
 2022.07.11 17:41:35 WARN  Flyway upgrade recommended: H2 2.1.214 is newer than this version of Flyway and support has not been tested. The latest supported version of H2 is 2.1.210.
 2022.07.11 17:41:35 WARN  Build server is not auto-connectable.
 2022.07.11 17:41:35 WARN  no build tool detected in workspace '/home/karol/OSK/zadanie2_mpi/src'. The most common cause for this problem is that the editor was opened in the wrong working directory, for example if you use sbt then the workspace directory should contain build.sbt. 
+2022.07.13 18:00:38 INFO  shutting down Metals

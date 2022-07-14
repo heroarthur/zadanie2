@@ -143,22 +143,84 @@ int main(int argc, char** argv) {
 			tuple2_Arr.data()[i].i = i + nodeGenomeOffset;
 		}
 
-		SA_algorithm(&B_1,
-					 &B_2,
-					 &SA,
-					 &SA_second,
-					 &tuple2_Arr, 
-					 &tuple2_second, 
-					 &tuple3, 
-					 &tuple3_second,
-					 &helpVectorsSendingOperations,
-					 &helpVectorsSampleSort2,
-					 &helpVectorsSampleSort3,
-					 &B_ISA_pointer, 
-					 worldRank,
-					 worldSize);
+		// SA_algorithm(&B_1,
+		// 			 &B_2,
+		// 			 &SA,
+		// 			 &SA_second,
+		// 			 &tuple2_Arr, 
+		// 			 &tuple2_second, 
+		// 			 &tuple3, 
+		// 			 &tuple3_second,
+		// 			 &helpVectorsSendingOperations,
+		// 			 &helpVectorsSampleSort2,
+		// 			 &helpVectorsSampleSort3,
+		// 			 &B_ISA_pointer, 
+		// 			 worldRank,
+		// 			 worldSize);
 		
-		print_MPI_vector(&SA, worldRank, worldSize);
+		// print_MPI_vector(&SA, worldRank, worldSize);
+
+		// define your file name
+		string file_name = "genomy/genom_4";
+
+		// attach an input stream to the wanted file
+		ifstream input_stream(file_name);
+
+		// check stream status
+		if (!input_stream) cerr << "Can't open input file!";
+
+		// file contents  
+		vector<string> text;
+
+		// one line
+		string line;
+
+		getline(input_stream, line);
+
+		nodeCharArray.resize(nodeGenomeSize);
+
+		int64 prefixStart = 23;
+		int64 prefixLen = 50;
+		string somePrefixString = line.substr(prefixStart, prefixLen);
+		vector<char> somePrefix(somePrefixString.begin(), somePrefixString.end());
+
+		int64 dataSize;
+		int64 nodeSize = nodeCharArray.size();
+
+		MPI_Allreduce(&nodeSize, &dataSize, 1, MPI_LONG_LONG_INT, MPI_SUM, MPI_COMM_WORLD);
+
+		int64 newNodeSize = dataSize / worldSize;
+		// int64 thisNodeNewSize = minInt64(newNodeSize, maxInt64(0, dataSize - worldRank * newNodeSize));
+		vector<char> prefix;
+
+		// cout<<"node size "<<worldRank<<" "<<nodeSize<<endl;
+		// vector<int64> machinesSizes; machinesSizes.resize(worldSize);
+
+
+		// MPI_Allgather(&nodeSize, 
+		// 			  1, 
+		// 			  MPI_LONG_LONG_INT, 
+		// 			  machinesSizes.data(),
+		// 			  1, 
+		// 			  MPI_LONG_LONG_INT, 
+		// 			  MPI_COMM_WORLD);
+
+
+		getPrefixFromGenom(&somePrefix, 
+						   &prefix,
+						   dataSize,
+						   nodeSize,
+						   newNodeSize,
+						   prefixStart,
+						   &nodeCharArray,
+						   worldRank,
+						   worldSize);
+
+		if (prefix.size() > 0) {
+			cout<<"prefiksy"<<endl;
+			cout<<somePrefixString<<endl;
+			cout<<prefix.data()<<endl;
+		}
 	}
 
 
