@@ -204,29 +204,9 @@ void findAnyInfixIndexWithPrefixQuery(vector<char>* query, //ma juz \0 na koncu
     int machineWhereSAstart;
     int64 prefixLen = query->size()-1;
     vector<char> prefix;
-    cout<<"SA size "<<SA->size()<<endl;
 
     int64 sizeSoFar = 0;
 
-    // cout<<"offsety"<<endl;
-    for (int i = 0; i < worldSize; i++) {
-        // cout<<SA_machineOffsets->data()[i]<<endl;
-    }
-
-
-
-
-    // for (int i = 0; i < worldSize; i++) {
-    //     if (SA_machineOffsets->data()[i] + SA_machineSizes->data()[i] > currIndex) {
-    //         machineWhereSAstart = i;
-    //         break;
-    //     }
-    //     // cout<<"machine sizes "<<machineSizes->data()[i]<<" offset "<<SA_machineOffsets->data()[i]<<endl;
-    // }
-
-
-
-    // machineWhereSAstart = currIndex / SA_normalNodeSize;
     getIndex(SA_machineSizes,
              SA_machineOffsets,
              currIndex,
@@ -234,42 +214,25 @@ void findAnyInfixIndexWithPrefixQuery(vector<char>* query, //ma juz \0 na koncu
              rank,
              worldSize);
 
-    cout<<"machine where SA start "<<machineWhereSAstart<<" offset "<<SA_machineOffsets->data()[machineWhereSAstart]<<endl;
-
-
-    // cout<<"curr index "<<currIndex<<endl;
     if (rank == machineWhereSAstart) {
         SA_index = SA->data()[currIndex - SA_machineOffsets->data()[machineWhereSAstart]];
-        cout<<"wartosc sa index size "<<SA->size()<<" "<<SA_index<<endl;
     }
 
 
     MPI_Bcast(&SA_index, 1, MPI_LONG_LONG_INT, machineWhereSAstart, MPI_COMM_WORLD);
-    cout<<"sa index "<<SA_index<<endl;
-    // cout<<"SA index "<<SA_index<<endl;
 
-    print_MPI_vector(SA, rank, worldSize);
 
     int machineWherePrefixStart;
     int cmp_dluzsze;
     int cmp_krotsze;
 
     for (int i = 0; i < dataSize; i++) {
-
-        if (rank == 0) {
-            // cout<<"wartosci l i r "<<l<<" "<<r<<endl;
-        }
         if (l > r) {
             *startIndexWithPrefix = -1;
             return;
         }
 
-        // if (rank == 0) {
-        //     cout<<"curr index "<<currIndex<<endl;
-        // }
 
-
-        // cout<<"SA index "<<SA_index<<endl;
         getPrefixFromGenom(SA_index,
                            prefixLen,
                            &prefix,
@@ -281,27 +244,15 @@ void findAnyInfixIndexWithPrefixQuery(vector<char>* query, //ma juz \0 na koncu
                            rank,
                            worldSize);
 
-        if (rank == 0) {
-            cout<<"machine where prefix start "<<machineWherePrefixStart<<endl;
-        }
-        // cout<<"SAindex"<<SA_index<<endl;
         MPI_Barrier(MPI_COMM_WORLD);
         
         if (machineWherePrefixStart == rank) {
             prefix.push_back('\0');
             cmp_dluzsze = strcmp(query->data(), prefix.data());
 
-            // cout<<"prefix dluzszy "<<prefix.data()<<" query "<<query->data()<<endl;
-
-
             prefix.pop_back(); prefix.pop_back(); prefix.push_back('\0');
             cmp_krotsze = strcmp(query->data(), prefix.data());
-
-            // cout<<"prefix krotszy "<<prefix.data()<<"    SAindex currIndex "<<SA_index<<" "<<currIndex<<endl;
-            // cout<<"cmp dluzsze "<<cmp_dluzsze<<endl;
         }
-
-        // cout<<"machine where prefix start "<<machineWherePrefixStart<<" cmp dluzsze "<<cmp_dluzsze<<endl;
 
         MPI_Bcast(&cmp_dluzsze, 1, MPI_INT, machineWherePrefixStart, MPI_COMM_WORLD);
         MPI_Bcast(&cmp_krotsze, 1, MPI_INT, machineWherePrefixStart, MPI_COMM_WORLD);
@@ -310,8 +261,6 @@ void findAnyInfixIndexWithPrefixQuery(vector<char>* query, //ma juz \0 na koncu
         
         if (cmp_krotsze == 0 || cmp_dluzsze == 0) {
             *startIndexWithPrefix = SA_index;
-            cout<<"wynik "<<currIndex<<endl;
-
             return;
         }
 
@@ -326,15 +275,6 @@ void findAnyInfixIndexWithPrefixQuery(vector<char>* query, //ma juz \0 na koncu
 
         currIndex = (l + r) / 2;
 
-        // if (rank == 0) {
-            // cout<<"SA index przed "<<SA_index<<endl;
-        // }
-        // SA_index = SA->data()[currIndex];
-        // if (rank == 0) {
-            // cout<<"SA index po"<<SA_index<<" curr index "<<currIndex<<endl;
-        // }
-        // cout<<"dziwne wartosci "<<currIndex<<" "<<SA_normalNodeSize<<endl;
-        // machineWhereSAstart = currIndex / SA_normalNodeSize;
         getIndex(SA_machineSizes,
                  SA_machineOffsets,
                  currIndex,
@@ -342,17 +282,12 @@ void findAnyInfixIndexWithPrefixQuery(vector<char>* query, //ma juz \0 na koncu
                  rank,
                  worldSize);
 
-        cout<<"machine where SA start "<<machineWhereSAstart<<" offset "<<SA_machineOffsets->data()[machineWhereSAstart]<<endl;
-
-
         if (rank == machineWhereSAstart) {
             SA_index = SA->data()[currIndex - SA_machineOffsets->data()[machineWhereSAstart]];
         }
         MPI_Bcast(&SA_index, 1, MPI_LONG_LONG_INT, machineWhereSAstart, MPI_COMM_WORLD);
 
         MPI_Barrier(MPI_COMM_WORLD);
-
-        // break;
     }
 
     
@@ -362,7 +297,102 @@ void findAnyInfixIndexWithPrefixQuery(vector<char>* query, //ma juz \0 na koncu
 
 
 
-void findMostLeftPrefix() {
+void findMostLeftPrefix(vector<char>* query, //ma juz \0 na koncu
+                        int64* resultIndex,
+                        int64 startIndex,
+                        int64 dataSize,
+                        int64 nodeSize,
+                        vector<int64>* machineSizes,
+                        vector<int64>* SA_machineSizes,
+                        vector<int64>* SA_machineOffsets,
+                        vector<char>* nodeCharArray,
+                        vector<int64>* SA,
+                        int rank,
+                        int worldSize) {
+
+
+    int64 l, r;
+    l = 0;
+    r = startIndex-1;
+    int64 previousFoundIndex = startIndex;
+    int64 currIndex = (l + r) / 2;
+    // cout<<"curr index "<<currIndex<<endl;
+    int64 SA_index;
+    int machineWhereSAstart;
+    int64 prefixLen = query->size()-1;
+    vector<char> prefix;
+
+    int64 sizeSoFar = 0;
+
+    getIndex(SA_machineSizes,
+             SA_machineOffsets,
+             currIndex,
+             &machineWhereSAstart,
+             rank,
+             worldSize);
+
+    if (rank == machineWhereSAstart) {
+        SA_index = SA->data()[currIndex - SA_machineOffsets->data()[machineWhereSAstart]];
+    }
+
+
+    MPI_Bcast(&SA_index, 1, MPI_LONG_LONG_INT, machineWhereSAstart, MPI_COMM_WORLD);
+
+
+    int machineWherePrefixStart;
+    int cmp_dluzsze;
+    int cmp_krotsze;
+
+    for (int i = 0; i < dataSize; i++) {
+        if (l > r) {
+            *resultIndex = previousFoundIndex;
+            return;
+        }
+
+        getPrefixFromGenom(SA_index,
+                           prefixLen,
+                           &prefix,
+                           &machineWherePrefixStart,
+                           dataSize,
+                           nodeSize,
+                           machineSizes,
+                           nodeCharArray,
+                           rank,
+                           worldSize);
+
+        MPI_Barrier(MPI_COMM_WORLD);
+        
+        if (machineWherePrefixStart == rank) {
+            prefix.pop_back(); prefix.push_back('\0');
+            cmp_krotsze = strcmp(query->data(), prefix.data());
+        }
+
+        MPI_Bcast(&cmp_krotsze, 1, MPI_INT, machineWherePrefixStart, MPI_COMM_WORLD);
+        
+        if (cmp_krotsze == 0) {
+            previousFoundIndex = currIndex;
+            r = currIndex-1;
+        }
+        else {
+            l = currIndex+1;
+        }
+
+        currIndex = (l + r) / 2;
+
+        getIndex(SA_machineSizes,
+                 SA_machineOffsets,
+                 currIndex,
+                 &machineWhereSAstart,
+                 rank,
+                 worldSize);
+
+        if (rank == machineWhereSAstart) {
+            SA_index = SA->data()[currIndex - SA_machineOffsets->data()[machineWhereSAstart]];
+        }
+        MPI_Bcast(&SA_index, 1, MPI_LONG_LONG_INT, machineWhereSAstart, MPI_COMM_WORLD);
+
+        MPI_Barrier(MPI_COMM_WORLD);
+    }
 
 }
 
@@ -370,6 +400,7 @@ void findMostLeftPrefix() {
 void findMostRightPrefix() {
 
 }
+
 
 
 
@@ -413,8 +444,6 @@ void startEdgePrefixIndexes(vector<char>* query,
         SA_machineOffset += SA_machineSizes.data()[i];
     }
 
-    // cout<<"machine offset "<<SA_machineOffset<<endl;
-
     SA_machineOffsets.resize(worldSize);
     MPI_Allgather(&SA_machineOffset, 
                   1, 
@@ -438,23 +467,29 @@ void startEdgePrefixIndexes(vector<char>* query,
                                      rank,
                                      worldSize);
 
-    cout<<"znaleziono pierwsze wystapienie "<<startIndexWithPrefix<<endl;
+    int64 leftMost, rightMost;
+
+    findMostLeftPrefix(query, //ma juz \0 na koncu
+                       &leftMost,
+                       startIndexWithPrefix,
+                       dataSize,
+                       nodeSize,
+                       &machineSizes,
+                       &SA_machineSizes,
+                       &SA_machineOffsets,
+                       nodeCharArray,
+                       SA,
+                       rank,
+                       worldSize);
+
+
+    if (rank == 0) {
+        cout<<"wynik leftMost any "<<leftMost<<" "<<startIndexWithPrefix<<endl;
+    }
 
 }
     
     
-
-                                    // (vector<char>* query, //ma juz \0 na koncu
-                                    // int64* startIndexWithPrefix,
-                                    // int64 dataSize,
-                                    // int64 nodeSize,
-                                    // vector<int64>* machineSizes,
-                                    // vector<int64>* SA_machineSizes,
-                                    // vector<int64>* SA_machineOffsets,
-                                    // vector<char>* nodeCharArray,
-                                    // vector<int64>* SA,
-                                    // int rank,
-                                    // int worldSize)
 
 
 // CAACCTTGCGACAGGGCGGG
