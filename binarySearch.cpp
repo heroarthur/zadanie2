@@ -397,6 +397,124 @@ void findMostLeftPrefix(vector<char>* query, //ma juz \0 na koncu
 }
 
 
+void findMostLeftOrRightPrefix(vector<char>* query, //ma juz \0 na koncu
+                               bool leftMost,
+                               int64* resultIndex,
+                               int64 startIndex,
+                               int64 dataSize,
+                               int64 nodeSize,
+                               vector<int64>* machineSizes,
+                               vector<int64>* SA_machineSizes,
+                               vector<int64>* SA_machineOffsets,
+                               vector<char>* nodeCharArray,
+                               vector<int64>* SA,
+                               int rank,
+                               int worldSize) {
+
+
+    int64 l, r;
+    if (leftMost) {
+        l = 0;
+        r = startIndex-1;
+    }
+    else {
+        l = startIndex+1;
+        r = dataSize-1;
+    }
+
+    int64 previousFoundIndex = startIndex;
+    int64 currIndex = (l + r) / 2;
+    // cout<<"curr index "<<currIndex<<endl;
+    int64 SA_index;
+    int machineWhereSAstart;
+    int64 prefixLen = query->size()-1;
+    vector<char> prefix;
+
+    int64 sizeSoFar = 0;
+
+    getIndex(SA_machineSizes,
+             SA_machineOffsets,
+             currIndex,
+             &machineWhereSAstart,
+             rank,
+             worldSize);
+
+    if (rank == machineWhereSAstart) {
+        SA_index = SA->data()[currIndex - SA_machineOffsets->data()[machineWhereSAstart]];
+    }
+
+
+    MPI_Bcast(&SA_index, 1, MPI_LONG_LONG_INT, machineWhereSAstart, MPI_COMM_WORLD);
+
+
+    int machineWherePrefixStart;
+    int cmp_dluzsze;
+    int cmp_krotsze;
+
+    for (int i = 0; i < dataSize; i++) {
+        if (l > r) {
+            *resultIndex = previousFoundIndex;
+            return;
+        }
+
+        getPrefixFromGenom(SA_index,
+                           prefixLen,
+                           &prefix,
+                           &machineWherePrefixStart,
+                           dataSize,
+                           nodeSize,
+                           machineSizes,
+                           nodeCharArray,
+                           rank,
+                           worldSize);
+
+        MPI_Barrier(MPI_COMM_WORLD);
+        
+        if (machineWherePrefixStart == rank) {
+            prefix.pop_back(); prefix.push_back('\0');
+            cmp_krotsze = strcmp(query->data(), prefix.data());
+        }
+
+        MPI_Bcast(&cmp_krotsze, 1, MPI_INT, machineWherePrefixStart, MPI_COMM_WORLD);
+        
+        if (cmp_krotsze == 0) {
+            previousFoundIndex = currIndex;
+            if (leftMost) {
+                r = currIndex-1;
+            }
+            else {
+                l = currIndex+1;
+            }
+        }
+        else {
+            if (leftMost) {
+                l = currIndex+1;
+            }
+            else {
+                r = currIndex-1;
+            }
+        }
+
+        currIndex = (l + r) / 2;
+
+        getIndex(SA_machineSizes,
+                 SA_machineOffsets,
+                 currIndex,
+                 &machineWhereSAstart,
+                 rank,
+                 worldSize);
+
+        if (rank == machineWhereSAstart) {
+            SA_index = SA->data()[currIndex - SA_machineOffsets->data()[machineWhereSAstart]];
+        }
+        MPI_Bcast(&SA_index, 1, MPI_LONG_LONG_INT, machineWhereSAstart, MPI_COMM_WORLD);
+
+        MPI_Barrier(MPI_COMM_WORLD);
+    }
+
+}
+
+
 void findMostRightPrefix() {
 
 }
@@ -468,25 +586,43 @@ void startEdgePrefixIndexes(vector<char>* query,
                                      worldSize);
 
     int64 leftMost, rightMost;
+    bool isLeftMost = true;
+    bool isRightMost = false;
 
-    findMostLeftPrefix(query, //ma juz \0 na koncu
-                       &leftMost,
-                       startIndexWithPrefix,
-                       dataSize,
-                       nodeSize,
-                       &machineSizes,
-                       &SA_machineSizes,
-                       &SA_machineOffsets,
-                       nodeCharArray,
-                       SA,
-                       rank,
-                       worldSize);
+    findMostLeftOrRightPrefix(query, //ma juz \0 na koncu
+                              isLeftMost,
+                              &leftMost,
+                              startIndexWithPrefix,
+                              dataSize,
+                              nodeSize,
+                              &machineSizes,
+                              &SA_machineSizes,
+                              &SA_machineOffsets,
+                              nodeCharArray,
+                              SA,
+                              rank,
+                              worldSize);
+
+
+    findMostLeftOrRightPrefix(query, //ma juz \0 na koncu
+                              isRightMost,
+                              &rightMost,
+                              startIndexWithPrefix,
+                              dataSize,
+                              nodeSize,
+                              &machineSizes,
+                              &SA_machineSizes,
+                              &SA_machineOffsets,
+                              nodeCharArray,
+                              SA,
+                              rank,
+                              worldSize);
 
 
     if (rank == 0) {
-        cout<<"wynik leftMost any "<<leftMost<<" "<<startIndexWithPrefix<<endl;
+        cout<<"wynik leftMost rightMost any "<<leftMost<<" "<<rightMost<<" "<<startIndexWithPrefix<<endl;
     }
-
+    
 }
     
     
