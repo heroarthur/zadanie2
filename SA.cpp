@@ -28,6 +28,7 @@ using namespace std;
 
 void SA_algorithm(vector<int64> *B_pointer,
                   vector<int64> *B_second_pointer,
+				  vector<int64>** pointerForFinalSA,
                   vector<int64> *SA_pointer,
                   vector<int64> *SA_second_pointer,
                   vector<Tuple2> *tuple2_pointer,
@@ -73,6 +74,21 @@ void SA_algorithm(vector<int64> *B_pointer,
 
 		if (done) {
 			*B_ISA_pointer = B_pointer;
+			// switchPointersInt64(&SA_pointer, &SA_second_pointer);
+
+			// rebalanceArray(SA_pointer, 
+			// 			   SA_second_pointer,
+			// 			   helpVectorsSendingOperations,
+			// 			   worldRank,
+			// 			   worldSize);
+			// switchPointersInt64(&SA_pointer, &SA_second_pointer);
+
+			// print
+			// print_MPI_vector(SA_second_pointer, worldRank, worldSize);
+
+			// print_MPI_vector(SA_pointer, worldRank, worldSize);
+
+			// *pointerForFinalSA = SA_pointer;
 			break;
 		}
 
@@ -87,12 +103,18 @@ void SA_algorithm(vector<int64> *B_pointer,
 
 		switchPointersInt64(&SA_pointer, &SA_second_pointer);
 
+			
+		// print_MPI_vector(SA_pointer, worldRank, worldSize);
+
 		rebalanceArray(SA_pointer, 
                        SA_second_pointer,
                        helpVectorsSendingOperations,
                        worldRank, 
                        worldSize);
 		switchPointersInt64(&SA_pointer, &SA_second_pointer);
+
+		// print_MPI_vector(SA_pointer, worldRank, worldSize);
+
 		
 		fillTuple3(B_pointer, 
 				   B_second_pointer, 

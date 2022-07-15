@@ -143,20 +143,20 @@ int main(int argc, char** argv) {
 			tuple2_Arr.data()[i].i = i + nodeGenomeOffset;
 		}
 
-		// SA_algorithm(&B_1,
-		// 			 &B_2,
-		// 			 &SA,
-		// 			 &SA_second,
-		// 			 &tuple2_Arr, 
-		// 			 &tuple2_second, 
-		// 			 &tuple3, 
-		// 			 &tuple3_second,
-		// 			 &helpVectorsSendingOperations,
-		// 			 &helpVectorsSampleSort2,
-		// 			 &helpVectorsSampleSort3,
-		// 			 &B_ISA_pointer, 
-		// 			 worldRank,
-		// 			 worldSize);
+		SA_algorithm(&B_1,
+					 &B_2,
+					 &SA,
+					 &SA_second,
+					 &tuple2_Arr, 
+					 &tuple2_second, 
+					 &tuple3, 
+					 &tuple3_second,
+					 &helpVectorsSendingOperations,
+					 &helpVectorsSampleSort2,
+					 &helpVectorsSampleSort3,
+					 &B_ISA_pointer, 
+					 worldRank,
+					 worldSize);
 		
 		// print_MPI_vector(&SA, worldRank, worldSize);
 
