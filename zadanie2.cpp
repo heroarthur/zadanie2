@@ -20,7 +20,7 @@ using namespace std;
 
 int main(int argc, char** argv) {
 
-	if (argc != 6) {
+	if (argc != 7) {
 		return -1;
 	}
 
@@ -46,12 +46,18 @@ int main(int argc, char** argv) {
 	string genome_in(argv[3]);
 	string queries_in(argv[4]);
 	string queries_out(argv[5]);
+	string queryString(argv[6]);
+
+	vector<char> query(queryString.begin(), queryString.end());
+	query.push_back('\0');
+	// cout<<"rozmiar wektora "<<query.size()<<endl;
 
 	// string fileName(argv[1]);
 
 	int64 totalGenomeSize;
 	int64 nodeGenomeSize;
 	int64 nodeGenomeOffset;
+	int64 originalNodeSize;
 
 	vector<char> nodeCharArray;
 	
@@ -118,6 +124,7 @@ int main(int argc, char** argv) {
 
 		totalGenomeSize = dataSource.getTotalGenomeSize(i);
 		nodeGenomeSize = dataSource.getNodeGenomeSize(i);
+		originalNodeSize = nodeGenomeSize;
 
 		nodeGenomeOffset = dataSource.getNodeGenomeOffset(i);
 		nodeCharArray.resize(nodeGenomeSize);
@@ -131,6 +138,7 @@ int main(int argc, char** argv) {
 		
 		if (worldRank == worldSize-1) {
 			nodeGenomeSize++;
+			originalNodeSize++;
 			nodeCharArray.data()[nodeGenomeSize-1] = '$';
 		}
 
@@ -158,7 +166,16 @@ int main(int argc, char** argv) {
 					 worldRank,
 					 worldSize);
 		
-		print_MPI_vector(&SA, worldRank, worldSize);
+		// print_MPI_vector(&SA, worldRank, worldSize);
+
+		startEdgePrefixIndexes(&query,
+							   &nodeCharArray,
+							   &SA,
+							   originalNodeSize,
+							   worldRank,
+							   worldSize);
+
+		// cout<<"zabij mnie\n";
 	}
 
 

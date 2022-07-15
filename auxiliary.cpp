@@ -599,3 +599,8 @@ void local_sort_openMP_tuple2(vector<Tuple2>* A) {
 		}
 	}
 }
+
+
+int64 absInt64(int64 a, int64 b) {
+    return a > b ? a - b : b - a;
+}
