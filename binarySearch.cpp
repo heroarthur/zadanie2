@@ -47,19 +47,15 @@ void getPrefixFromGenom(int64 prefixStart,
     int64 querySize = prefixLen;
     int64 machineWherePrefixStartLocal;
 
-    // cout<<"preifx start get prefix "<<prefixStart<<endl;
-    // cout<<"prefix start "<<prefixStart<<endl;
     int64 sizeSoFar = 0;
     for (int i = 0; i < worldSize; i++) {
         if (machineSizes->data()[i] + sizeSoFar > prefixStart) {
             machineWherePrefixStartLocal = i;
             break;
         }
-        // cout<<"machine sizes "<<machineSizes->data()[i]<<endl;
         sizeSoFar += machineSizes->data()[i];
     }
 
-    // cout<<"machine where prefix start "<<machineWherePrefixStartLocal<<endl;
     *machineWherePrefixStart = machineWherePrefixStartLocal;
 
     int64 offset = 0;
@@ -174,8 +170,6 @@ void getIndex(vector<int64>* machineSizes,
               int* containedMachine,
               int rank,
               int worldSize) {
-
-    // cout<<"index "<<index<<endl;
         
     for (int i = 0; i < worldSize; i++) {
         if (machineOffsets->data()[i] <= index && index < machineOffsets->data()[i] + machineSizes->data()[i]) {
@@ -421,6 +415,7 @@ void findMostLeftOrRightPrefix(vector<char>* query, //ma juz \0 na koncu
 void startEdgePrefixIndexes(vector<char>* query,
                             vector<char>* nodeCharArray,
                             vector<int64>* SA,
+                            int64* resultCount,
                             int64 originalNodeSize,
                             int rank,
                             int worldSize) {
@@ -488,7 +483,7 @@ void startEdgePrefixIndexes(vector<char>* query,
     bool isRightMost = false;
 
     if (startIndexWithPrefix == -1) {
-        cout<<0;
+        *resultCount = 0;
         return;
     }
 
@@ -522,9 +517,7 @@ void startEdgePrefixIndexes(vector<char>* query,
                               worldSize);
 
     int64 result = rightMost - leftMost + 1; 
-
-    cout<<result;
-    // absInt64()
+    *resultCount = result;
 }
     
     

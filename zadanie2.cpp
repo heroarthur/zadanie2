@@ -1,10 +1,10 @@
 #include <iostream> 
+#include <fstream>
 #include <stdio.h>
 #include <algorithm>
 #include <stdlib.h>
 #include <time.h>
-#include <string> 
-
+#include <string>
 
 #include <omp.h>
 #include <mpi.h>
@@ -20,20 +20,12 @@ using namespace std;
 
 int main(int argc, char** argv) {
 
-	if (argc != 7) {
+	if (argc != 6) {
+		cout<<"zla liczba argumentow"<<endl;
 		return -1;
 	}
 
 	MPI_Init(&argc, &argv);
-
-	// int a = 0;
-	// int chunk = 100;
-	// #pragma omp parallel firstprivate(a)
-	// for (int i = 0; i < 100000; i+=chunk) {
-	// 	for (int j = i; j < min(i + chunk, 100000); j++) {
-	// 		a++;
-	// 	}
-	// }
 
 
 	int worldRank;
@@ -46,13 +38,32 @@ int main(int argc, char** argv) {
 	string genome_in(argv[3]);
 	string queries_in(argv[4]);
 	string queries_out(argv[5]);
-	string queryString(argv[6]);
 
-	vector<char> query(queryString.begin(), queryString.end());
-	query.push_back('\0');
-	// cout<<"rozmiar wektora "<<query.size()<<endl;
 
-	// string fileName(argv[1]);
+	vector<vector<int64>> results;
+	vector<vector<char>> queries;
+
+	results.resize(n);
+	for (int i = 0; i < n; i++) {
+		results.data()[i].resize(m);
+	}
+	queries.resize(m);
+
+
+	string line;
+	ifstream queriesFile (queries_in);
+	if (queriesFile.is_open())
+	{
+		for (int i = 0; i < m; i++) {
+			getline (queriesFile,line);
+			// queries.data()[i] = line.c_str();
+			queries.data()[i].assign(line.begin(), line.end());
+			queries.data()[i].push_back('\0');
+			// cout<<"rozmiar "<<queries.data()[i].size()<<endl;
+		}
+		queriesFile.close();
+	}
+
 
 	int64 totalGenomeSize;
 	int64 nodeGenomeSize;
@@ -116,21 +127,23 @@ int main(int argc, char** argv) {
 	string inputFile;
 	Tuple2 lastTuple2;
 
-	for (int i = n; i < n+1; i++) {
-		vector<char> addedLastElemsVector; addedLastElemsVector.resize(1);
-		fill(addedLastElemsVector.begin(), addedLastElemsVector.end(), '@');
+	vector<char> addedLastElemsVector; addedLastElemsVector.resize(1);
+	fill(addedLastElemsVector.begin(), addedLastElemsVector.end(), '@');
+	
+	DataSource dataSource((char*) genome_in.c_str());
 
-		DataSource dataSource((char*) genome_in.c_str());
+	int64 resultCount;
 
-		totalGenomeSize = dataSource.getTotalGenomeSize(i);
-		nodeGenomeSize = dataSource.getNodeGenomeSize(i);
+	for (int g = 0; g < n; g++) {
+		totalGenomeSize = dataSource.getTotalGenomeSize(g);
+		nodeGenomeSize = dataSource.getNodeGenomeSize(g);
 		originalNodeSize = nodeGenomeSize;
 
-		nodeGenomeOffset = dataSource.getNodeGenomeOffset(i);
+		nodeGenomeOffset = dataSource.getNodeGenomeOffset(g);
 		nodeCharArray.resize(nodeGenomeSize);
 		nodeCharArray.insert(nodeCharArray.end(), addedLastElemsVector.begin(), addedLastElemsVector.end());
 
-		dataSource.getNodeGenomeValues(i, nodeCharArray.data());
+		dataSource.getNodeGenomeValues(g, nodeCharArray.data());
 
 		while(nodeCharArray.data()[nodeCharArray.size()-1] == '@') {
 			nodeCharArray.pop_back();
@@ -166,19 +179,35 @@ int main(int argc, char** argv) {
 					 worldRank,
 					 worldSize);
 		
-		// print_MPI_vector(&SA, worldRank, worldSize);
 
-		startEdgePrefixIndexes(&query,
-							   &nodeCharArray,
-							   &SA,
-							   originalNodeSize,
-							   worldRank,
-							   worldSize);
-
-		// cout<<"zabij mnie\n";
+		for (int q = 0; q < m; q++) {
+			startEdgePrefixIndexes(&queries[q],
+								   &nodeCharArray,
+								   &SA,
+								   &resultCount,
+								   originalNodeSize,
+								   worldRank,
+								   worldSize);
+			
+			results.data()[g].data()[q] = resultCount;
+		}
 	}
 
 
+	if (worldRank == root) {
+		ofstream resultFile(queries_out);
+
+		for (int q = 0; q < m; q++) {
+			for (int g = 0; g < n; g++) {
+				resultFile<<results[g][q]; 
+				if (g < n-1) {
+					resultFile<<" ";
+				}
+			}
+			resultFile<<endl;
+		}
+		resultFile.close();
+	}
 
 
 	MPI_Finalize();

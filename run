@@ -1,5 +1,7 @@
 #!/bin/bash
-mpirun -n 4 ./zadanie2 13 0 genomy/genom queries out "CAAC"
+mpirun -n 2 ./zadanie2 15 19 genomy/genom genomy/queries1 out_mpi
+# python testQueries.py 15 19 genomy/genom genomy/queries1 out_py
+
 # /opt/scalasca/bin/scalasca mpirun -n 4 ./zadanie2 1 0 genomy/genom queries out
 # mpirun -n 4 ./zadanie2 genomy/missisippi
 # valgrind --tool=callgrind mpirun -n 10 ./zadanie2
