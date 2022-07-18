@@ -160,50 +160,50 @@ int main(int argc, char** argv) {
 			tuple2_Arr.data()[i].i = i + nodeGenomeOffset;
 		}
 
-		SA_algorithm(&B_1,
-					 &B_2,
-					 &SA,
-					 &SA_second,
-					 &tuple2_Arr, 
-					 &tuple2_second, 
-					 &tuple3, 
-					 &tuple3_second,
-					 &helpVectorsSendingOperations,
-					 &helpVectorsSampleSort2,
-					 &helpVectorsSampleSort3,
-					 &B_ISA_pointer, 
-					 worldRank,
-					 worldSize);
+	// 	SA_algorithm(&B_1,
+	// 				 &B_2,
+	// 				 &SA,
+	// 				 &SA_second,
+	// 				 &tuple2_Arr, 
+	// 				 &tuple2_second, 
+	// 				 &tuple3, 
+	// 				 &tuple3_second,
+	// 				 &helpVectorsSendingOperations,
+	// 				 &helpVectorsSampleSort2,
+	// 				 &helpVectorsSampleSort3,
+	// 				 &B_ISA_pointer, 
+	// 				 worldRank,
+	// 				 worldSize);
 		
 
-		for (int q = 0; q < m; q++) {
-			startEdgePrefixIndexes(&queries[q],
-								   &nodeCharArray,
-								   &SA,
-								   &resultCount,
-								   originalNodeSize,
-								   worldRank,
-								   worldSize);
+	// 	for (int q = 0; q < m; q++) {
+	// 		startEdgePrefixIndexes(&queries[q],
+	// 							   &nodeCharArray,
+	// 							   &SA,
+	// 							   &resultCount,
+	// 							   originalNodeSize,
+	// 							   worldRank,
+	// 							   worldSize);
 			
-			results.data()[g].data()[q] = resultCount;
-		}
-	}
+	// 		results.data()[g].data()[q] = resultCount;
+	// 	}
+	// }
 
 
-	if (worldRank == root) {
-		ofstream resultFile(queries_out);
+	// if (worldRank == root) {
+	// 	ofstream resultFile(queries_out);
 
-		for (int q = 0; q < m; q++) {
-			for (int g = 0; g < n; g++) {
-				resultFile<<results[g][q]; 
-				if (g < n-1) {
-					resultFile<<" ";
-				}
-			}
-			resultFile<<endl;
-		}
-		resultFile.close();
-	}
+	// 	for (int q = 0; q < m; q++) {
+	// 		for (int g = 0; g < n; g++) {
+	// 			resultFile<<results[g][q]; 
+	// 			if (g < n-1) {
+	// 				resultFile<<" ";
+	// 			}
+	// 		}
+	// 		resultFile<<endl;
+	// 	}
+	// 	resultFile.close();
+	// }
 
 
 	MPI_Finalize();
