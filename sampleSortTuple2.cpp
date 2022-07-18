@@ -239,7 +239,7 @@ void sample_sort_MPI_tuple2(vector<Tuple2>* A,
 
     findPivotPositionsTuple2(A, &(helpVectors->broadcastSample), &(helpVectors->pivotsPositions), rank);
         
-	// sendDataToProperPartitionTuple2(A, A_help, helpVectors, rank, worldSize);
+	sendDataToProperPartitionTuple2(A, A_help, helpVectors, rank, worldSize);
 
     // MPI_Barrier(MPI_COMM_WORLD);
 

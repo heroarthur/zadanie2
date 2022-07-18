@@ -57,7 +57,7 @@ void SA_algorithm(vector<int64> *B_pointer,
 	// initialize_SA(SA_pointer, tuple2_pointer);
 
 	bool done = false;
-	for (int64 h = k; true; h*=2) {
+	// for (int64 h = k; true; h*=2) {
 
 		// MPI_Barrier(MPI_COMM_WORLD);
 
@@ -112,7 +112,7 @@ void SA_algorithm(vector<int64> *B_pointer,
 		// 							  &done,
 		// 							  worldRank,
 		// 							  worldSize);
-	}
+	// }
 
 	MPI_Barrier(MPI_COMM_WORLD);
 }
