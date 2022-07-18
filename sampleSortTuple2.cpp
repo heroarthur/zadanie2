@@ -167,8 +167,9 @@ void sendDataToProperPartitionTuple2(vector<Tuple2>* A,
                       MPI_Tuple2,
                       MPI_COMM_WORLD);
 
-        A_sampleSorted->insert(A_sampleSorted->end(), helpVectors->tmp_buff.begin(), helpVectors->tmp_buff.end());
-        helpVectors->tmp_buff.clear();
+        // A_sampleSorted->insert(A_sampleSorted->end(), helpVectors->tmp_buff.begin(), helpVectors->tmp_buff.end());
+        // helpVectors->tmp_buff.clear();
+        break;
     }
 
     helpVectors->allArrivingDisplacement.resize(helpVectors->allArrivingNumbers.size() + 1);
