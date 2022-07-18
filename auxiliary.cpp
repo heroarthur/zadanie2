@@ -188,7 +188,7 @@ int getNextSendSize(int64 currentPartialPosition, int64 endPosition, int worldSi
     int partialSendSize = wyslijRaz; //2147483647 / worldSize;
     int64 partialSendSizeInt64 = partialSendSize;
     int64 diff = (endPosition - currentPartialPosition);
-    cout<<"get next send size parametry "<<partialSendSizeInt64<<" "<<diff<<endl;
+    cout<<"parametry "<<currentPartialPosition<<" "<<endPosition<<endl;
     if (diff < partialSendSizeInt64) {
         return (int) diff;
     }
