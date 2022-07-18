@@ -1,10 +1,5 @@
-EXECS=zadanie2
-MPICC?=g++
+zadanie2:
+	mpic++ -Wall -fopenmp -O3 -std=c++2a --std=c++2a zadanie2.cpp data_source.cpp -o zadanie2
 
-all: ${EXECS}
-
-zadanie2: zadanie2.cpp
-	${MPICC} -fopenmp -o zadanie2 zadanie2.cpp
-
-clean:
-	rm -f ${EXECS}
+clean :
+	rm -f *.o *.out *.err $(ALL)
