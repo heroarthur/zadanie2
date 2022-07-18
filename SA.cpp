@@ -50,11 +50,11 @@ void SA_algorithm(vector<int64> *B_pointer,
 					worldSize);
 	switchPointersTuple2(&tuple2_pointer, &tuple2_second_pointer);
 
-	rebucket_assign_h_group_rank(tuple2_pointer, 
-					B_pointer, 
-					worldRank,
-					worldSize);
-	initialize_SA(SA_pointer, tuple2_pointer);
+	// rebucket_assign_h_group_rank(tuple2_pointer, 
+	// 				B_pointer, 
+	// 				worldRank,
+	// 				worldSize);
+	// initialize_SA(SA_pointer, tuple2_pointer);
 
 	bool done = false;
 	for (int64 h = k; true; h*=2) {
