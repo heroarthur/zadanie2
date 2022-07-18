@@ -153,19 +153,19 @@ void sendDataToProperPartitionTuple2(vector<Tuple2>* A,
         for (int64 i = 1; i < (int64) helpVectors->arrivingDisplacement.size(); i++) {
             helpVectors->arrivingDisplacement.data()[i] = helpVectors->arrivingDisplacement.data()[i-1] + helpVectors->arrivingNumber.data()[i-1];
         }
-        helpVectors->allArrivingNumbers.insert(helpVectors->allArrivingNumbers.end(), helpVectors->arrivingNumber.begin(), helpVectors->arrivingNumber.end());
+        // helpVectors->allArrivingNumbers.insert(helpVectors->allArrivingNumbers.end(), helpVectors->arrivingNumber.begin(), helpVectors->arrivingNumber.end());
 
-        helpVectors->tmp_buff.resize(sizeTmpBuff);
+        // helpVectors->tmp_buff.resize(sizeTmpBuff);
 
-        MPI_Alltoallv(helpVectors->partialArr.data(), 
-                      helpVectors->scattervPositions.data(),
-                      helpVectors->displacement.data(),
-                      MPI_Tuple2,
-                      helpVectors->tmp_buff.data(),
-                      helpVectors->arrivingNumber.data(),
-                      helpVectors->arrivingDisplacement.data(),
-                      MPI_Tuple2,
-                      MPI_COMM_WORLD);
+        // MPI_Alltoallv(helpVectors->partialArr.data(), 
+        //               helpVectors->scattervPositions.data(),
+        //               helpVectors->displacement.data(),
+        //               MPI_Tuple2,
+        //               helpVectors->tmp_buff.data(),
+        //               helpVectors->arrivingNumber.data(),
+        //               helpVectors->arrivingDisplacement.data(),
+        //               MPI_Tuple2,
+        //               MPI_COMM_WORLD);
 
         // A_sampleSorted->insert(A_sampleSorted->end(), helpVectors->tmp_buff.begin(), helpVectors->tmp_buff.end());
         // helpVectors->tmp_buff.clear();
