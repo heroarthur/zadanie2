@@ -136,23 +136,23 @@ void sendDataToProperPartitionTuple2(vector<Tuple2>* A,
 
     for (int partialSends = 0; partialSends < numberOfLoops; partialSends++) {
 
-        getNextPartialPivotsTuple2(A, 
-                                   &(helpVectors->partialArr),
-                                   &(helpVectors->pivotsPositions), 
-                                   &(helpVectors->partialPivotsPosition),
-                                   &(helpVectors->scattervPositions),
-                                   &(helpVectors->displacement),
-                                   worldSize);
+        // getNextPartialPivotsTuple2(A, 
+        //                            &(helpVectors->partialArr),
+        //                            &(helpVectors->pivotsPositions), 
+        //                            &(helpVectors->partialPivotsPosition),
+        //                            &(helpVectors->scattervPositions),
+        //                            &(helpVectors->displacement),
+        //                            worldSize);
 
-        MPI_Alltoall((void*)helpVectors->scattervPositions.data(), 1, MPI_INT, (void*)helpVectors->arrivingNumber.data(), 1, MPI_INT, MPI_COMM_WORLD);
+        // MPI_Alltoall((void*)helpVectors->scattervPositions.data(), 1, MPI_INT, (void*)helpVectors->arrivingNumber.data(), 1, MPI_INT, MPI_COMM_WORLD);
 
 
-        sizeTmpBuff = accumulate(helpVectors->arrivingNumber.begin(), helpVectors->arrivingNumber.end(), 0);
+        // sizeTmpBuff = accumulate(helpVectors->arrivingNumber.begin(), helpVectors->arrivingNumber.end(), 0);
 
-        helpVectors->arrivingDisplacement.data()[0] = 0;
-        for (int64 i = 1; i < (int64) helpVectors->arrivingDisplacement.size(); i++) {
-            helpVectors->arrivingDisplacement.data()[i] = helpVectors->arrivingDisplacement.data()[i-1] + helpVectors->arrivingNumber.data()[i-1];
-        }
+        // helpVectors->arrivingDisplacement.data()[0] = 0;
+        // for (int64 i = 1; i < (int64) helpVectors->arrivingDisplacement.size(); i++) {
+        //     helpVectors->arrivingDisplacement.data()[i] = helpVectors->arrivingDisplacement.data()[i-1] + helpVectors->arrivingNumber.data()[i-1];
+        // }
         // helpVectors->allArrivingNumbers.insert(helpVectors->allArrivingNumbers.end(), helpVectors->arrivingNumber.begin(), helpVectors->arrivingNumber.end());
 
         // helpVectors->tmp_buff.resize(sizeTmpBuff);
