@@ -187,7 +187,7 @@ int main(int argc, char** argv) {
 			
 	// 		results.data()[g].data()[q] = resultCount;
 	// 	}
-	// }
+	}
 
 
 	// if (worldRank == root) {
