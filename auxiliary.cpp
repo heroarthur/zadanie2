@@ -29,9 +29,6 @@
 #define K charArrayLen
 #define ENTER cout<<endl<<endl
 
-#define THREADS_NUM 8
-#define BLOCKS_NUMBER THREADS_NUM
-
 using namespace std;
 
 
@@ -542,23 +539,24 @@ void initializeHelpingVectorsSampleSort3(HelpingVectorsSampleSort3* vectors, int
 
 
 void local_sort_openMP_tuple3(vector<Tuple3>* A) {
-    
-	#pragma omp parallel num_threads(THREADS_NUM)
+    int blocksNumber;
+	#pragma omp parallel
 	{
-        int64 lastElemensSize = A->size() % BLOCKS_NUMBER;
+        blocksNumber = omp_get_num_threads();
+        int64 lastElemensSize = A->size() % blocksNumber;
 		int64 blockId = omp_get_thread_num();
-		int64 blockStart = get_block_start(blockId, BLOCKS_NUMBER, A->size());
-		int64 blockEnd = get_block_start(blockId+1, BLOCKS_NUMBER, A->size()) + (blockId == BLOCKS_NUMBER-1 ? lastElemensSize : 0);
+		int64 blockStart = get_block_start(blockId, blocksNumber, A->size());
+		int64 blockEnd = get_block_start(blockId+1, blocksNumber, A->size()) + (blockId == blocksNumber-1 ? lastElemensSize : 0);
 		std::sort(A->begin() + blockStart, A->begin() + blockEnd, cmp_tuple3());
 	}
 
-	for (int mergeStep = 1; mergeStep < BLOCKS_NUMBER; mergeStep *= 2 )
+	for (int mergeStep = 1; mergeStep < blocksNumber; mergeStep *= 2 )
 	{
-		int mergesInStep = (BLOCKS_NUMBER / (2 * mergeStep));
+		int mergesInStep = (blocksNumber / (2 * mergeStep));
 
 		#pragma omp parallel for
 		for (int i = 0; i < mergesInStep; i++) {
-			int64 halfMergeLen = (A->size() / BLOCKS_NUMBER) * mergeStep;
+			int64 halfMergeLen = (A->size() / blocksNumber) * mergeStep;
 			int64 mergeStart =(i * halfMergeLen) * 2;
 			int64 mergeMid = mergeStart + halfMergeLen;
 			int64 mergeEnd = i == mergesInStep-1 ? A->size() : mergeStart + 2 * halfMergeLen;
@@ -573,22 +571,24 @@ void local_sort_openMP_tuple3(vector<Tuple3>* A) {
 
 void local_sort_openMP_tuple2(vector<Tuple2>* A) {
 
-	#pragma omp parallel num_threads(THREADS_NUM)
+    int blocksNumber;
+	#pragma omp parallel
 	{
-		int64 lastElemensSize = A->size() % BLOCKS_NUMBER;
+        blocksNumber = omp_get_num_threads();
+		int64 lastElemensSize = A->size() % blocksNumber;
 		int blockId = omp_get_thread_num();
-		int64 blockStart = get_block_start(blockId, BLOCKS_NUMBER, A->size());
-		int64 blockEnd = get_block_start(blockId+1, BLOCKS_NUMBER, A->size()) + (blockId == BLOCKS_NUMBER-1 ? lastElemensSize : 0);
+		int64 blockStart = get_block_start(blockId, blocksNumber, A->size());
+		int64 blockEnd = get_block_start(blockId+1, blocksNumber, A->size()) + (blockId == blocksNumber-1 ? lastElemensSize : 0);
 		std::sort(A->begin() + blockStart, A->begin() + blockEnd, cmp_tuple2());
 	}
 
-	for (int mergeStep = 1; mergeStep < BLOCKS_NUMBER; mergeStep *= 2)
+	for (int mergeStep = 1; mergeStep < blocksNumber; mergeStep *= 2)
 	{
-		int mergesInStep = (BLOCKS_NUMBER / (2 * mergeStep));
+		int mergesInStep = (blocksNumber / (2 * mergeStep));
 
 		#pragma omp parallel for
 		for (int i = 0; i < mergesInStep; i++) {
-			int64 halfMergeLen = (A->size() / BLOCKS_NUMBER) * mergeStep;
+			int64 halfMergeLen = (A->size() / blocksNumber) * mergeStep;
 			int64 mergeStart = (i * halfMergeLen) * 2;
 			int64 mergeMid = mergeStart + halfMergeLen;
 			int64 mergeEnd = i == mergesInStep-1 ? A->size() : mergeStart + 2 * halfMergeLen;

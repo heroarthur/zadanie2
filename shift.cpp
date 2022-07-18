@@ -61,12 +61,13 @@ void prepareDataForShiftSent(vector<int64>* B,
 
     assert((int64) B->size() == nodeSize);
 
-    #pragma omp parallel private(loopEnd, normalThreadSize, normalVectorUpdateNumber, curr_i, target_i, currNode, targetNode, thread_num, threadSize, offset, threadOffset, data, localDataForPartitions, index, updateVectorsNumber, vector_offset) num_threads(THREADS_NUM)
+    #pragma omp parallel private(loopEnd, normalThreadSize, normalVectorUpdateNumber, curr_i, target_i, currNode, targetNode, thread_num, threadSize, offset, threadOffset, data, localDataForPartitions, index, updateVectorsNumber, vector_offset)
     {           
+        int threadNumber = omp_get_num_threads();
 
         thread_num = omp_get_thread_num();
-        normalThreadSize = ceil(nodeSize / (double) THREADS_NUM);
-        normalVectorUpdateNumber = ceil(worldSize / (double) THREADS_NUM);
+        normalThreadSize = ceil(nodeSize / (double) threadNumber);
+        normalVectorUpdateNumber = ceil(worldSize / (double) threadNumber);
         threadSize = minInt64(normalThreadSize, maxInt64(0, nodeSize - thread_num * normalThreadSize));
 
         localDataForPartitions.resize(worldSize);
@@ -99,8 +100,8 @@ void prepareDataForShiftSent(vector<int64>* B,
 
         index = thread_num;
 
-        for (int i = 0; i < THREADS_NUM; i++) {
-            index = (index + i) % THREADS_NUM;
+        for (int i = 0; i < threadNumber; i++) {
+            index = (index + i) % threadNumber;
 
             vector_offset = index * normalVectorUpdateNumber;
             updateVectorsNumber = minInt64(normalVectorUpdateNumber, maxInt64(0, worldSize - index * normalVectorUpdateNumber));

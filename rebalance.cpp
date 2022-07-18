@@ -37,8 +37,7 @@ void prepareDataForReorderSent(vector<int64>* A,
                                int worldSize) {
     const int64 startIndex = rank * newNodeSize;
 
-    const int64 normalThreadSize = ceil(nodeSize / (double) THREADS_NUM);
-    const int normalVectorUpdateNumber = ceil(worldSize / (double) THREADS_NUM);
+
 
     int thread_num;
     int64 threadSize;
@@ -52,8 +51,13 @@ void prepareDataForReorderSent(vector<int64>* A,
     int updateVectorsNumber;
     int vector_offset;
 
-    #pragma omp parallel firstprivate(startIndex) private(currIndex, thread_num, threadSize, nodeToSend, offset, data, localDataForPartitions, index, updateVectorsNumber, vector_offset) num_threads(THREADS_NUM)
+    #pragma omp parallel firstprivate(startIndex) private(currIndex, thread_num, threadSize, nodeToSend, offset, data, localDataForPartitions, index, updateVectorsNumber, vector_offset)
     {            
+        int threadNumber = omp_get_num_threads();
+
+        int64 normalThreadSize = ceil(nodeSize / (double) threadNumber);
+        int normalVectorUpdateNumber = ceil(worldSize / (double) threadNumber);
+
         thread_num = omp_get_thread_num();
         threadSize = minInt64(normalThreadSize, maxInt64(0, nodeSize - thread_num * normalThreadSize));
 
@@ -70,8 +74,8 @@ void prepareDataForReorderSent(vector<int64>* A,
 
         index = thread_num;
 
-        for (int i = 0; i < THREADS_NUM; i++) {
-            index = (index + i) % THREADS_NUM;
+        for (int i = 0; i < threadNumber; i++) {
+            index = (index + i) % threadNumber;
 
             vector_offset = index * normalVectorUpdateNumber;
             updateVectorsNumber = minInt64(normalVectorUpdateNumber, maxInt64(0, worldSize - index * normalVectorUpdateNumber));
