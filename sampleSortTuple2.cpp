@@ -91,14 +91,15 @@ void getNextPartialPivotsTuple2(vector<Tuple2>* arr,
 
     int displacementSum = 0;
 
-    // for (int64 i = 0; i < (int64) pivotsPosition->size(); i++) {
-    //     nextSendSize = getNextSendSize(partialPivotsPosition->data()[i], pivotsPosition->data()[i], worldSize);
-	// 	scattervPositions->data()[i] = nextSendSize;
-    //     partialArr->insert(partialArr->end(), arr->begin() + partialPivotsPosition->data()[i], arr->begin() + partialPivotsPosition->data()[i] + nextSendSize);
-    //     partialPivotsPosition->data()[i] += nextSendSize;
-    //     displacement->data()[i] = displacementSum;
-    //     displacementSum += nextSendSize;
-    // }
+    for (int64 i = 0; i < (int64) pivotsPosition->size(); i++) {
+        cout<<"dane "<<i<<" "<<partialPivotsPosition->data()[i]<<" "<<nextSendSize<<" "<<displacementSum<<endl;
+        nextSendSize = getNextSendSize(partialPivotsPosition->data()[i], pivotsPosition->data()[i], worldSize);
+		scattervPositions->data()[i] = nextSendSize;
+        partialArr->insert(partialArr->end(), arr->begin() + partialPivotsPosition->data()[i], arr->begin() + partialPivotsPosition->data()[i] + nextSendSize);
+        partialPivotsPosition->data()[i] += nextSendSize;
+        displacement->data()[i] = displacementSum;
+        displacementSum += nextSendSize;
+    }
 }
 
 
