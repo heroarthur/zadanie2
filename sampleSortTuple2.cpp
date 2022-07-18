@@ -249,6 +249,12 @@ void sample_sort_MPI_tuple2(vector<Tuple2>* A,
     }
 
     findPivotPositionsTuple2(A, &(helpVectors->broadcastSample), &(helpVectors->pivotsPositions), rank);
+
+    cout<<"PIVOTS "<<endl;
+    for (int i = 0; i < helpVectors->pivotsPositions.size(); i++) {
+        cout<<helpVectors->pivotsPositions[i]<<" ";
+    }
+    cout<<endl;
         
 	sendDataToProperPartitionTuple2(A, A_help, helpVectors, rank, worldSize);
 
