@@ -71,19 +71,20 @@ void findPivotPositionsTuple2(const vector<Tuple2>* __restrict__ arr,
 
 
 
-void getNextPartialPivotsTuple2(vector<Tuple2>* arr, 
-                                vector<Tuple2>* partialArr, 
-                                vector<int64>* pivotsPosition, 
+void getNextPartialPivotsTuple2(vector<Tuple2>* arr,
+                                vector<Tuple2>* partialArr,
+                                vector<int64>* pivotsPosition,
                                 vector<int64>* partialPivotsPosition,
                                 vector<int>* scattervPositions,
                                 vector<int>* displacement,
+                                int rank,
                                 int worldSize) {
 
     int partialArraSize = 0;
     int nextSendSize;
 
     partialArr->clear();
-    
+
     for (int64 i = 0; i < (int64) pivotsPosition->size(); i++) {
         nextSendSize = getNextSendSize(partialPivotsPosition->data()[i], pivotsPosition->data()[i], worldSize);
         partialArraSize += nextSendSize;
@@ -91,16 +92,23 @@ void getNextPartialPivotsTuple2(vector<Tuple2>* arr,
 
     int displacementSum = 0;
 
+    cout<<"ZACZYNAMY PETLE size "<<(int64) pivotsPosition->size()<<" "<<rank<<" "<<worldSize<<endl;
     for (int64 i = 0; i < (int64) pivotsPosition->size(); i++) {
         cout<<"dane "<<i<<" "<<partialPivotsPosition->data()[i]<<" "<<nextSendSize<<" "<<displacementSum<<endl;
         nextSendSize = getNextSendSize(partialPivotsPosition->data()[i], pivotsPosition->data()[i], worldSize);
-		scattervPositions->data()[i] = nextSendSize;
+        scattervPositions->data()[i] = nextSendSize;
+        cout<<"robie insert "<<endl;
         partialArr->insert(partialArr->end(), arr->begin() + partialPivotsPosition->data()[i], arr->begin() + partialPivotsPosition->data()[i] + nextSendSize);
+        cout<<"skonczylem insert"<<endl;
         partialPivotsPosition->data()[i] += nextSendSize;
         displacement->data()[i] = displacementSum;
         displacementSum += nextSendSize;
     }
+    cout<<"koniec tego"<<endl;
 }
+
+
+
 
 
 
@@ -143,6 +151,7 @@ void sendDataToProperPartitionTuple2(vector<Tuple2>* A,
                                    &(helpVectors->partialPivotsPosition),
                                    &(helpVectors->scattervPositions),
                                    &(helpVectors->displacement),
+                                   rank,
                                    worldSize);
 
         // MPI_Alltoall((void*)helpVectors->scattervPositions.data(), 1, MPI_INT, (void*)helpVectors->arrivingNumber.data(), 1, MPI_INT, MPI_COMM_WORLD);
