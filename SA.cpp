@@ -59,40 +59,40 @@ void SA_algorithm(vector<int64> *B_pointer,
 	bool done = false;
 	for (int64 h = k; true; h*=2) {
 
-		MPI_Barrier(MPI_COMM_WORLD);
+		// MPI_Barrier(MPI_COMM_WORLD);
 
 
-		reorder_and_rebalance(B_pointer, 
-							  B_second_pointer, 
-							  SA_pointer,
-							  SA_second_pointer,
-							  helpVectorsSendingOperations,
-							  worldRank, 
-							  worldSize);
-		switchPointersInt64(&B_pointer, &B_second_pointer);
+		// reorder_and_rebalance(B_pointer, 
+		// 					  B_second_pointer, 
+		// 					  SA_pointer,
+		// 					  SA_second_pointer,
+		// 					  helpVectorsSendingOperations,
+		// 					  worldRank, 
+		// 					  worldSize);
+		// switchPointersInt64(&B_pointer, &B_second_pointer);
 
-		if (done) {
-			*B_ISA_pointer = B_pointer;
-			break;
-		}
+		// if (done) {
+		// 	*B_ISA_pointer = B_pointer;
+		// 	break;
+		// }
 
-		shift_by_h(&B_pointer, 
-				   &B_second_pointer, 
-				   SA_pointer,
-				   NULL,
-				   helpVectorsSendingOperations,
-				   h,
-				   worldRank, 
-				   worldSize);
+		// shift_by_h(&B_pointer, 
+		// 		   &B_second_pointer, 
+		// 		   SA_pointer,
+		// 		   NULL,
+		// 		   helpVectorsSendingOperations,
+		// 		   h,
+		// 		   worldRank, 
+		// 		   worldSize);
 
-		switchPointersInt64(&SA_pointer, &SA_second_pointer);
+		// switchPointersInt64(&SA_pointer, &SA_second_pointer);
 
-		rebalanceArray(SA_pointer, 
-                       SA_second_pointer,
-                       helpVectorsSendingOperations,
-                       worldRank, 
-                       worldSize);
-		switchPointersInt64(&SA_pointer, &SA_second_pointer);
+		// rebalanceArray(SA_pointer, 
+        //                SA_second_pointer,
+        //                helpVectorsSendingOperations,
+        //                worldRank, 
+        //                worldSize);
+		// switchPointersInt64(&SA_pointer, &SA_second_pointer);
 		
 		// fillTuple3(B_pointer, 
 		// 		   B_second_pointer, 
