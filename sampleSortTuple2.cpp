@@ -136,13 +136,13 @@ void sendDataToProperPartitionTuple2(vector<Tuple2>* A,
 
     for (int partialSends = 0; partialSends < numberOfLoops; partialSends++) {
 
-        // getNextPartialPivotsTuple2(A, 
-        //                            &(helpVectors->partialArr),
-        //                            &(helpVectors->pivotsPositions), 
-        //                            &(helpVectors->partialPivotsPosition),
-        //                            &(helpVectors->scattervPositions),
-        //                            &(helpVectors->displacement),
-        //                            worldSize);
+        getNextPartialPivotsTuple2(A, 
+                                   &(helpVectors->partialArr),
+                                   &(helpVectors->pivotsPositions), 
+                                   &(helpVectors->partialPivotsPosition),
+                                   &(helpVectors->scattervPositions),
+                                   &(helpVectors->displacement),
+                                   worldSize);
 
         // MPI_Alltoall((void*)helpVectors->scattervPositions.data(), 1, MPI_INT, (void*)helpVectors->arrivingNumber.data(), 1, MPI_INT, MPI_COMM_WORLD);
 
