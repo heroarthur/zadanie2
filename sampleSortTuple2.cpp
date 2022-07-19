@@ -92,19 +92,19 @@ void getNextPartialPivotsTuple2(vector<Tuple2>* arr,
 
     int displacementSum = 0;
 
-    cout<<"ZACZYNAMY PETLE size "<<(int64) pivotsPosition->size()<<" "<<rank<<" "<<worldSize<<endl;
+    // cout<<"ZACZYNAMY PETLE size "<<(int64) pivotsPosition->size()<<" "<<rank<<" "<<worldSize<<endl;
     for (int64 i = 0; i < (int64) pivotsPosition->size(); i++) {
-        cout<<"dane "<<i<<" "<<partialPivotsPosition->data()[i]<<" "<<nextSendSize<<" "<<displacementSum<<endl;
+        // cout<<"dane "<<i<<" "<<partialPivotsPosition->data()[i]<<" "<<nextSendSize<<" "<<displacementSum<<endl;
         nextSendSize = getNextSendSize(partialPivotsPosition->data()[i], pivotsPosition->data()[i], worldSize);
         scattervPositions->data()[i] = nextSendSize;
-        cout<<"robie insert "<<endl;
+        // cout<<"robie insert "<<endl;
         partialArr->insert(partialArr->end(), arr->begin() + partialPivotsPosition->data()[i], arr->begin() + partialPivotsPosition->data()[i] + nextSendSize);
-        cout<<"skonczylem insert"<<endl;
+        // cout<<"skonczylem insert"<<endl;
         partialPivotsPosition->data()[i] += nextSendSize;
         displacement->data()[i] = displacementSum;
         displacementSum += nextSendSize;
     }
-    cout<<"koniec tego"<<endl;
+    // cout<<"koniec tego"<<endl;
 }
 
 
@@ -250,11 +250,11 @@ void sample_sort_MPI_tuple2(vector<Tuple2>* A,
 
     findPivotPositionsTuple2(A, &(helpVectors->broadcastSample), &(helpVectors->pivotsPositions), rank);
 
-    cout<<"PIVOTS "<<endl;
+    // cout<<"PIVOTS "<<endl;
     for (int i = 0; i < helpVectors->pivotsPositions.size(); i++) {
-        cout<<helpVectors->pivotsPositions[i]<<" ";
+        // cout<<helpVectors->pivotsPositions[i]<<" ";
     }
-    cout<<endl;
+    // cout<<endl;
         
 	sendDataToProperPartitionTuple2(A, A_help, helpVectors, rank, worldSize);
 
