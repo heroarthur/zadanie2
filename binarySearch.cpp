@@ -19,6 +19,15 @@
 
 
 
+    
+// int64 dataSize;
+// int64 nodeSize = A->size();
+
+// MPI_Allreduce(&nodeSize, &dataSize, 1, MPI_LONG_LONG_INT, MPI_SUM, MPI_COMM_WORLD);
+
+// int64 newNodeSize = ceil(dataSize / (double) worldSize);
+// int64 thisNodeNewSize = minInt64(newNodeSize, maxInt64(0, dataSize - rank * newNodeSize));
+
 
 
 
@@ -506,3 +515,7 @@ void startEdgePrefixIndexes(vector<char>* query,
     *resultCount = result;
 }
     
+    
+
+
+// CAACCTTGCGACAGGGCGGG

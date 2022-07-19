@@ -71,48 +71,47 @@ void SA_algorithm(vector<int64> *B_pointer,
 							  worldSize);
 		switchPointersInt64(&B_pointer, &B_second_pointer);
 
-		// if (done) {
-		// 	*B_ISA_pointer = B_pointer;
-		// 	break;
-		// }
+		if (done) {
+			*B_ISA_pointer = B_pointer;
+			break;
+		}
 
-	// 	shift_by_h(&B_pointer, 
-	// 			   &B_second_pointer, 
-	// 			   SA_pointer,
-	// 			   NULL,
-	// 			   helpVectorsSendingOperations,
-	// 			   h,
-	// 			   worldRank, 
-	// 			   worldSize);
+		shift_by_h(&B_pointer, 
+				   &B_second_pointer, 
+				   SA_pointer,
+				   NULL,
+				   helpVectorsSendingOperations,
+				   h,
+				   worldRank, 
+				   worldSize);
 
-	// 	switchPointersInt64(&SA_pointer, &SA_second_pointer);
+		switchPointersInt64(&SA_pointer, &SA_second_pointer);
 
-	// 	rebalanceArray(SA_pointer, 
-    //                    SA_second_pointer,
-    //                    helpVectorsSendingOperations,
-    //                    worldRank, 
-    //                    worldSize);
-	// 	switchPointersInt64(&SA_pointer, &SA_second_pointer);
+		rebalanceArray(SA_pointer, 
+                       SA_second_pointer,
+                       helpVectorsSendingOperations,
+                       worldRank, 
+                       worldSize);
+		switchPointersInt64(&SA_pointer, &SA_second_pointer);
 		
-	// 	fillTuple3(B_pointer, 
-	// 			   B_second_pointer, 
-	// 			   SA_pointer, 
-	// 			   tuple3_pointer);
+		fillTuple3(B_pointer, 
+				   B_second_pointer, 
+				   SA_pointer, 
+				   tuple3_pointer);
 
-	// 	sample_sort_MPI_tuple3(tuple3_pointer, 
-    //                            tuple3_second_pointer,
-    //                            helpVectorsSampleSort3,
-    //                            worldRank, 
-    //                            worldSize);
-	// 	switchPointersTuple3(&tuple3_pointer, &tuple3_second_pointer);
+		sample_sort_MPI_tuple3(tuple3_pointer, 
+                               tuple3_second_pointer,
+                               helpVectorsSampleSort3,
+                               worldRank, 
+                               worldSize);
+		switchPointersTuple3(&tuple3_pointer, &tuple3_second_pointer);
 		
-	// 	rebucket_assign_2h_group_rank(tuple3_pointer, 
-	// 								  B_pointer,
-	// 								  SA_pointer,
-	// 								  &done,
-	// 								  worldRank,
-	// 								  worldSize);
-	break;
+		rebucket_assign_2h_group_rank(tuple3_pointer, 
+									  B_pointer,
+									  SA_pointer,
+									  &done,
+									  worldRank,
+									  worldSize);
 	}
 
 	MPI_Barrier(MPI_COMM_WORLD);

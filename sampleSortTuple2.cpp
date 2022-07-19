@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <cstdio>
+// #include <cstring>
 #include <vector>
 #include <numeric>
 
@@ -70,20 +71,19 @@ void findPivotPositionsTuple2(const vector<Tuple2>* __restrict__ arr,
 
 
 
-void getNextPartialPivotsTuple2(vector<Tuple2>* arr,
-                                vector<Tuple2>* partialArr,
-                                vector<int64>* pivotsPosition,
+void getNextPartialPivotsTuple2(vector<Tuple2>* arr, 
+                                vector<Tuple2>* partialArr, 
+                                vector<int64>* pivotsPosition, 
                                 vector<int64>* partialPivotsPosition,
                                 vector<int>* scattervPositions,
                                 vector<int>* displacement,
-                                int rank,
                                 int worldSize) {
 
     int partialArraSize = 0;
     int nextSendSize;
 
     partialArr->clear();
-
+    
     for (int64 i = 0; i < (int64) pivotsPosition->size(); i++) {
         nextSendSize = getNextSendSize(partialPivotsPosition->data()[i], pivotsPosition->data()[i], worldSize);
         partialArraSize += nextSendSize;
@@ -93,16 +93,13 @@ void getNextPartialPivotsTuple2(vector<Tuple2>* arr,
 
     for (int64 i = 0; i < (int64) pivotsPosition->size(); i++) {
         nextSendSize = getNextSendSize(partialPivotsPosition->data()[i], pivotsPosition->data()[i], worldSize);
-        scattervPositions->data()[i] = nextSendSize;
+		scattervPositions->data()[i] = nextSendSize;
         partialArr->insert(partialArr->end(), arr->begin() + partialPivotsPosition->data()[i], arr->begin() + partialPivotsPosition->data()[i] + nextSendSize);
         partialPivotsPosition->data()[i] += nextSendSize;
         displacement->data()[i] = displacementSum;
         displacementSum += nextSendSize;
     }
 }
-
-
-
 
 
 
@@ -145,7 +142,6 @@ void sendDataToProperPartitionTuple2(vector<Tuple2>* A,
                                    &(helpVectors->partialPivotsPosition),
                                    &(helpVectors->scattervPositions),
                                    &(helpVectors->displacement),
-                                   rank,
                                    worldSize);
 
         MPI_Alltoall((void*)helpVectors->scattervPositions.data(), 1, MPI_INT, (void*)helpVectors->arrivingNumber.data(), 1, MPI_INT, MPI_COMM_WORLD);
@@ -173,7 +169,6 @@ void sendDataToProperPartitionTuple2(vector<Tuple2>* A,
 
         A_sampleSorted->insert(A_sampleSorted->end(), helpVectors->tmp_buff.begin(), helpVectors->tmp_buff.end());
         helpVectors->tmp_buff.clear();
-        break;
     }
 
     helpVectors->allArrivingDisplacement.resize(helpVectors->allArrivingNumbers.size() + 1);
@@ -192,7 +187,6 @@ void mergeSortedParts(vector<Tuple2>* A,
                           
     int blocksNumber = helpVectors->allArrivingDisplacement.size()-1;
     int64 roundBlocksNumber = roundToPowerOf2(blocksNumber);
-    int threadsNum = roundBlocksNumber / 2;
     helpVectors->addPadding.resize(roundBlocksNumber - blocksNumber);
     fill(helpVectors->addPadding.begin(), helpVectors->addPadding.end(), helpVectors->allArrivingDisplacement.data()[blocksNumber]);
     helpVectors->allArrivingDisplacement.insert(helpVectors->allArrivingDisplacement.end(), helpVectors->addPadding.begin(), helpVectors->addPadding.end());
@@ -202,7 +196,6 @@ void mergeSortedParts(vector<Tuple2>* A,
 	{
 		int mergesInStep = (blocksNumberWithPadding / (2 * mergeStep));
 
-        #pragma omp parallel for num_threads(threadsNum)
 		for (int i = 0; i < mergesInStep; i++) {
             int64 indexMergeStart = 2 * mergeStep * i;
             int64 indexMergeMid = indexMergeStart + mergeStep;
@@ -245,7 +238,6 @@ void sample_sort_MPI_tuple2(vector<Tuple2>* A,
     }
 
     findPivotPositionsTuple2(A, &(helpVectors->broadcastSample), &(helpVectors->pivotsPositions), rank);
-
         
 	sendDataToProperPartitionTuple2(A, A_help, helpVectors, rank, worldSize);
 

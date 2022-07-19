@@ -39,6 +39,7 @@ int main(int argc, char** argv) {
 	string queries_in(argv[4]);
 	string queries_out(argv[5]);
 
+
 	vector<vector<int64>> results;
 	vector<vector<char>> queries;
 
@@ -55,8 +56,10 @@ int main(int argc, char** argv) {
 	{
 		for (int i = 0; i < m; i++) {
 			getline (queriesFile,line);
+			// queries.data()[i] = line.c_str();
 			queries.data()[i].assign(line.begin(), line.end());
 			queries.data()[i].push_back('\0');
+			// cout<<"rozmiar "<<queries.data()[i].size()<<endl;
 		}
 		queriesFile.close();
 	}
@@ -173,34 +176,34 @@ int main(int argc, char** argv) {
 					 worldSize);
 		
 
-		// for (int q = 0; q < m; q++) {
-		// 	startEdgePrefixIndexes(&queries[q],
-		// 						   &nodeCharArray,
-		// 						   &SA,
-		// 						   &resultCount,
-		// 						   originalNodeSize,
-		// 						   worldRank,
-		// 						   worldSize);
+		for (int q = 0; q < m; q++) {
+			startEdgePrefixIndexes(&queries[q],
+								   &nodeCharArray,
+								   &SA,
+								   &resultCount,
+								   originalNodeSize,
+								   worldRank,
+								   worldSize);
 			
-		// 	results.data()[g].data()[q] = resultCount;
-		// }
+			results.data()[g].data()[q] = resultCount;
+		}
 	}
 
 
-	// if (worldRank == root) {
-	// 	ofstream resultFile(queries_out);
+	if (worldRank == root) {
+		ofstream resultFile(queries_out);
 
-	// 	for (int q = 0; q < m; q++) {
-	// 		for (int g = 0; g < n; g++) {
-	// 			resultFile<<results[g][q]; 
-	// 			if (g < n-1) {
-	// 				resultFile<<" ";
-	// 			}
-	// 		}
-	// 		resultFile<<endl;
-	// 	}
-	// 	resultFile.close();
-	// }
+		for (int q = 0; q < m; q++) {
+			for (int g = 0; g < n; g++) {
+				resultFile<<results[g][q]; 
+				if (g < n-1) {
+					resultFile<<" ";
+				}
+			}
+			resultFile<<endl;
+		}
+		resultFile.close();
+	}
 
 
 	MPI_Finalize();

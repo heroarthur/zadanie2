@@ -187,7 +187,7 @@ bool doNextPartialRound(vector<int64>* pivotsPosition,
 int getNextSendSize(int64 currentPartialPosition, int64 endPosition, int worldSize) {
     int partialSendSize = wyslijRaz; //2147483647 / worldSize;
     int64 partialSendSizeInt64 = partialSendSize;
-    int64 diff = (endPosition - currentPartialPosition);
+    int64 diff = (endPosition - currentPartialPosition); 
     if (diff < partialSendSizeInt64) {
         return (int) diff;
     }
@@ -199,7 +199,7 @@ void initialize_SA(vector<int64>* SA,
                    vector<Tuple2>* tuple2) {
     SA->resize(tuple2->size());
 
-    //#pragma omp parallel for
+    #pragma omp parallel for
     for (int64 i = 0; i < (int64) tuple2->size(); i++) {
         SA->data()[i] = tuple2->data()[i].i;
     }
@@ -216,7 +216,7 @@ void fillTuple3(vector<int64>* B,
 
     tuple3->resize(B->size());
 
-    //#pragma omp parallel for
+    #pragma omp parallel for
     for (int64 i = 0; i < (int64) tuple3->size(); i++) {
         tuple3->data()[i].B = B->data()[i];
         tuple3->data()[i].B2 = B2->data()[i];
@@ -359,7 +359,7 @@ void do_sending_operation(vector<int64>* B,
         int64 offset = rank * newNodeSize;
 
         int64 index;
-        //#pragma omp parallel for private(index)
+        #pragma omp parallel for private(index)
         for (int64 i = 0; i < (int64) helpVectors->tmp_buff.size(); i++) {
             index = helpVectors->tmp_buff.data()[i].i1 - offset;
             B_help->data()[index] = helpVectors->tmp_buff.data()[i].i2;
@@ -475,16 +475,7 @@ int64 roundToPowerOf2(int64 v) {
     return power;
 }
 
-int getPowerOf2MaximumNumberOfThreads() {
-    int maxThreads;
-    int receivedThreadsNumber;
-    #pragma omp parallel
-    {
-        maxThreads = omp_get_num_threads();
-    }
-    receivedThreadsNumber = (int) roundToPowerOf2(maxThreads) / 2;
-    return receivedThreadsNumber;
-}
+
 
 
 
@@ -549,7 +540,7 @@ void initializeHelpingVectorsSampleSort3(HelpingVectorsSampleSort3* vectors, int
 
 void local_sort_openMP_tuple3(vector<Tuple3>* A) {
     int blocksNumber;
-	//#pragma omp parallel
+	#pragma omp parallel
 	{
         blocksNumber = omp_get_num_threads();
         int64 lastElemensSize = A->size() % blocksNumber;
@@ -563,7 +554,7 @@ void local_sort_openMP_tuple3(vector<Tuple3>* A) {
 	{
 		int mergesInStep = (blocksNumber / (2 * mergeStep));
 
-		//#pragma omp parallel for
+		#pragma omp parallel for
 		for (int i = 0; i < mergesInStep; i++) {
 			int64 halfMergeLen = (A->size() / blocksNumber) * mergeStep;
 			int64 mergeStart =(i * halfMergeLen) * 2;
@@ -581,15 +572,13 @@ void local_sort_openMP_tuple3(vector<Tuple3>* A) {
 void local_sort_openMP_tuple2(vector<Tuple2>* A) {
 
     int blocksNumber;
-    int powerOf2ThreadsNumber = getPowerOf2MaximumNumberOfThreads();
-	#pragma omp parallel num_threads(powerOf2ThreadsNumber)
+	#pragma omp parallel
 	{
         blocksNumber = omp_get_num_threads();
 		int64 lastElemensSize = A->size() % blocksNumber;
 		int blockId = omp_get_thread_num();
 		int64 blockStart = get_block_start(blockId, blocksNumber, A->size());
 		int64 blockEnd = get_block_start(blockId+1, blocksNumber, A->size()) + (blockId == blocksNumber-1 ? lastElemensSize : 0);
-
 		std::sort(A->begin() + blockStart, A->begin() + blockEnd, cmp_tuple2());
 	}
 
@@ -597,7 +586,7 @@ void local_sort_openMP_tuple2(vector<Tuple2>* A) {
 	{
 		int mergesInStep = (blocksNumber / (2 * mergeStep));
 
-		#pragma omp parallel for num_threads(powerOf2ThreadsNumber)
+		#pragma omp parallel for
 		for (int i = 0; i < mergesInStep; i++) {
 			int64 halfMergeLen = (A->size() / blocksNumber) * mergeStep;
 			int64 mergeStart = (i * halfMergeLen) * 2;
