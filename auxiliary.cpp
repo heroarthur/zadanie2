@@ -580,7 +580,7 @@ void local_sort_openMP_tuple2(vector<Tuple2>* A) {
 		int blockId = omp_get_thread_num();
 		int64 blockStart = get_block_start(blockId, blocksNumber, A->size());
 		int64 blockEnd = get_block_start(blockId+1, blocksNumber, A->size()) + (blockId == blocksNumber-1 ? lastElemensSize : 0);
-        cout<<""
+        cout<<"dane "<<blockId<<" "<<blocksNumber<<" "<<A->size()<<" "<<(blockId == blocksNumber-1 ? lastElemensSize : 0)<<" "<<lastElemensSize<<endl;
 		std::sort(A->begin() + blockStart, A->begin() + blockEnd, cmp_tuple2());
 	}
 
