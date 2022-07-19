@@ -188,7 +188,6 @@ int getNextSendSize(int64 currentPartialPosition, int64 endPosition, int worldSi
     int partialSendSize = wyslijRaz; //2147483647 / worldSize;
     int64 partialSendSizeInt64 = partialSendSize;
     int64 diff = (endPosition - currentPartialPosition);
-    // cout<<"parametry "<<currentPartialPosition<<" "<<endPosition<<endl;
     if (diff < partialSendSizeInt64) {
         return (int) diff;
     }
@@ -592,9 +591,6 @@ void local_sort_openMP_tuple2(vector<Tuple2>* A) {
 		int64 blockEnd = get_block_start(blockId+1, blocksNumber, A->size()) + (blockId == blocksNumber-1 ? lastElemensSize : 0);
 
 		std::sort(A->begin() + blockStart, A->begin() + blockEnd, cmp_tuple2());
-        // if (blockId == 0)
-            // cout<<"dane "<<blockId<<" "<<blocksNumber<<" "<<A->size()<<" "<<(blockId == blocksNumber-1 ? lastElemensSize : 0)<<" "<<lastElemensSize<<endl;
-        // cout<<"numer watku "<<blockId<<endl;
 	}
 
 	for (int mergeStep = 1; mergeStep < blocksNumber; mergeStep *= 2)

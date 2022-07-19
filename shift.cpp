@@ -33,10 +33,6 @@ void prepareDataForShiftSent(vector<int64>* B,
                              int rank,
                              int worldSize) {
 
-    // const int64 startIndex = rank * newNodeSize;
-
-    // cout<<"new node size "<<newNodeSize<<endl;
-
     int64 normalThreadSize;
     int normalVectorUpdateNumber;
 
