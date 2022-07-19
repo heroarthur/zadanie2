@@ -51,7 +51,7 @@ void prepareDataForReorderSent(vector<int64>* A,
     int updateVectorsNumber;
     int vector_offset;
 
-    #pragma omp parallel firstprivate(startIndex) private(currIndex, thread_num, threadSize, nodeToSend, offset, data, localDataForPartitions, index, updateVectorsNumber, vector_offset)
+    //#pragma omp parallel firstprivate(startIndex) private(currIndex, thread_num, threadSize, nodeToSend, offset, data, localDataForPartitions, index, updateVectorsNumber, vector_offset)
     {            
         int threadNumber = omp_get_num_threads();
 
@@ -86,7 +86,7 @@ void prepareDataForReorderSent(vector<int64>* A,
                                                         localDataForPartitions.data()[v_index].end());
             }
 
-            #pragma omp barrier
+            //#pragma omp barrier
         }
     }
 }
@@ -160,7 +160,7 @@ void rebalanceArray(vector<int64>* A,
 
         int64 offset = rank * newNodeSize;
 
-        #pragma omp parallel for firstprivate(offset)
+        //#pragma omp parallel for firstprivate(offset)
         for (int64 i = 0; i < (int64) helpVectors->tmp_buff.size(); i ++) {
             A_help->data()[helpVectors->tmp_buff.data()[i].i1 - offset] = helpVectors->tmp_buff.data()[i].i2;
         }

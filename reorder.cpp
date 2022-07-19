@@ -44,7 +44,7 @@ void prepareDataForReorderSent(vector<int64>* B,
         int updateVectorsNumber;
         int vector_offset;
 
-        #pragma omp parallel private(thread_num, threadSize, nodeToSend, offset, data, localDataForPartitions, index, updateVectorsNumber, vector_offset)
+        //#pragma omp parallel private(thread_num, threadSize, nodeToSend, offset, data, localDataForPartitions, index, updateVectorsNumber, vector_offset)
         {           
             int threadNumber = omp_get_num_threads();
 
@@ -78,7 +78,7 @@ void prepareDataForReorderSent(vector<int64>* B,
                                                             localDataForPartitions.data()[v_index].end());
                 }
 
-                #pragma omp barrier
+                //#pragma omp barrier
             }
         }
 }

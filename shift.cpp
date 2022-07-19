@@ -61,7 +61,7 @@ void prepareDataForShiftSent(vector<int64>* B,
 
     assert((int64) B->size() == nodeSize);
 
-    #pragma omp parallel private(loopEnd, normalThreadSize, normalVectorUpdateNumber, curr_i, target_i, currNode, targetNode, thread_num, threadSize, offset, threadOffset, data, localDataForPartitions, index, updateVectorsNumber, vector_offset)
+    //#pragma omp parallel private(loopEnd, normalThreadSize, normalVectorUpdateNumber, curr_i, target_i, currNode, targetNode, thread_num, threadSize, offset, threadOffset, data, localDataForPartitions, index, updateVectorsNumber, vector_offset)
     {           
         int threadNumber = omp_get_num_threads();
 
@@ -112,7 +112,7 @@ void prepareDataForShiftSent(vector<int64>* B,
                                                         localDataForPartitions.data()[v_index].end());
             }
 
-            #pragma omp barrier
+            //#pragma omp barrier
         }
     }
 }
