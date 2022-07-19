@@ -476,7 +476,16 @@ int64 roundToPowerOf2(int64 v) {
     return power;
 }
 
-
+int getPowerOf2MaximumNumberOfThreads() {
+    int maxThreads;
+    int receivedThreadsNumber;
+    #pragma omp parallel
+    {
+        maxThreads = omp_get_num_threads();
+    }
+    receivedThreadsNumber = (int) roundToPowerOf2(maxThreads) / 2;
+    return receivedThreadsNumber;
+}
 
 
 
@@ -573,22 +582,26 @@ void local_sort_openMP_tuple3(vector<Tuple3>* A) {
 void local_sort_openMP_tuple2(vector<Tuple2>* A) {
 
     int blocksNumber;
-	//#pragma omp parallel
+    int powerOf2ThreadsNumber = getPowerOf2MaximumNumberOfThreads();
+	#pragma omp parallel num_threads(powerOf2ThreadsNumber)
 	{
         blocksNumber = omp_get_num_threads();
 		int64 lastElemensSize = A->size() % blocksNumber;
 		int blockId = omp_get_thread_num();
 		int64 blockStart = get_block_start(blockId, blocksNumber, A->size());
 		int64 blockEnd = get_block_start(blockId+1, blocksNumber, A->size()) + (blockId == blocksNumber-1 ? lastElemensSize : 0);
-        cout<<"dane "<<blockId<<" "<<blocksNumber<<" "<<A->size()<<" "<<(blockId == blocksNumber-1 ? lastElemensSize : 0)<<" "<<lastElemensSize<<endl;
+
 		std::sort(A->begin() + blockStart, A->begin() + blockEnd, cmp_tuple2());
+        // if (blockId == 0)
+            // cout<<"dane "<<blockId<<" "<<blocksNumber<<" "<<A->size()<<" "<<(blockId == blocksNumber-1 ? lastElemensSize : 0)<<" "<<lastElemensSize<<endl;
+        // cout<<"numer watku "<<blockId<<endl;
 	}
 
 	for (int mergeStep = 1; mergeStep < blocksNumber; mergeStep *= 2)
 	{
 		int mergesInStep = (blocksNumber / (2 * mergeStep));
 
-		//#pragma omp parallel for
+		#pragma omp parallel for num_threads(powerOf2ThreadsNumber)
 		for (int i = 0; i < mergesInStep; i++) {
 			int64 halfMergeLen = (A->size() / blocksNumber) * mergeStep;
 			int64 mergeStart = (i * halfMergeLen) * 2;

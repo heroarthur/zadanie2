@@ -39,7 +39,6 @@ int main(int argc, char** argv) {
 	string queries_in(argv[4]);
 	string queries_out(argv[5]);
 
-
 	vector<vector<int64>> results;
 	vector<vector<char>> queries;
 
