@@ -3,8 +3,8 @@
 #SBATCH --output "z2.out"   # stdout redirection
 #SBATCH --error "z2.err"    # stderr redirection
 #SBATCH --account "g89-1244"          # the number of our grant
-#SBATCH --nodes 1                  # how many nodes we want
-#SBATCH --tasks-per-node 4           # each node is 2 socket, 12 core, so we want 24 tasks on each node
-#SBATCH --time 00:01:00               # if the job runs longer than this, it'll be killed
+#SBATCH --nodes 2                  # how many nodes we want
+#SBATCH --tasks-per-node 2           # each node is 2 socket, 12 core, so we want 24 tasks on each node
+#SBATCH --time 00:03:00               # if the job runs longer than this, it'll be killed
 
-srun zadanie2 11 19 genomy/genom genomy/queries1 out_mpi
+srun zadanie2 1 80 testSzybkosc/genom /lustre/tetyda/home/adinar/public_html/perf_test/queries out_mpi
