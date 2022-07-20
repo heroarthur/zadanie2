@@ -14,3 +14,6 @@ seq
 test
 *.o
 *.ghc
+pomocnicze/*
+.metals*
+.vscode*
