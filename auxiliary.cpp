@@ -202,7 +202,7 @@ void initialize_SA(vector<int64>* SA,
                    vector<Tuple2>* tuple2) {
     SA->resize(tuple2->size());
 
-    #pragma omp parallel for
+    #pragma omp parallel for num_threads(THREADS_NUM)
     for (int64 i = 0; i < (int64) tuple2->size(); i++) {
         SA->data()[i] = tuple2->data()[i].i;
     }
@@ -219,7 +219,7 @@ void fillTuple3(vector<int64>* B,
 
     tuple3->resize(B->size());
 
-    #pragma omp parallel for
+    #pragma omp parallel for num_threads(THREADS_NUM)
     for (int64 i = 0; i < (int64) tuple3->size(); i++) {
         tuple3->data()[i].B = B->data()[i];
         tuple3->data()[i].B2 = B2->data()[i];
@@ -362,7 +362,7 @@ void do_sending_operation(vector<int64>* B,
         int64 offset = rank * newNodeSize;
 
         int64 index;
-        #pragma omp parallel for private(index)
+        #pragma omp parallel for private(index) num_threads(THREADS_NUM)
         for (int64 i = 0; i < (int64) helpVectors->tmp_buff.size(); i++) {
             index = helpVectors->tmp_buff.data()[i].i1 - offset;
             B_help->data()[index] = helpVectors->tmp_buff.data()[i].i2;
@@ -556,7 +556,7 @@ void local_sort_openMP_tuple3(vector<Tuple3>* A) {
 	{
 		int mergesInStep = (BLOCKS_NUMBER / (2 * mergeStep));
 
-		#pragma omp parallel for
+		#pragma omp parallel for num_threads(THREADS_NUM)
 		for (int i = 0; i < mergesInStep; i++) {
 			int64 halfMergeLen = (A->size() / BLOCKS_NUMBER) * mergeStep;
 			int64 mergeStart =(i * halfMergeLen) * 2;
@@ -586,7 +586,7 @@ void local_sort_openMP_tuple2(vector<Tuple2>* A) {
 	{
 		int mergesInStep = (BLOCKS_NUMBER / (2 * mergeStep));
 
-		#pragma omp parallel for
+		#pragma omp parallel for num_threads(THREADS_NUM)
 		for (int i = 0; i < mergesInStep; i++) {
 			int64 halfMergeLen = (A->size() / BLOCKS_NUMBER) * mergeStep;
 			int64 mergeStart = (i * halfMergeLen) * 2;

@@ -1,0 +1,13 @@
+-wieksza ilosc przysylanych naraz danych
+-odpowiednia wielkosc k
+-__restrict__
+-OpenMP gdzie tylko sie da
+-optymalizacje kompilatora -O3
+-int zamiast unsigned int
+
+
+-optymalizacje O3 czasem wprowadzaja bledy
+-
+
+domyslnie dla k = 1 i wyslijNaraz = 100, bez restrict
+42, 43, 44, 45
