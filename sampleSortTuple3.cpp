@@ -202,6 +202,7 @@ void mergeSortedParts(vector<Tuple3>* A,
 	{
 		int mergesInStep = (blocksNumberWithPadding / (2 * mergeStep));
 
+        #pragma omp parallel
 		for (int i = 0; i < mergesInStep; i++) {
             int64 indexMergeStart = 2 * mergeStep * i;
             int64 indexMergeMid = indexMergeStart + mergeStep;
