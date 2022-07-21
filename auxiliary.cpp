@@ -17,7 +17,7 @@
 #include <bits/stdc++.h>
 
 #define root 0
-#define wyslijRaz 40000000
+#define wyslijRaz 40000000 //22369000
 #define int64 long long int
 #define charArrayLen 32
 #define k charArrayLen
