@@ -30,54 +30,17 @@ void prepareDataForReorderSent(vector<int64>* B,
                                vector<vector<TwoInts64>>* dataForPartitions,
                                int rank,
                                int worldSize) {
+    TwoInts64 data;
+    int nodeToSend;
 
-        const int64 normalThreadSize = ceil(nodeSize / (double) THREADS_NUM);
-        const int normalVectorUpdateNumber = ceil(worldSize / (double) THREADS_NUM);
-
-        int thread_num;
-        int64 threadSize;
-        int nodeToSend;
-        int64 offset;
-        TwoInts64 data;
-        vector<vector<TwoInts64>> localDataForPartitions;
-
-        int index;
-        int updateVectorsNumber;
-        int vector_offset;
-
-        #pragma omp parallel private(thread_num, threadSize, nodeToSend, offset, data, localDataForPartitions, index, updateVectorsNumber, vector_offset) num_threads(THREADS_NUM)
-        {            
-            thread_num = omp_get_thread_num();
-            threadSize = minInt64(normalThreadSize, maxInt64(0, nodeSize - thread_num * normalThreadSize));
-
-            localDataForPartitions.resize(worldSize);
-            offset = thread_num * normalThreadSize;
-
-            for (int64 i = offset; i < offset + threadSize; i++) {
-                nodeToSend = getNodeToSend(SA->data()[i], newNodeSize);
-                data.i1 = SA->data()[i];
-                data.i2 = B->data()[i];
-                localDataForPartitions.data()[nodeToSend].push_back(data);
-            }
-
-            index = thread_num;
-
-            for (int i = 0; i < THREADS_NUM; i++) {
-                index = (index + i) % THREADS_NUM;
-
-                vector_offset = index * normalVectorUpdateNumber;
-                updateVectorsNumber = minInt64(normalVectorUpdateNumber, maxInt64(0, worldSize - index * normalVectorUpdateNumber));
-                for (int v_index = vector_offset; v_index < vector_offset+updateVectorsNumber; v_index++)
-                {
-                    dataForPartitions->data()[v_index].insert(dataForPartitions->data()[v_index].end(), 
-                                                            localDataForPartitions.data()[v_index].begin(), 
-                                                            localDataForPartitions.data()[v_index].end());
-                }
-
-                #pragma omp barrier
-            }
-        }
+    for (int i = 0; i < nodeSize; i++) {
+        nodeToSend = getNodeToSend(SA->data()[i], newNodeSize);
+        data.i1 = SA->data()[i];
+        data.i2 = B->data()[i];
+        dataForPartitions->data()[nodeToSend].push_back(data);
+    }
 }
+
 
 void reorder_and_rebalance(vector<int64>* B, 
                            vector<int64>* B_new, 
