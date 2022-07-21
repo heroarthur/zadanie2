@@ -27,6 +27,10 @@ int main(int argc, char** argv) {
 
 	MPI_Init(&argc, &argv);
 
+	double starttime, endtime;
+    starttime = MPI_Wtime();
+
+
 
 	int worldRank;
 	MPI_Comm_rank(MPI_COMM_WORLD, &worldRank);
@@ -205,6 +209,8 @@ int main(int argc, char** argv) {
 		resultFile.close();
 	}
 
+	endtime   = MPI_Wtime();
+    printf("That took %f seconds\n",endtime-starttime);
 
 	MPI_Finalize();
 
