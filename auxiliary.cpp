@@ -539,7 +539,7 @@ void initializeHelpingVectorsSampleSort3(HelpingVectorsSampleSort3* vectors, int
 
 
 void local_sort_openMP_tuple3(vector<Tuple3>* A) {
-	std::sort(A->begin() + blockStart, A->end(), cmp_tuple3());
+	std::sort(A->begin(), A->end(), cmp_tuple3());
 }
 
 
