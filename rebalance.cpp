@@ -28,7 +28,7 @@ using namespace std;
 
 
 
-void prepareDataForReorderSent(vector<int64>* A, 
+void prepareDataForReorderSent(vector<int64>* __restrict__ A, 
                                int64 newNodeSize, 
                                int64 nodeSize,
                                int64 dataSize,
@@ -51,8 +51,8 @@ void prepareDataForReorderSent(vector<int64>* A,
 }
 
 
-void rebalanceArray(vector<int64>* A, 
-                    vector<int64>* A_help,
+void rebalanceArray(vector<int64>* __restrict__ A, 
+                    vector<int64>* __restrict__ A_help,
                     HelpingVectorsSendingOperations* helpVectors,
                     int rank, 
                     int worldSize) {

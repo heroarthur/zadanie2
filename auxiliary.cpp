@@ -176,8 +176,8 @@ void print_MPI_2ints(vector<twoInts64>* v, int rank, int worldSize) {
 }
 
 
-bool doNextPartialRound(vector<int64>* pivotsPosition, 
-                        vector<int64>* partialPivotsPosition) {
+bool doNextPartialRound(vector<int64>* __restrict__ pivotsPosition, 
+                        vector<int64>* __restrict__ partialPivotsPosition) {
 	for (int64 i = 0; i < (int64) pivotsPosition->size(); i++) {
 		if (pivotsPosition->data()[i] != partialPivotsPosition->data()[i]) {
 			return true;
@@ -198,8 +198,8 @@ int getNextSendSize(int64 currentPartialPosition, int64 endPosition, int worldSi
 }
 
 
-void initialize_SA(vector<int64>* SA, 
-                   vector<Tuple2>* tuple2) {
+void initialize_SA(vector<int64>* __restrict__ SA, 
+                   vector<Tuple2>* __restrict__ tuple2) {
     SA->resize(tuple2->size());
 
     for (int64 i = 0; i < (int64) tuple2->size(); i++) {
@@ -208,10 +208,10 @@ void initialize_SA(vector<int64>* SA,
 }
 
 
-void fillTuple3(vector<int64>* B, 
-                vector<int64>* B2, 
-                vector<int64>* SA, 
-                vector<Tuple3>* tuple3) {
+void fillTuple3(vector<int64>* __restrict__ B, 
+                vector<int64>* __restrict__ B2, 
+                vector<int64>* __restrict__ SA, 
+                vector<Tuple3>* __restrict__ tuple3) {
 
     assert(B->size() == B2->size());
     assert(B->size() == SA->size());
@@ -226,11 +226,11 @@ void fillTuple3(vector<int64>* B,
 }
 
 
-void getNextPartialSend(vector<vector<TwoInts64>>* dataForPartitions, 
-                        vector<TwoInts64>* partialArr, 
-                        vector<int64>* partialPivotsPosition,
-						vector<int>* scattervPositions,
-						vector<int>* displacement,
+void getNextPartialSend(vector<vector<TwoInts64>>* __restrict__ dataForPartitions, 
+                        vector<TwoInts64>* __restrict__ partialArr, 
+                        vector<int64>* __restrict__ partialPivotsPosition,
+						vector<int>* __restrict__ scattervPositions,
+						vector<int>* __restrict__ displacement,
                         int rank,
                         int worldSize) {
 
@@ -262,8 +262,8 @@ void getNextPartialSend(vector<vector<TwoInts64>>* dataForPartitions,
     }
 }
 
-bool doNextPartialSend(vector<int64>* pivotsPosition, 
-                       vector<int64>* partialPivotsPosition) {
+bool doNextPartialSend(vector<int64>* __restrict__ pivotsPosition, 
+                       vector<int64>* __restrict__ partialPivotsPosition) {
     
     for(int64 i = 0; i < (int64) pivotsPosition->size(); i++) {
         if (pivotsPosition->data()[i] > partialPivotsPosition->data()[i]) {
@@ -279,11 +279,11 @@ inline int getNodeToSend(int64 id, int64 nodeSize) {
 }
 
 
-void do_sending_operation(vector<int64>* B, 
-                          vector<int64>* B_help, 
-                          vector<int64>* SA,
-                          vector<int64>* SA_second_pointer,
-                          HelpingVectorsSendingOperations* helpVectors,
+void do_sending_operation(vector<int64>* __restrict__ B, 
+                          vector<int64>* __restrict__ B_help, 
+                          vector<int64>* __restrict__ SA,
+                          vector<int64>* __restrict__ SA_second_pointer,
+                          HelpingVectorsSendingOperations* __restrict__ helpVectors,
                           int64 help_param,
                           bool update_SA,
                           int rank, 

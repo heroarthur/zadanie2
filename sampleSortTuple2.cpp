@@ -28,7 +28,7 @@ using namespace std;
 
 
 
-const int64 binarySearchTuple2(const vector<Tuple2>* arr, 
+const int64 binarySearchTuple2(const vector<Tuple2>* __restrict__ arr, 
                                Tuple2 tuple, 
                                int64 l, 
                                int64 r)
@@ -71,12 +71,12 @@ void findPivotPositionsTuple2(const vector<Tuple2>* __restrict__ arr,
 
 
 
-void getNextPartialPivotsTuple2(vector<Tuple2>* arr, 
-                                vector<Tuple2>* partialArr, 
-                                vector<int64>* pivotsPosition, 
-                                vector<int64>* partialPivotsPosition,
-                                vector<int>* scattervPositions,
-                                vector<int>* displacement,
+void getNextPartialPivotsTuple2(vector<Tuple2>* __restrict__ arr, 
+                                vector<Tuple2>* __restrict__ partialArr, 
+                                vector<int64>* __restrict__ pivotsPosition, 
+                                vector<int64>* __restrict__ partialPivotsPosition,
+                                vector<int>* __restrict__ scattervPositions,
+                                vector<int>* __restrict__ displacement,
                                 int worldSize) {
 
     int partialArraSize = 0;
@@ -103,9 +103,9 @@ void getNextPartialPivotsTuple2(vector<Tuple2>* arr,
 
 
 
-void sendDataToProperPartitionTuple2(vector<Tuple2>* A, 
-                                     vector<Tuple2>* A_sampleSorted, 
-                                     HelpingVectorsSampleSort2* helpVectors,
+void sendDataToProperPartitionTuple2(vector<Tuple2>* __restrict__ A, 
+                                     vector<Tuple2>* __restrict__ A_sampleSorted, 
+                                     HelpingVectorsSampleSort2* __restrict__ helpVectors,
                                      int rank, 
                                      int worldSize) {
 
@@ -181,8 +181,8 @@ void sendDataToProperPartitionTuple2(vector<Tuple2>* A,
 
 
 
-void mergeSortedParts(vector<Tuple2>* A, 
-                      HelpingVectorsSampleSort2* helpVectors, 
+void mergeSortedParts(vector<Tuple2>* __restrict__ A, 
+                      HelpingVectorsSampleSort2* __restrict__ helpVectors, 
                       int rank) {
                           
     int blocksNumber = helpVectors->allArrivingDisplacement.size()-1;
@@ -210,9 +210,9 @@ void mergeSortedParts(vector<Tuple2>* A,
 
 
 
-void sample_sort_MPI_tuple2(vector<Tuple2>* A, 
-                            vector<Tuple2>* A_help,
-                            HelpingVectorsSampleSort2* helpVectors,
+void sample_sort_MPI_tuple2(vector<Tuple2>* __restrict__ A, 
+                            vector<Tuple2>* __restrict__ A_help,
+                            HelpingVectorsSampleSort2* __restrict__ helpVectors,
                             int rank, 
                             int worldSize) {
 

@@ -27,7 +27,7 @@ using namespace std;
 
 
 
-int64 binarySearchTuple3(vector<Tuple3>* arr, 
+int64 binarySearchTuple3(vector<Tuple3>* __restrict__ arr, 
                          Tuple3 tuple, 
                          int64 l, 
                          int64 r)
@@ -56,9 +56,9 @@ int64 binarySearchTuple3(vector<Tuple3>* arr,
 }
 
 
-void findPivotPositionsTuple3(vector<Tuple3>* arr, 
-                              vector<Tuple3>* pivotsTuples, 
-                              vector<int64>* pivotsPositions, 
+void findPivotPositionsTuple3(vector<Tuple3>* __restrict__ arr, 
+                              vector<Tuple3>* __restrict__ pivotsTuples, 
+                              vector<int64>* __restrict__ pivotsPositions, 
                               int rank) {
 
     pivotsPositions->resize(pivotsTuples->size());
@@ -77,12 +77,12 @@ void findPivotPositionsTuple3(vector<Tuple3>* arr,
 
 
 
-void getNextPartialPivotsTuple3(vector<Tuple3>* arr, 
-                                vector<Tuple3>* partialArr, 
-                                vector<int64>* pivotsPosition, 
-                                vector<int64>* partialPivotsPosition,
-                                vector<int>* scattervPositions,
-                                vector<int>* displacement,
+void getNextPartialPivotsTuple3(vector<Tuple3>* __restrict__ arr, 
+                                vector<Tuple3>* __restrict__ partialArr, 
+                                vector<int64>* __restrict__ pivotsPosition, 
+                                vector<int64>* __restrict__ partialPivotsPosition,
+                                vector<int>* __restrict__ scattervPositions,
+                                vector<int>* __restrict__ displacement,
                                 int worldSize) {
 
     int partialArraSize = 0;
@@ -109,8 +109,8 @@ void getNextPartialPivotsTuple3(vector<Tuple3>* arr,
 
 
 
-void sendDataToProperPartitionTuple3(vector<Tuple3>* A, 
-                                     vector<Tuple3>* A_sampleSorted, 
+void sendDataToProperPartitionTuple3(vector<Tuple3>* __restrict__ A, 
+                                     vector<Tuple3>* __restrict__ A_sampleSorted, 
                                      HelpingVectorsSampleSort3* helpVectors,
                                      int rank, 
                                      int worldSize) {
@@ -187,8 +187,8 @@ void sendDataToProperPartitionTuple3(vector<Tuple3>* A,
 
 
 
-void mergeSortedParts(vector<Tuple3>* A, 
-                      HelpingVectorsSampleSort3* helpVectors, 
+void mergeSortedParts(vector<Tuple3>* __restrict__ A, 
+                      HelpingVectorsSampleSort3* __restrict__ helpVectors, 
                       int rank) {
                           
     int blocksNumber = helpVectors->allArrivingDisplacement.size()-1;
@@ -217,9 +217,9 @@ void mergeSortedParts(vector<Tuple3>* A,
 }
 
 
-void sample_sort_MPI_tuple3(vector<Tuple3>* A, 
-                            vector<Tuple3>* A_help,
-                            HelpingVectorsSampleSort3* helpVectors,
+void sample_sort_MPI_tuple3(vector<Tuple3>* __restrict__ A, 
+                            vector<Tuple3>* __restrict__ A_help,
+                            HelpingVectorsSampleSort3* __restrict__ helpVectors,
                             int rank, 
                             int worldSize) {
 

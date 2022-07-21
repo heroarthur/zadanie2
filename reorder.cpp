@@ -21,13 +21,13 @@
 
 using namespace std;
 
-void prepareDataForReorderSent(vector<int64>* B, 
-                               vector<int64>* SA, 
+void prepareDataForReorderSent(vector<int64>* __restrict__ B, 
+                               vector<int64>* __restrict__ SA, 
                                int64 newNodeSize, 
                                int64 nodeSize,
                                int64 dataSize,
                                int64 h,
-                               vector<vector<TwoInts64>>* dataForPartitions,
+                               vector<vector<TwoInts64>>* __restrict__ dataForPartitions,
                                int rank,
                                int worldSize) {
     TwoInts64 data;
@@ -42,11 +42,11 @@ void prepareDataForReorderSent(vector<int64>* B,
 }
 
 
-void reorder_and_rebalance(vector<int64>* B, 
-                           vector<int64>* B_new, 
-                           vector<int64>* SA,
-                           vector<int64>* SA_second_pointer,
-                           HelpingVectorsSendingOperations* helpVectors,
+void reorder_and_rebalance(vector<int64>* __restrict__ B, 
+                           vector<int64>* __restrict__ B_new, 
+                           vector<int64>* __restrict__ SA,
+                           vector<int64>* __restrict__ SA_second_pointer,
+                           HelpingVectorsSendingOperations* __restrict__ helpVectors,
                            int rank, 
                            int worldSize) {
 

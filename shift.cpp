@@ -23,13 +23,13 @@
 using namespace std;
 
 
-void prepareDataForShiftSent(vector<int64>* B, 
-                             vector<int64>* None1, 
+void prepareDataForShiftSent(vector<int64>* __restrict__ B, 
+                             vector<int64>* __restrict__ None1, 
                              int64 newNodeSize, 
                              int64 nodeSize,
                              int64 dataSize,
                              int64 h,
-                             vector<vector<TwoInts64>>* dataForPartitions,
+                             vector<vector<TwoInts64>>* __restrict__ dataForPartitions,
                              int rank,
                              int worldSize) {
 

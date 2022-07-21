@@ -26,14 +26,14 @@ using namespace std;
 
 
 
-void SA_algorithm(vector<int64> *B_pointer,
-                  vector<int64> *B_second_pointer,
-                  vector<int64> *SA_pointer,
-                  vector<int64> *SA_second_pointer,
-                  vector<Tuple2> *tuple2_pointer,
-                  vector<Tuple2> *tuple2_second_pointer,
-                  vector<Tuple3> *tuple3_pointer,
-                  vector<Tuple3> *tuple3_second_pointer,
+void SA_algorithm(vector<int64>* B_pointer,
+                  vector<int64>* B_second_pointer,
+                  vector<int64>* SA_pointer,
+                  vector<int64>* SA_second_pointer,
+                  vector<Tuple2>* tuple2_pointer,
+                  vector<Tuple2>* tuple2_second_pointer,
+                  vector<Tuple3>* tuple3_pointer,
+                  vector<Tuple3>* tuple3_second_pointer,
                   HelpingVectorsSendingOperations *helpVectorsSendingOperations,
                   HelpingVectorsSampleSort2 *helpVectorsSampleSort2,
                   HelpingVectorsSampleSort3 *helpVectorsSampleSort3,
