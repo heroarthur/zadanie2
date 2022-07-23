@@ -1,2 +1,0 @@
-#!/bin/bash
-mpic++ -fopenmp -O0 --std=c++2a seq.cpp -o seq 
