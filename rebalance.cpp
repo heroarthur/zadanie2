@@ -85,7 +85,7 @@ void rebalanceArray(vector<int64>* __restrict__ A,
     
     MPI_Allreduce(&localMaxPartialSend, &globalMaxPartialSend, 1, MPI_LONG_LONG_INT, MPI_MAX, MPI_COMM_WORLD);
 
-    int sizeTmpBuff;
+    int64 sizeTmpBuff;
 
     for (int partialSends = 0; partialSends < globalMaxPartialSend; partialSends++) {
         getNextPartialSend(&(helpVectors->dataForPartitions), 

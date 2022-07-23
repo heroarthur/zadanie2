@@ -96,8 +96,8 @@ void getPrefixFromGenom(int64 prefixStart,
 
     int64 sendCountSoFar = 0;
     int64 startCharArrayOffset = rank == machineWherePrefixStartLocal ? prefixStart - offset : 0;
-    int sendInThisRound;
-    int totalSendInThisRound;
+    int64 sendInThisRound;
+    int64 totalSendInThisRound;
 
 
     vector<vector<char>> prefixParts;

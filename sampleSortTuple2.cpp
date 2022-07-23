@@ -79,8 +79,8 @@ void getNextPartialPivotsTuple2(vector<Tuple2>* __restrict__ arr,
                                 vector<int>* __restrict__ displacement,
                                 int worldSize) {
 
-    int partialArraSize = 0;
-    int nextSendSize;
+    int64 partialArraSize = 0;
+    int64 nextSendSize;
 
     partialArr->clear();
     
@@ -89,7 +89,7 @@ void getNextPartialPivotsTuple2(vector<Tuple2>* __restrict__ arr,
         partialArraSize += nextSendSize;
     }
 
-    int displacementSum = 0;
+    int64 displacementSum = 0;
 
     for (int64 i = 0; i < (int64) pivotsPosition->size(); i++) {
         nextSendSize = getNextSendSize(partialPivotsPosition->data()[i], pivotsPosition->data()[i], worldSize);
@@ -117,7 +117,7 @@ void sendDataToProperPartitionTuple2(vector<Tuple2>* __restrict__ A,
     helpVectors->arrivingNumber.resize(worldSize);
     helpVectors->arrivingDisplacement.resize(worldSize);
     
-    int sizeTmpBuff;
+    int64 sizeTmpBuff;
 
 	helpVectors->partialPivotsPosition[0] = 0;
 	for (int64 i = 1; i < (int64) helpVectors->pivotsPositions.size(); i++) {

@@ -17,7 +17,7 @@
 #include <bits/stdc++.h>
 
 #define root 0
-#define wyslijRaz 40000000 //22369000
+#define wyslijRaz 22369000
 #define int64 long long int
 #define charArrayLen 32
 #define k charArrayLen
@@ -322,7 +322,7 @@ void do_sending_operation(vector<int64>* __restrict__ B,
     MPI_Allreduce(&localMaxPartialSend, &globalMaxPartialSend, 1, MPI_LONG_LONG_INT, MPI_MAX, MPI_COMM_WORLD);
 
 
-    int sizeTmpBuff;
+    int64 sizeTmpBuff;
 
 
 
