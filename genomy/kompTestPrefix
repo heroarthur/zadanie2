@@ -1,2 +1,0 @@
-#!/bin/bash
-mpic++ -fopenmp -O0 --std=c++2a testMPIprefix.cpp ../data_source.h ../data_source.cpp -o testMPIprefix
