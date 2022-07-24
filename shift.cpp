@@ -41,7 +41,7 @@ void prepareDataForShiftSent(vector<int64>* __restrict__ B,
     int data_size_minus_one = dataSize-1;
     TwoInts64 data;
     int64 offset = rank * newNodeSize;
-    for (int i = 0; i < B->size(); i++) {
+    for (int i = 0; i < (int) B->size(); i++) {
         curr_i = offset + i;
         target_i = curr_i - h;
 

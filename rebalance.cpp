@@ -35,7 +35,6 @@ void prepareDataForReorderSent(vector<int64>* __restrict__ A,
                                vector<vector<TwoInts64>>* dataForPartitions,
                                int rank,
                                int worldSize) {
-    TwoInts64 data;
     int nodeToSend;
     int64 startIndex = rank * newNodeSize;
     int64 currIndex;

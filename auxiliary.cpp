@@ -23,7 +23,6 @@
 #define k charArrayLen
 #define EMPTY_HELP_PARAM 0
 #define vectorMemoryAllocationFactor 10000
- //(2147483647 / 10)
 #define int64 long long int
 #define root 0
 #define K charArrayLen

@@ -60,10 +60,8 @@ int main(int argc, char** argv) {
 	{
 		for (int i = 0; i < m; i++) {
 			getline (queriesFile,line);
-			// queries.data()[i] = line.c_str();
 			queries.data()[i].assign(line.begin(), line.end());
 			queries.data()[i].push_back('\0');
-			// cout<<"rozmiar "<<queries.data()[i].size()<<endl;
 		}
 		queriesFile.close();
 	}
