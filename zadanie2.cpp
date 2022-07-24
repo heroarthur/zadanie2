@@ -27,8 +27,7 @@ int main(int argc, char** argv) {
 
 	MPI_Init(&argc, &argv);
 
-	double starttime, endtime_sa, endtime_queries;
-    starttime = MPI_Wtime();
+
 
 
 
@@ -191,8 +190,7 @@ int main(int argc, char** argv) {
 		}
 	}
 
-	endtime_sa   = MPI_Wtime();
-    printf("sa took %f seconds\n",endtime_sa-starttime);
+
 
 
 	if (worldRank == root) {
@@ -210,9 +208,7 @@ int main(int argc, char** argv) {
 		resultFile.close();
 	}
 
-	endtime_queries   = MPI_Wtime();
 
-    printf("queries took %f seconds\n",endtime_queries-endtime_sa);
 
 
 	MPI_Finalize();
