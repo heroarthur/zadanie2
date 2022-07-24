@@ -1,5 +1,5 @@
 zadanie2:
-	mpic++ -Wall -O3 -std=c++2a --std=c++2a zadanie2.cpp data_source.cpp -o genome_index
+	CC -O3 -std=c++2a --std=c++2a zadanie2.cpp data_source.cpp -o genome_index
 
 clean :
 	rm -f *.o *.out *.err genome_index

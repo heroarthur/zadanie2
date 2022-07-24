@@ -7,4 +7,4 @@
 #SBATCH --tasks-per-node 24           # each node is 2 socket, 12 core, so we want 24 tasks on each node
 #SBATCH --time 00:15:00               # if the job runs longer than this, it'll be killed
 
-srun zadanie2 4 80 /lustre/tetyda/home/adinar/public_html/perf_test/genome /lustre/tetyda/home/adinar/public_html/perf_test/queries out_duzy_test
+srun genome_index 4 80 /lustre/tetyda/home/adinar/public_html/perf_test/genome /lustre/tetyda/home/adinar/public_html/perf_test/queries out_duzy_test
