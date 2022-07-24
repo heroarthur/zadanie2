@@ -29,7 +29,7 @@
 #define K charArrayLen
 #define ENTER cout<<endl<<endl
 
-#define THREADS_NUM 1
+#define THREADS_NUM 8
 #define BLOCKS_NUMBER THREADS_NUM
 
 using namespace std;
